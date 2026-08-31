@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
 import { HomePage } from '@/src/pages/public/HomePage';
+import { JobDetailPage } from '@/src/pages/public/JobDetailPage';
 import { JobsPage } from '@/src/pages/public/JobsPage';
 
 function FoundationPage() {
@@ -23,6 +24,7 @@ export function App() {
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="jobs" element={<JobsPage />} />
+        <Route path="jobs/:jobId" element={<JobDetailPage />} />
         <Route path="*" element={<FoundationPage />} />
       </Route>
     </Routes>
