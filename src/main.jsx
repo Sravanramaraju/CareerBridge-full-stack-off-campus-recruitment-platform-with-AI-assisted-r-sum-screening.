@@ -11,7 +11,7 @@ import { App } from '@/src/app/App';
 import { AppProviders } from '@/src/app/providers';
 import '@/src/styles/globals.css';
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AppProviders>
       <BrowserRouter>

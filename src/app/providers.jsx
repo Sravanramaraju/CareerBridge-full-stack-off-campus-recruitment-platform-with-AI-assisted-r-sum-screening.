@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { ThemeProvider } from '@/src/features/theme/ThemeProvider';
 
-export function AppProviders({ children }: { children: ReactNode }) {
+export function AppProviders({ children }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({

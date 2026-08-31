@@ -1,24 +1,17 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-
-type Theme = 'light' | 'dark';
-
-interface ThemeContextValue {
-  theme: Theme;
-  toggleTheme: () => void;
-}
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const THEME_STORAGE_KEY = 'careerbridge.theme';
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+const ThemeContext = createContext(null);
 
-function getInitialTheme(): Theme {
+function getInitialTheme() {
   if (typeof window === 'undefined') return 'light';
   const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (saved === 'light' || saved === 'dark') return saved;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');

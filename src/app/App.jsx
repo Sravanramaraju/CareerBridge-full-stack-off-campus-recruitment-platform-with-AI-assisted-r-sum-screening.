@@ -7,7 +7,7 @@ function FoundationPage() {
         <p className="text-sm font-semibold text-primary">CareerBridge</p>
         <h1 className="mt-3 font-heading text-3xl font-bold">Frontend foundation is ready.</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          The early-career recruitment experience is being built from a clean, typed foundation.
+          The early-career recruitment experience is being built from a clean JavaScript foundation.
         </p>
       </section>
     </main>
