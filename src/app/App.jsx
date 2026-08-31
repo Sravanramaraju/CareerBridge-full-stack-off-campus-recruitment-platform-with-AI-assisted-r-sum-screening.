@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
 import { HomePage } from '@/src/pages/public/HomePage';
+import { JobsPage } from '@/src/pages/public/JobsPage';
 
 function FoundationPage() {
   return (
@@ -21,6 +22,7 @@ export function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="jobs" element={<JobsPage />} />
         <Route path="*" element={<FoundationPage />} />
       </Route>
     </Routes>
