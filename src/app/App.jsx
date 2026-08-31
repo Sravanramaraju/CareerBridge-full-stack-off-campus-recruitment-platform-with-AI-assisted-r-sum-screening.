@@ -1,5 +1,10 @@
 import { Route, Routes } from 'react-router-dom';
+import { AuthLayout } from '@/src/layouts/AuthLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
+import { ForgotPasswordPage } from '@/src/pages/auth/ForgotPasswordPage';
+import { LoginPage } from '@/src/pages/auth/LoginPage';
+import { RoleSignupPage } from '@/src/pages/auth/RoleSignupPage';
+import { SignupPage } from '@/src/pages/auth/SignupPage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
@@ -20,6 +25,13 @@ export function App() {
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="404" element={<NotFoundPage />} />
         <Route path="*" element={<NotFoundPage />} />
+      </Route>
+      <Route element={<AuthLayout />}>
+        <Route path="login" element={<LoginPage />} />
+        <Route path="signup" element={<SignupPage />} />
+        <Route path="signup/applicant" element={<RoleSignupPage accountType="applicant" />} />
+        <Route path="signup/recruiter" element={<RoleSignupPage accountType="recruiter" />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
       </Route>
     </Routes>
   );
