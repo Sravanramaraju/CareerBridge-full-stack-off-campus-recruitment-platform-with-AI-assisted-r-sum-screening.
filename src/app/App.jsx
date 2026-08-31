@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
+import { HomePage } from '@/src/pages/public/HomePage';
 
 function FoundationPage() {
   return (
@@ -19,6 +20,7 @@ export function App() {
   return (
     <Routes>
       <Route element={<PublicLayout />}>
+        <Route index element={<HomePage />} />
         <Route path="*" element={<FoundationPage />} />
       </Route>
     </Routes>
