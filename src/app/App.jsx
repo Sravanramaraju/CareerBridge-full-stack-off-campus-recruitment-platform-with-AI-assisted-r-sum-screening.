@@ -5,20 +5,8 @@ import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
 import { JobDetailPage } from '@/src/pages/public/JobDetailPage';
 import { JobsPage } from '@/src/pages/public/JobsPage';
-
-function FoundationPage() {
-  return (
-    <section className="grid min-h-[65vh] place-items-center px-4">
-      <section className="w-full max-w-xl rounded-2xl border bg-card p-8 text-center">
-        <p className="text-sm font-semibold text-primary">CareerBridge</p>
-        <h1 className="mt-3 font-heading text-3xl font-bold">Frontend foundation is ready.</h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          The early-career recruitment experience is being built from a clean JavaScript foundation.
-        </p>
-      </section>
-    </section>
-  );
-}
+import { NotFoundPage } from '@/src/pages/public/NotFoundPage';
+import { ResourcesPage } from '@/src/pages/public/ResourcesPage';
 
 export function App() {
   return (
@@ -29,7 +17,9 @@ export function App() {
         <Route path="jobs/:jobId" element={<JobDetailPage />} />
         <Route path="companies" element={<CompaniesPage />} />
         <Route path="companies/:companyId" element={<CompanyDetailPage />} />
-        <Route path="*" element={<FoundationPage />} />
+        <Route path="resources" element={<ResourcesPage />} />
+        <Route path="404" element={<NotFoundPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
