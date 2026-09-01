@@ -1,5 +1,6 @@
 import { companies, getCompanyById, jobs } from '@/src/data/mockData';
 import { DEMO_ACCOUNTS } from '@/src/domain/constants';
+import { useAppStore } from '@/src/store/useAppStore';
 
 const NETWORK_DELAY = 220;
 
@@ -13,6 +14,13 @@ function normalise(value = '') {
   return value.trim().toLocaleLowerCase();
 }
 
+function availableJobs() {
+  const localJobs = useAppStore.getState().recruiterDrafts.filter((job) => job.status === 'Published');
+  const merged = new Map(jobs.map((job) => [job.id, job]));
+  localJobs.forEach((job) => merged.set(job.id, job));
+  return [...merged.values()];
+}
+
 export const catalogService = {
   async listJobs(filters = {}) {
     const keyword = normalise(filters.keyword);
@@ -20,7 +28,7 @@ export const catalogService = {
     const selectedTypes = filters.types || [];
     const selectedModes = filters.modes || [];
 
-    const result = jobs.filter((job) => {
+    const result = availableJobs().filter((job) => {
       const company = getCompanyById(job.companyId);
       const searchable = [job.title, company?.name, job.summary, ...job.skills].join(' ').toLocaleLowerCase();
       const matchesKeyword = !keyword || searchable.includes(keyword);
@@ -35,7 +43,7 @@ export const catalogService = {
   },
 
   async getJob(jobId) {
-    return respond(jobs.find((job) => job.id === jobId) || null);
+    return respond(availableJobs().find((job) => job.id === jobId) || null);
   },
 
   async listCompanies() {

@@ -16,6 +16,7 @@ import { ApplicantSettingsPage } from '@/src/pages/applicant/ApplicantSettingsPa
 import { ProfilePage } from '@/src/pages/applicant/ProfilePage';
 import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboardPage';
 import { RecruiterJobsPage } from '@/src/pages/recruiter/RecruiterJobsPage';
+import { JobFormPage } from '@/src/pages/recruiter/JobFormPage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
@@ -55,6 +56,8 @@ export function App() {
       <Route element={<RoleGuard allowedRole="recruiter"><RecruiterLayout /></RoleGuard>}>
         <Route path="recruiter/dashboard" element={<RecruiterDashboardPage />} />
         <Route path="recruiter/jobs" element={<RecruiterJobsPage />} />
+        <Route path="recruiter/jobs/new" element={<JobFormPage />} />
+        <Route path="recruiter/jobs/:jobId/edit" element={<JobFormPage />} />
       </Route>
     </Routes>
   );
