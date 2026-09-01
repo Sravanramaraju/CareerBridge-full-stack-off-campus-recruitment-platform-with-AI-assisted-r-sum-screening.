@@ -7,18 +7,10 @@ import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
 import { RecruiterLayout } from '@/src/layouts/RecruiterLayout';
 import { AdminLayout } from '@/src/layouts/AdminLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
-import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboardPage';
 import { AdminDashboardPage } from '@/src/pages/admin/AdminDashboardPage';
 import { AdminCompaniesPage } from '@/src/pages/admin/AdminCompaniesPage';
 import { AdminJobsPage } from '@/src/pages/admin/AdminJobsPage';
 import { AdminUsersPage } from '@/src/pages/admin/AdminUsersPage';
-import { RecruiterJobsPage } from '@/src/pages/recruiter/RecruiterJobsPage';
-import { RecruiterCompanyPage } from '@/src/pages/recruiter/RecruiterCompanyPage';
-import { RecruiterNotificationsPage } from '@/src/pages/recruiter/RecruiterNotificationsPage';
-import { RecruiterSettingsPage } from '@/src/pages/recruiter/RecruiterSettingsPage';
-import { JobFormPage } from '@/src/pages/recruiter/JobFormPage';
-import { CandidateDetailPage } from '@/src/pages/recruiter/CandidateDetailPage';
-import { CandidatePipelinePage } from '@/src/pages/recruiter/CandidatePipelinePage';
 
 const HomePage = lazy(() => import('@/src/pages/public/HomePage').then((module) => ({ default: module.HomePage })));
 const JobsPage = lazy(() => import('@/src/pages/public/JobsPage').then((module) => ({ default: module.JobsPage })));
@@ -37,6 +29,14 @@ const ApplicationsPage = lazy(() => import('@/src/pages/applicant/ApplicationsPa
 const ApplicationDetailPage = lazy(() => import('@/src/pages/applicant/ApplicationDetailPage').then((module) => ({ default: module.ApplicationDetailPage })));
 const ProfilePage = lazy(() => import('@/src/pages/applicant/ProfilePage').then((module) => ({ default: module.ProfilePage })));
 const ApplicantSettingsPage = lazy(() => import('@/src/pages/applicant/ApplicantSettingsPage').then((module) => ({ default: module.ApplicantSettingsPage })));
+const RecruiterDashboardPage = lazy(() => import('@/src/pages/recruiter/RecruiterDashboardPage').then((module) => ({ default: module.RecruiterDashboardPage })));
+const RecruiterJobsPage = lazy(() => import('@/src/pages/recruiter/RecruiterJobsPage').then((module) => ({ default: module.RecruiterJobsPage })));
+const JobFormPage = lazy(() => import('@/src/pages/recruiter/JobFormPage').then((module) => ({ default: module.JobFormPage })));
+const CandidatePipelinePage = lazy(() => import('@/src/pages/recruiter/CandidatePipelinePage').then((module) => ({ default: module.CandidatePipelinePage })));
+const CandidateDetailPage = lazy(() => import('@/src/pages/recruiter/CandidateDetailPage').then((module) => ({ default: module.CandidateDetailPage })));
+const RecruiterCompanyPage = lazy(() => import('@/src/pages/recruiter/RecruiterCompanyPage').then((module) => ({ default: module.RecruiterCompanyPage })));
+const RecruiterNotificationsPage = lazy(() => import('@/src/pages/recruiter/RecruiterNotificationsPage').then((module) => ({ default: module.RecruiterNotificationsPage })));
+const RecruiterSettingsPage = lazy(() => import('@/src/pages/recruiter/RecruiterSettingsPage').then((module) => ({ default: module.RecruiterSettingsPage })));
 
 export function App() {
   return (
