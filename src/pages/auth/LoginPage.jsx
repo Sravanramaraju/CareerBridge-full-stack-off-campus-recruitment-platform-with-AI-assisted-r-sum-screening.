@@ -9,6 +9,7 @@ import { FormField, Input } from '@/src/components/ui/Input';
 import { DEMO_ACCOUNTS } from '@/src/domain/constants';
 import { authService } from '@/src/services/mockApi';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const loginSchema = z.object({
   email: z.email('Enter a valid email address.'),
@@ -18,6 +19,7 @@ const loginSchema = z.object({
 const roleHome = { applicant: '/applicant/dashboard', recruiter: '/recruiter/dashboard', admin: '/admin/dashboard' };
 
 export function LoginPage() {
+  useDocumentTitle('Log in');
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState('');
   const [searchParams] = useSearchParams();
