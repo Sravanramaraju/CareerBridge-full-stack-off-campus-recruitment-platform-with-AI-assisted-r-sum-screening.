@@ -8,6 +8,7 @@ import { JobCard } from '@/src/components/jobs/JobCard';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { buttonVariants } from '@/src/components/ui/Button';
 import { careerResources, companies, jobs } from '@/src/data/mockData';
+import { useAppStore } from '@/src/store/useAppStore';
 
 const browseChips = [
   'Fresher', 'Internship', 'Remote', 'Software Engineering', 'Data & Analytics',
@@ -41,6 +42,8 @@ const candidateFlow = [
 
 export function HomePage() {
   const featuredJobs = jobs.filter((job) => job.featured).slice(0, 6);
+  const savedJobIds = useAppStore((state) => state.savedJobIds);
+  const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
 
   return (
     <>
@@ -97,7 +100,14 @@ export function HomePage() {
           </Link>
         </div>
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          {featuredJobs.map((job) => <JobCard key={job.id} job={job} />)}
+          {featuredJobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              isSaved={savedJobIds.includes(job.id)}
+              onSave={toggleSavedJob}
+            />
+          ))}
         </div>
       </section>
 
