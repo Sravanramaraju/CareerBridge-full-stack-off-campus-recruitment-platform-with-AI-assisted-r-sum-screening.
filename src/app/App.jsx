@@ -8,6 +8,7 @@ import { LoginPage } from '@/src/pages/auth/LoginPage';
 import { RoleSignupPage } from '@/src/pages/auth/RoleSignupPage';
 import { SignupPage } from '@/src/pages/auth/SignupPage';
 import { ApplicantDashboardPage } from '@/src/pages/applicant/ApplicantDashboardPage';
+import { SavedJobsPage } from '@/src/pages/applicant/SavedJobsPage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
@@ -38,6 +39,7 @@ export function App() {
       </Route>
       <Route element={<RoleGuard allowedRole="applicant"><ApplicantLayout /></RoleGuard>}>
         <Route path="applicant/dashboard" element={<ApplicantDashboardPage />} />
+        <Route path="applicant/saved-jobs" element={<SavedJobsPage />} />
       </Route>
     </Routes>
   );
