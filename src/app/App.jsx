@@ -7,10 +7,6 @@ import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
 import { RecruiterLayout } from '@/src/layouts/RecruiterLayout';
 import { AdminLayout } from '@/src/layouts/AdminLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
-import { ForgotPasswordPage } from '@/src/pages/auth/ForgotPasswordPage';
-import { LoginPage } from '@/src/pages/auth/LoginPage';
-import { RoleSignupPage } from '@/src/pages/auth/RoleSignupPage';
-import { SignupPage } from '@/src/pages/auth/SignupPage';
 import { ApplicantDashboardPage } from '@/src/pages/applicant/ApplicantDashboardPage';
 import { ApplicationDetailPage } from '@/src/pages/applicant/ApplicationDetailPage';
 import { ApplicationsPage } from '@/src/pages/applicant/ApplicationsPage';
@@ -37,6 +33,10 @@ const CompaniesPage = lazy(() => import('@/src/pages/public/CompaniesPage').then
 const CompanyDetailPage = lazy(() => import('@/src/pages/public/CompanyDetailPage').then((module) => ({ default: module.CompanyDetailPage })));
 const ResourcesPage = lazy(() => import('@/src/pages/public/ResourcesPage').then((module) => ({ default: module.ResourcesPage })));
 const NotFoundPage = lazy(() => import('@/src/pages/public/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
+const LoginPage = lazy(() => import('@/src/pages/auth/LoginPage').then((module) => ({ default: module.LoginPage })));
+const SignupPage = lazy(() => import('@/src/pages/auth/SignupPage').then((module) => ({ default: module.SignupPage })));
+const RoleSignupPage = lazy(() => import('@/src/pages/auth/RoleSignupPage').then((module) => ({ default: module.RoleSignupPage })));
+const ForgotPasswordPage = lazy(() => import('@/src/pages/auth/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage })));
 
 export function App() {
   return (
