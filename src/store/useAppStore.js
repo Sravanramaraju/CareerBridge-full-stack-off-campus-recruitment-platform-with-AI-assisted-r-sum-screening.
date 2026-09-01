@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { APPLICATION_STATUSES } from '@/src/domain/constants';
 import { mockApplications, recruiterCandidates } from '@/src/data/mockData';
+import { adminCompanyReviews, adminJobReviews, adminUsers } from '@/src/data/adminData';
 
 export const APP_STORAGE_KEY = 'careerbridge.mock.v1';
 
@@ -26,6 +27,9 @@ export const useAppStore = create(
         verificationStatus: 'Verified',
       },
       readNotificationIds: [],
+      adminCompanyStates: Object.fromEntries(adminCompanyReviews.map((company) => [company.id, company.status])),
+      adminJobStates: Object.fromEntries(adminJobReviews.map((job) => [job.id, job.state])),
+      adminUserStates: Object.fromEntries(adminUsers.map((user) => [user.id, user.state])),
       profile: {
         name: 'Ananya Rao',
         email: 'applicant@careerbridge.demo',
@@ -78,6 +82,9 @@ export const useAppStore = create(
       updateCompanyProfile: (updates) => set((state) => ({ companyProfile: { ...state.companyProfile, ...updates } })),
       markNotificationRead: (notificationId) => set((state) => ({ readNotificationIds: state.readNotificationIds.includes(notificationId) ? state.readNotificationIds : [...state.readNotificationIds, notificationId] })),
       markAllNotificationsRead: (notificationIds) => set((state) => ({ readNotificationIds: [...new Set([...state.readNotificationIds, ...notificationIds])] })),
+      setAdminCompanyState: (companyId, status) => set((state) => ({ adminCompanyStates: { ...state.adminCompanyStates, [companyId]: status } })),
+      setAdminJobState: (jobId, status) => set((state) => ({ adminJobStates: { ...state.adminJobStates, [jobId]: status } })),
+      setAdminUserState: (userId, status) => set((state) => ({ adminUserStates: { ...state.adminUserStates, [userId]: status } })),
       updateProfile: (updates) => set((state) => ({ profile: { ...state.profile, ...updates } })),
       saveRecruiterDraft: (draft) => set((state) => ({
         recruiterDrafts: [
@@ -107,6 +114,9 @@ export const useAppStore = create(
         candidateStatuses: state.candidateStatuses,
         companyProfile: state.companyProfile,
         readNotificationIds: state.readNotificationIds,
+        adminCompanyStates: state.adminCompanyStates,
+        adminJobStates: state.adminJobStates,
+        adminUserStates: state.adminUserStates,
         profile: state.profile,
       }),
     },
