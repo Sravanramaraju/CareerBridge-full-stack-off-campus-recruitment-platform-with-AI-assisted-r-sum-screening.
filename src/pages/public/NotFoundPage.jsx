@@ -1,8 +1,10 @@
 import { ArrowLeft, SearchX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { buttonVariants } from '@/src/components/ui/Button';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function NotFoundPage() {
+  useDocumentTitle('Page not found');
   return (
     <section className="page-container grid min-h-[64vh] place-items-center py-16 text-center">
       <div>
