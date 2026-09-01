@@ -6,6 +6,7 @@ import { Badge } from '@/src/components/ui/Badge';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { catalogService } from '@/src/services/mockApi';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const values = [
   ['Learn in the open', 'Questions, early drafts, and thoughtful feedback are part of how work moves forward.'],
@@ -19,6 +20,7 @@ export function CompanyDetailPage() {
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
   const companyQuery = useQuery({ queryKey: ['company', companyId], queryFn: () => catalogService.getCompany(companyId) });
   const jobsQuery = useQuery({ queryKey: ['company-jobs', companyId], queryFn: () => catalogService.listJobs({}), enabled: companyQuery.isSuccess });
+  useDocumentTitle(companyQuery.data?.name || 'Company profile');
 
   if (companyQuery.isLoading) return <div className="page-container py-12"><Skeleton className="h-5 w-32" /><div className="surface-card mt-7 p-8"><Skeleton className="size-16" /><Skeleton className="mt-5 h-9 w-1/2" /><Skeleton className="mt-3 h-5 w-1/3" /></div></div>;
   if (!companyQuery.data) return <div className="page-container py-16"><EmptyState icon={Building2} title="Company not found" description="This company profile may no longer be available." /></div>;
