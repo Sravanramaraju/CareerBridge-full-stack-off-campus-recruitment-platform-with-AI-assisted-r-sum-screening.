@@ -75,7 +75,7 @@ export function JobDetailPage() {
   }
 
   return (
-    <div className="page-container py-8 sm:py-10">
+    <div className="page-container py-8 pb-28 sm:py-10 lg:pb-10">
       <Link to="/jobs" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--cb-text-secondary)] hover:text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -154,6 +154,24 @@ export function JobDetailPage() {
             <p className="mt-1">CareerBridge demo listing · Report concerns through the company profile.</p>
           </div>
         </aside>
+      </div>
+
+      <div className="fixed inset-x-3 bottom-3 z-30 flex gap-2 rounded-2xl border border-[var(--cb-border)] bg-[var(--cb-surface-raised)] p-2 shadow-[var(--cb-shadow-raised)] lg:hidden" aria-label="Mobile application actions">
+        <Button
+          variant={isSaved ? 'soft' : 'secondary'}
+          size="iconSm"
+          onClick={() => toggleSavedJob(job.id)}
+          aria-label={isSaved ? 'Remove saved job' : 'Save job'}
+        >
+          <Bookmark className={isSaved ? 'fill-current' : ''} aria-hidden="true" />
+        </Button>
+        {application ? (
+          <Link to={`/applicant/applications/${application.id}`} className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'flex-1')}>Track application</Link>
+        ) : isApplicant ? (
+          <Button size="lg" className="flex-1" onClick={() => setModalOpen(true)}><Send aria-hidden="true" />Apply now</Button>
+        ) : (
+          <Link to={`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`} className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'flex-1')}>Log in to apply</Link>
+        )}
       </div>
     </div>
   );
