@@ -7,12 +7,6 @@ import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
 import { RecruiterLayout } from '@/src/layouts/RecruiterLayout';
 import { AdminLayout } from '@/src/layouts/AdminLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
-import { ApplicantDashboardPage } from '@/src/pages/applicant/ApplicantDashboardPage';
-import { ApplicationDetailPage } from '@/src/pages/applicant/ApplicationDetailPage';
-import { ApplicationsPage } from '@/src/pages/applicant/ApplicationsPage';
-import { SavedJobsPage } from '@/src/pages/applicant/SavedJobsPage';
-import { ApplicantSettingsPage } from '@/src/pages/applicant/ApplicantSettingsPage';
-import { ProfilePage } from '@/src/pages/applicant/ProfilePage';
 import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboardPage';
 import { AdminDashboardPage } from '@/src/pages/admin/AdminDashboardPage';
 import { AdminCompaniesPage } from '@/src/pages/admin/AdminCompaniesPage';
@@ -37,6 +31,12 @@ const LoginPage = lazy(() => import('@/src/pages/auth/LoginPage').then((module) 
 const SignupPage = lazy(() => import('@/src/pages/auth/SignupPage').then((module) => ({ default: module.SignupPage })));
 const RoleSignupPage = lazy(() => import('@/src/pages/auth/RoleSignupPage').then((module) => ({ default: module.RoleSignupPage })));
 const ForgotPasswordPage = lazy(() => import('@/src/pages/auth/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage })));
+const ApplicantDashboardPage = lazy(() => import('@/src/pages/applicant/ApplicantDashboardPage').then((module) => ({ default: module.ApplicantDashboardPage })));
+const SavedJobsPage = lazy(() => import('@/src/pages/applicant/SavedJobsPage').then((module) => ({ default: module.SavedJobsPage })));
+const ApplicationsPage = lazy(() => import('@/src/pages/applicant/ApplicationsPage').then((module) => ({ default: module.ApplicationsPage })));
+const ApplicationDetailPage = lazy(() => import('@/src/pages/applicant/ApplicationDetailPage').then((module) => ({ default: module.ApplicationDetailPage })));
+const ProfilePage = lazy(() => import('@/src/pages/applicant/ProfilePage').then((module) => ({ default: module.ProfilePage })));
+const ApplicantSettingsPage = lazy(() => import('@/src/pages/applicant/ApplicantSettingsPage').then((module) => ({ default: module.ApplicantSettingsPage })));
 
 export function App() {
   return (
