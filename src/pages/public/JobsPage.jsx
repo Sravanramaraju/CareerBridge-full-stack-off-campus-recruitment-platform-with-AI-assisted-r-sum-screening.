@@ -1,35 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BriefcaseBusiness, SlidersHorizontal, X } from 'lucide-react';
+import { BriefcaseBusiness, SlidersHorizontal } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { JobCard } from '@/src/components/jobs/JobCard';
+import { JobFilterPanel } from '@/src/components/jobs/JobFilterPanel';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
-import { Button } from '@/src/components/ui/Button';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
-import { EMPLOYMENT_TYPES, WORK_MODES } from '@/src/domain/constants';
 import { catalogService } from '@/src/services/mockApi';
 import { useAppStore } from '@/src/store/useAppStore';
-
-function FilterGroup({ title, options, selected, onChange }) {
-  return (
-    <fieldset className="border-b border-[var(--cb-divider)] pb-6 last:border-0">
-      <legend className="font-heading text-sm font-bold">{title}</legend>
-      <div className="mt-3 grid gap-2.5">
-        {options.map((option) => (
-          <label key={option} className="flex cursor-pointer items-center gap-2.5 text-sm text-[var(--cb-text-secondary)]">
-            <input
-              type="checkbox"
-              className="size-4 rounded border-[var(--cb-border-strong)] accent-[var(--cb-primary)]"
-              checked={selected.includes(option)}
-              onChange={() => onChange(option)}
-            />
-            {option}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
 
 function JobsLoading() {
   return (
@@ -46,8 +24,14 @@ function JobsLoading() {
 
 export function JobsPage() {
   const [searchParams] = useSearchParams();
-  const [types, setTypes] = useState([]);
-  const [modes, setModes] = useState([]);
+  const [facetFilters, setFacetFilters] = useState({
+    types: [],
+    modes: [],
+    salaryBands: [],
+    industries: [],
+    skills: [],
+    datePosted: '',
+  });
   const [sort, setSort] = useState('newest');
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
@@ -56,9 +40,8 @@ export function JobsPage() {
     keyword: searchParams.get('q') || '',
     location: searchParams.get('location') || '',
     experience: searchParams.get('experience') || '',
-    types,
-    modes,
-  }), [modes, searchParams, types]);
+    ...facetFilters,
+  }), [facetFilters, searchParams]);
 
   const jobsQuery = useQuery({
     queryKey: ['jobs', filters],
@@ -71,22 +54,30 @@ export function JobsPage() {
     return result.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
   }, [jobsQuery.data, sort]);
 
-  function toggleFilter(setter, value) {
-    setter((current) => current.includes(value) ? current.filter((item) => item !== value) : [...current, value]);
+  function toggleFilter(key, value) {
+    setFacetFilters((current) => ({
+      ...current,
+      [key]: current[key].includes(value)
+        ? current[key].filter((item) => item !== value)
+        : [...current[key], value],
+    }));
   }
 
   function clearFilters() {
-    setTypes([]);
-    setModes([]);
+    setFacetFilters({ types: [], modes: [], salaryBands: [], industries: [], skills: [], datePosted: '' });
   }
 
-  const filterContent = (
-    <div className="grid gap-6">
-      <FilterGroup title="Employment type" options={EMPLOYMENT_TYPES} selected={types} onChange={(value) => toggleFilter(setTypes, value)} />
-      <FilterGroup title="Work mode" options={WORK_MODES} selected={modes} onChange={(value) => toggleFilter(setModes, value)} />
-      {(types.length > 0 || modes.length > 0) && <Button variant="ghost" size="sm" onClick={clearFilters}><X aria-hidden="true" />Clear filters</Button>}
-    </div>
+  const selectedFilterCount = Object.values(facetFilters).reduce(
+    (total, value) => total + (Array.isArray(value) ? value.length : Number(Boolean(value))),
+    0,
   );
+
+  const filterContent = <JobFilterPanel
+    filters={facetFilters}
+    onToggle={toggleFilter}
+    onDateChange={(datePosted) => setFacetFilters((current) => ({ ...current, datePosted }))}
+    onClear={clearFilters}
+  />;
 
   return (
     <div className="page-container py-10 sm:py-12">
@@ -98,7 +89,7 @@ export function JobsPage() {
       <div className="mt-7"><JobSearchBar compact initialValues={filters} /></div>
 
       <details className="surface-card mt-5 p-4 lg:hidden">
-        <summary className="flex cursor-pointer list-none items-center justify-between font-semibold"><span className="inline-flex items-center gap-2"><SlidersHorizontal className="size-4" />Filters</span><span className="text-xs text-[var(--cb-primary)]">{types.length + modes.length} selected</span></summary>
+        <summary className="flex cursor-pointer list-none items-center justify-between font-semibold"><span className="inline-flex items-center gap-2"><SlidersHorizontal className="size-4" />Filters</span><span className="text-xs text-[var(--cb-primary)]">{selectedFilterCount} selected</span></summary>
         <div className="mt-5">{filterContent}</div>
       </details>
 
