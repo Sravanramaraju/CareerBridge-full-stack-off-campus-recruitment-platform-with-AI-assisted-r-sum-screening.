@@ -413,6 +413,66 @@ export const mockNotifications = [
   { id: 'notification-5', title: 'Profile reminder', message: 'Add one recent project to strengthen your candidate profile.', time: '5d ago', read: true },
 ];
 
+export const recruiterCandidates = [
+  {
+    applicationId: 'candidate-app-2001', jobId: 'frontend-engineer-northstar', name: 'Kavya Nair', initials: 'KN', headline: 'Frontend developer · 1 year experience', match: 92, experience: '1 year', skills: ['React', 'JavaScript', 'CSS', 'Testing'], location: 'Bengaluru', appliedAt: '2026-08-31T06:30:00.000Z', status: 'Shortlisted',
+    summary: 'Frontend developer focused on accessible design systems and reliable component architecture.', education: 'B.Tech, Information Technology · CUSAT', projects: ['Accessible commerce design system', 'Campus event discovery PWA'], requiredCoverage: '7 / 8', preferredCoverage: '2 / 3', missing: ['GraphQL'],
+  },
+  {
+    applicationId: 'candidate-app-2002', jobId: 'frontend-engineer-northstar', name: 'Arjun Menon', initials: 'AM', headline: 'Computer science graduate', match: 88, experience: 'Fresher', skills: ['React', 'JavaScript', 'Git', 'REST APIs'], location: 'Kochi', appliedAt: '2026-08-31T05:10:00.000Z', status: 'Under Review',
+    summary: 'Computer science graduate who has shipped collaborative web projects and enjoys product-focused engineering.', education: 'B.E., Computer Science · Anna University', projects: ['Open-source issue triage dashboard', 'Peer learning platform'], requiredCoverage: '7 / 8', preferredCoverage: '1 / 3', missing: ['Playwright', 'GraphQL'],
+  },
+  {
+    applicationId: 'candidate-app-2003', jobId: 'frontend-engineer-northstar', name: 'Meera Joshi', initials: 'MJ', headline: 'UI engineer · internship experience', match: 84, experience: '8 months', skills: ['React', 'TypeScript', 'Figma', 'Accessibility'], location: 'Pune', appliedAt: '2026-08-30T10:45:00.000Z', status: 'Interview',
+    summary: 'UI engineer combining design awareness with accessible implementation and structured frontend delivery.', education: 'B.Des, Interaction Design · MIT Institute of Design', projects: ['Public-service form redesign', 'Component accessibility audit'], requiredCoverage: '6 / 8', preferredCoverage: '3 / 3', missing: ['API testing', 'Node.js'],
+  },
+  {
+    applicationId: 'candidate-app-2004', jobId: 'frontend-engineer-northstar', name: 'Ritvik Shah', initials: 'RS', headline: 'Full-stack developer · graduate', match: 79, experience: 'Fresher', skills: ['JavaScript', 'Node.js', 'React', 'PostgreSQL'], location: 'Ahmedabad', appliedAt: '2026-08-29T08:20:00.000Z', status: 'Applied',
+    summary: 'Graduate developer with strong end-to-end project exposure and a practical approach to debugging.', education: 'B.Tech, Computer Engineering · Nirma University', projects: ['Local business inventory platform', 'Developer notes API'], requiredCoverage: '6 / 8', preferredCoverage: '1 / 3', missing: ['Accessibility', 'Playwright'],
+  },
+  {
+    applicationId: 'candidate-app-2005', jobId: 'frontend-engineer-northstar', name: 'Ishita Roy', initials: 'IR', headline: 'Frontend developer · 1.5 years', match: 76, experience: '1.5 years', skills: ['Vue', 'JavaScript', 'CSS', 'Cypress'], location: 'Kolkata', appliedAt: '2026-08-28T09:05:00.000Z', status: 'Rejected',
+    summary: 'Frontend developer experienced in customer-facing dashboards and pragmatic automated testing.', education: 'B.Sc., Computer Science · University of Calcutta', projects: ['Customer analytics dashboard'], requiredCoverage: '5 / 8', preferredCoverage: '2 / 3', missing: ['React', 'TypeScript', 'GraphQL'],
+  },
+  {
+    applicationId: 'candidate-app-2006', jobId: 'data-analyst-meridian', name: 'Neel Iyer', initials: 'NI', headline: 'Data analyst · finance projects', match: 90, experience: 'Fresher', skills: ['SQL', 'Python', 'Excel', 'Power BI'], location: 'Mumbai', appliedAt: '2026-08-31T04:40:00.000Z', status: 'Interview',
+    summary: 'Analyst with strong financial-data coursework and careful communication of assumptions.', education: 'B.Com, Business Analytics · NMIMS', projects: ['Credit portfolio risk dashboard', 'Retail cohort analysis'], requiredCoverage: '8 / 8', preferredCoverage: '2 / 3', missing: ['dbt'],
+  },
+  {
+    applicationId: 'candidate-app-2007', jobId: 'data-analyst-meridian', name: 'Sana Khan', initials: 'SK', headline: 'Economics graduate · data focus', match: 85, experience: '6 months', skills: ['Excel', 'SQL', 'Statistics', 'Tableau'], location: 'Mumbai', appliedAt: '2026-08-30T07:10:00.000Z', status: 'Shortlisted',
+    summary: 'Economics graduate translating quantitative work into concise business recommendations.', education: 'B.A. Economics · St. Xavier’s College', projects: ['Household spending study', 'Pricing experiment analysis'], requiredCoverage: '7 / 8', preferredCoverage: '2 / 3', missing: ['Python'],
+  },
+  {
+    applicationId: 'candidate-app-2008', jobId: 'business-analyst-greenroute', name: 'Dev Patel', initials: 'DP', headline: 'Operations analyst · graduate', match: 82, experience: 'Fresher', skills: ['Excel', 'SQL', 'Operations', 'Communication'], location: 'Pune', appliedAt: '2026-08-29T12:00:00.000Z', status: 'Under Review',
+    summary: 'Operations-focused graduate who has worked with campus logistics and structured problem solving.', education: 'BBA, Operations · Symbiosis', projects: ['Campus shuttle capacity model'], requiredCoverage: '7 / 8', preferredCoverage: '1 / 3', missing: ['Fleet analytics'],
+  },
+  {
+    applicationId: 'candidate-app-2009', jobId: 'product-design-intern-paperplane', name: 'Tara Singh', initials: 'TS', headline: 'Product design student', match: 89, experience: 'Internship', skills: ['Figma', 'User research', 'Prototyping', 'Usability testing'], location: 'Remote', appliedAt: '2026-08-28T06:15:00.000Z', status: 'Offered',
+    summary: 'Product design student grounding interface decisions in research, accessibility, and rapid iteration.', education: 'B.Des, Communication Design · Srishti Manipal', projects: ['Accessible transit planning concept', 'Student finance research'], requiredCoverage: '8 / 8', preferredCoverage: '3 / 3', missing: [],
+  },
+  {
+    applicationId: 'candidate-app-2010', jobId: 'backend-engineer-clinivo', name: 'Vikram Das', initials: 'VD', headline: 'Backend developer · 2 years', match: 87, experience: '2 years', skills: ['Node.js', 'PostgreSQL', 'REST APIs', 'Docker'], location: 'Hyderabad', appliedAt: '2026-08-27T11:25:00.000Z', status: 'Under Review',
+    summary: 'Backend developer building documented APIs and dependable data workflows for operational products.', education: 'B.Tech, Computer Science · JNTU', projects: ['Healthcare appointment API', 'Queue monitoring service'], requiredCoverage: '8 / 8', preferredCoverage: '2 / 3', missing: ['FHIR'],
+  },
+];
+
+export const recruiterJobStats = {
+  'frontend-engineer-northstar': { department: 'Engineering', applications: 48, publishedAt: '2026-08-29', expiresIn: 15 },
+  'qa-engineer-northstar': { department: 'Engineering', applications: 27, publishedAt: '2026-08-23', expiresIn: 9 },
+  'data-analyst-meridian': { department: 'Data', applications: 35, publishedAt: '2026-08-28', expiresIn: 13 },
+  'business-analyst-greenroute': { department: 'Operations', applications: 22, publishedAt: '2026-08-26', expiresIn: 17 },
+  'product-design-intern-paperplane': { department: 'Design', applications: 41, publishedAt: '2026-08-27', expiresIn: 11 },
+};
+
+export const recruiterNotifications = [
+  { id: 'recruiter-note-1', title: '5 new applications', message: 'Graduate Frontend Engineer received new applications.', time: '35m ago', read: false },
+  { id: 'recruiter-note-2', title: 'Interview feedback due', message: 'Add feedback for Meera Joshi before the panel review.', time: '2h ago', read: false },
+  { id: 'recruiter-note-3', title: 'Job closing soon', message: 'Quality Engineer closes in 9 days.', time: '1d ago', read: false },
+  { id: 'recruiter-note-4', title: 'Candidate accepted interview', message: 'Neel Iyer confirmed the proposed interview slot.', time: '1d ago', read: true },
+  { id: 'recruiter-note-5', title: 'Draft needs review', message: 'Complete the eligibility section for your saved job draft.', time: '2d ago', read: true },
+  { id: 'recruiter-note-6', title: 'Company profile viewed', message: 'Your employer profile received 18 candidate views this week.', time: '3d ago', read: true },
+];
+
 export function getCompanyById(companyId) {
   return companies.find((company) => company.id === companyId);
 }
