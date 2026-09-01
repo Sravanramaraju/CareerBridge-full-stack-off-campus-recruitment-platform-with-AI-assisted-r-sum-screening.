@@ -14,6 +14,21 @@ function normalise(value = '') {
   return value.trim().toLocaleLowerCase();
 }
 
+function salaryFloorInLakhs(salary = '') {
+  const amount = Number(salary.replaceAll(',', '').match(/[\d.]+/)?.[0] || 0);
+  return salary.toLocaleLowerCase().includes('/month') ? (amount * 12) / 100000 : amount;
+}
+
+function matchesSalaryBand(job, bands = []) {
+  if (!bands.length) return true;
+  const floor = salaryFloorInLakhs(job.salary);
+  return bands.some((band) => {
+    if (band === 'Up to ₹5 LPA') return floor < 5;
+    if (band === '₹5–8 LPA') return floor >= 5 && floor < 8;
+    return floor >= 8;
+  });
+}
+
 function availableJobs() {
   const localJobs = useAppStore.getState().recruiterDrafts.filter((job) => job.status === 'Published');
   const merged = new Map(jobs.map((job) => [job.id, job]));
@@ -27,6 +42,11 @@ export const catalogService = {
     const location = normalise(filters.location);
     const selectedTypes = filters.types || [];
     const selectedModes = filters.modes || [];
+    const selectedIndustries = filters.industries || [];
+    const selectedSkills = filters.skills || [];
+    const dateCutoff = filters.datePosted
+      ? Date.now() - Number(filters.datePosted) * 86400000
+      : null;
 
     const result = availableJobs().filter((job) => {
       const company = getCompanyById(job.companyId);
@@ -36,7 +56,18 @@ export const catalogService = {
       const matchesExperience = !filters.experience || job.experience === filters.experience;
       const matchesType = !selectedTypes.length || selectedTypes.includes(job.employmentType);
       const matchesMode = !selectedModes.length || selectedModes.includes(job.workMode);
-      return matchesKeyword && matchesLocation && matchesExperience && matchesType && matchesMode;
+      const matchesIndustry = !selectedIndustries.length || selectedIndustries.includes(company?.industry);
+      const matchesSkills = !selectedSkills.length || selectedSkills.some((skill) => job.skills.includes(skill));
+      const matchesDate = !dateCutoff || new Date(job.postedAt).getTime() >= dateCutoff;
+      return matchesKeyword
+        && matchesLocation
+        && matchesExperience
+        && matchesType
+        && matchesMode
+        && matchesIndustry
+        && matchesSkills
+        && matchesSalaryBand(job, filters.salaryBands)
+        && matchesDate;
     });
 
     return respond(result);
