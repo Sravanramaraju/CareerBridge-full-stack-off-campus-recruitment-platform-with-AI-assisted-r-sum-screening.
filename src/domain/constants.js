@@ -1,6 +1,13 @@
 export const EMPLOYMENT_TYPES = ['Full-time', 'Internship', 'Contract'];
 export const WORK_MODES = ['On-site', 'Hybrid', 'Remote'];
 export const EXPERIENCE_LEVELS = ['Fresher', '0–1 years', '1–2 years', '2–3 years'];
+export const SALARY_BANDS = ['Up to ₹5 LPA', '₹5–8 LPA', '₹8+ LPA'];
+export const DATE_POSTED_OPTIONS = [
+  { label: 'Past 24 hours', value: '1' },
+  { label: 'Past 3 days', value: '3' },
+  { label: 'Past week', value: '7' },
+  { label: 'Past 30 days', value: '30' },
+];
 
 export const APPLICATION_STATUSES = {
   APPLIED: 'Applied',
