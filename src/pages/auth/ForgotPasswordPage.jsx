@@ -3,8 +3,10 @@ import { ArrowLeft, MailCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/src/components/ui/Button';
 import { FormField, Input } from '@/src/components/ui/Input';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function ForgotPasswordPage() {
+  useDocumentTitle('Reset password');
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
 
