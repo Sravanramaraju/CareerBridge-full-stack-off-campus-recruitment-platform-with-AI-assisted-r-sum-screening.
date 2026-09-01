@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { Button } from '@/src/components/ui/Button';
 import { FormField, Input } from '@/src/components/ui/Input';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Enter your full name.'),
@@ -16,6 +17,7 @@ const signupSchema = z.object({
 }).refine((values) => values.password === values.confirmPassword, { message: 'Passwords do not match.', path: ['confirmPassword'] });
 
 export function RoleSignupPage({ accountType }) {
+  useDocumentTitle(accountType === 'recruiter' ? 'Recruiter sign up' : 'Applicant sign up');
   const [complete, setComplete] = useState(false);
   const navigate = useNavigate();
   const setSession = useAppStore((state) => state.setSession);
