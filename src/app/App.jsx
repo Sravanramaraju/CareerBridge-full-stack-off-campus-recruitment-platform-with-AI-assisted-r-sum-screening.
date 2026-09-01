@@ -19,6 +19,7 @@ import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboard
 import { AdminDashboardPage } from '@/src/pages/admin/AdminDashboardPage';
 import { AdminCompaniesPage } from '@/src/pages/admin/AdminCompaniesPage';
 import { AdminJobsPage } from '@/src/pages/admin/AdminJobsPage';
+import { AdminUsersPage } from '@/src/pages/admin/AdminUsersPage';
 import { RecruiterJobsPage } from '@/src/pages/recruiter/RecruiterJobsPage';
 import { RecruiterCompanyPage } from '@/src/pages/recruiter/RecruiterCompanyPage';
 import { RecruiterNotificationsPage } from '@/src/pages/recruiter/RecruiterNotificationsPage';
@@ -77,6 +78,7 @@ export function App() {
         <Route path="admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="admin/companies" element={<AdminCompaniesPage />} />
         <Route path="admin/jobs" element={<AdminJobsPage />} />
+        <Route path="admin/users" element={<AdminUsersPage />} />
       </Route>
     </Routes>
   );
