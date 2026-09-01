@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { buttonVariants } from '@/src/components/ui/Button';
 import { careerResources } from '@/src/data/mockData';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const toolkit = [
   ['Target the role', 'Choose a small, coherent set of roles and learn what evidence they consistently require.'],
@@ -14,6 +15,7 @@ const toolkit = [
 const resourceIcons = [FileText, MessagesSquare, Target, BookOpen, MessagesSquare, CheckCircle2];
 
 export function ResourcesPage() {
+  useDocumentTitle('Career resources');
   return (
     <>
       <section className="border-b border-[var(--cb-divider)] bg-[var(--cb-surface)]">
