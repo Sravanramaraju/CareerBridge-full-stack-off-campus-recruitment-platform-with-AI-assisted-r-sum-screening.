@@ -1,5 +1,6 @@
 import { ArrowRight, BriefcaseBusiness, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const roles = [
   {
@@ -19,6 +20,7 @@ const roles = [
 ];
 
 export function SignupPage() {
+  useDocumentTitle('Create an account');
   return (
     <section className="w-full max-w-xl">
       <p className="text-sm font-bold text-[var(--cb-primary)]">Join CareerBridge</p>
