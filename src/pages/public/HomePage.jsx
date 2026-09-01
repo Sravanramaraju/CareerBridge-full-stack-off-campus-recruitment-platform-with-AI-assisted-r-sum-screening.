@@ -9,6 +9,7 @@ import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { buttonVariants } from '@/src/components/ui/Button';
 import { careerResources, companies, jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const browseChips = [
   'Fresher', 'Internship', 'Remote', 'Software Engineering', 'Data & Analytics',
@@ -41,6 +42,7 @@ const candidateFlow = [
 ];
 
 export function HomePage() {
+  useDocumentTitle();
   const featuredJobs = jobs.filter((job) => job.featured).slice(0, 6);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
