@@ -7,11 +7,11 @@ const roleHome = {
   admin: '/admin/dashboard',
 };
 
-export function RoleGuard({ role, children }) {
+export function RoleGuard({ allowedRole, children }) {
   const session = useAppStore((state) => state.session);
   const location = useLocation();
 
   if (!session) return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  if (session.role !== role) return <Navigate to={roleHome[session.role] || '/'} replace />;
+  if (session.role !== allowedRole) return <Navigate to={roleHome[session.role] || '/'} replace />;
   return children;
 }

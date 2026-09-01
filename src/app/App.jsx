@@ -1,10 +1,13 @@
 import { Route, Routes } from 'react-router-dom';
 import { AuthLayout } from '@/src/layouts/AuthLayout';
+import { RoleGuard } from '@/src/components/auth/RoleGuard';
+import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
 import { ForgotPasswordPage } from '@/src/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/src/pages/auth/LoginPage';
 import { RoleSignupPage } from '@/src/pages/auth/RoleSignupPage';
 import { SignupPage } from '@/src/pages/auth/SignupPage';
+import { ApplicantDashboardPage } from '@/src/pages/applicant/ApplicantDashboardPage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
@@ -32,6 +35,9 @@ export function App() {
         <Route path="signup/applicant" element={<RoleSignupPage accountType="applicant" />} />
         <Route path="signup/recruiter" element={<RoleSignupPage accountType="recruiter" />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
+      </Route>
+      <Route element={<RoleGuard allowedRole="applicant"><ApplicantLayout /></RoleGuard>}>
+        <Route path="applicant/dashboard" element={<ApplicantDashboardPage />} />
       </Route>
     </Routes>
   );

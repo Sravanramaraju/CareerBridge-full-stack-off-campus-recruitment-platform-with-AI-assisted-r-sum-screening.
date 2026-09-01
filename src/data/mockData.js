@@ -357,6 +357,62 @@ export const careerResources = [
   },
 ];
 
+export const mockApplications = [
+  {
+    id: 'application-cb-1001', jobId: 'data-analyst-meridian', applicantId: 'demo-applicant', status: 'Interview', coverNote: 'I enjoy turning complex datasets into clear product decisions.', appliedAt: '2026-08-18T09:30:00.000Z', updatedAt: '2026-08-30T11:15:00.000Z',
+    timeline: [
+      { status: 'Applied', date: '2026-08-18T09:30:00.000Z', note: 'Application submitted successfully.' },
+      { status: 'Screening', date: '2026-08-22T07:45:00.000Z', note: 'Profile moved to recruiter screening.' },
+      { status: 'Assessment', date: '2026-08-25T10:20:00.000Z', note: 'Data exercise completed.' },
+      { status: 'Interview', date: '2026-08-30T11:15:00.000Z', note: 'Interview discussion scheduled for 3 September.' },
+    ],
+  },
+  {
+    id: 'application-cb-1002', jobId: 'frontend-engineer-northstar', applicantId: 'demo-applicant', status: 'Screening', coverNote: 'My recent projects focus on accessible React interfaces and dependable frontend patterns.', appliedAt: '2026-08-24T08:10:00.000Z', updatedAt: '2026-08-29T12:10:00.000Z',
+    timeline: [
+      { status: 'Applied', date: '2026-08-24T08:10:00.000Z', note: 'Application submitted successfully.' },
+      { status: 'Screening', date: '2026-08-29T12:10:00.000Z', note: 'The hiring team is reviewing your profile.' },
+    ],
+  },
+  {
+    id: 'application-cb-1003', jobId: 'business-analyst-greenroute', applicantId: 'demo-applicant', status: 'Assessment', coverNote: '', appliedAt: '2026-08-21T06:50:00.000Z', updatedAt: '2026-08-28T09:40:00.000Z',
+    timeline: [
+      { status: 'Applied', date: '2026-08-21T06:50:00.000Z', note: 'Application submitted successfully.' },
+      { status: 'Screening', date: '2026-08-24T08:30:00.000Z', note: 'Profile reviewed by the hiring team.' },
+      { status: 'Assessment', date: '2026-08-28T09:40:00.000Z', note: 'Operations case exercise shared by email.' },
+    ],
+  },
+  {
+    id: 'application-cb-1004', jobId: 'growth-associate-orbit', applicantId: 'demo-applicant', status: 'Applied', coverNote: '', appliedAt: '2026-08-29T10:05:00.000Z', updatedAt: '2026-08-29T10:05:00.000Z',
+    timeline: [{ status: 'Applied', date: '2026-08-29T10:05:00.000Z', note: 'Application submitted successfully.' }],
+  },
+  {
+    id: 'application-cb-1005', jobId: 'ux-researcher-paperplane', applicantId: 'demo-applicant', status: 'Not selected', coverNote: '', appliedAt: '2026-08-10T07:20:00.000Z', updatedAt: '2026-08-20T14:00:00.000Z',
+    timeline: [
+      { status: 'Applied', date: '2026-08-10T07:20:00.000Z', note: 'Application submitted successfully.' },
+      { status: 'Screening', date: '2026-08-14T10:00:00.000Z', note: 'Profile reviewed by the hiring team.' },
+      { status: 'Not selected', date: '2026-08-20T14:00:00.000Z', note: 'The team moved forward with other candidates.' },
+    ],
+  },
+  {
+    id: 'application-cb-1006', jobId: 'customer-success-clinivo', applicantId: 'demo-applicant', status: 'Offer', coverNote: 'I care about patient-centred communication and clear customer onboarding.', appliedAt: '2026-08-05T08:00:00.000Z', updatedAt: '2026-08-27T09:15:00.000Z',
+    timeline: [
+      { status: 'Applied', date: '2026-08-05T08:00:00.000Z', note: 'Application submitted successfully.' },
+      { status: 'Screening', date: '2026-08-09T06:30:00.000Z', note: 'Profile reviewed by the hiring team.' },
+      { status: 'Interview', date: '2026-08-18T11:00:00.000Z', note: 'Final team conversation completed.' },
+      { status: 'Offer', date: '2026-08-27T09:15:00.000Z', note: 'Offer shared. Review the details in your email.' },
+    ],
+  },
+];
+
+export const mockNotifications = [
+  { id: 'notification-1', title: 'Interview scheduled', message: 'Meridian Fintech scheduled your interview for 3 September.', time: '2h ago', read: false },
+  { id: 'notification-2', title: 'Profile viewed', message: 'Northstar Labs reviewed your application.', time: '1d ago', read: false },
+  { id: 'notification-3', title: 'New matching role', message: 'A new frontend role matches your saved preferences.', time: '2d ago', read: true },
+  { id: 'notification-4', title: 'Application update', message: 'GreenRoute shared the next assessment step.', time: '3d ago', read: true },
+  { id: 'notification-5', title: 'Profile reminder', message: 'Add one recent project to strengthen your candidate profile.', time: '5d ago', read: true },
+];
+
 export function getCompanyById(companyId) {
   return companies.find((company) => company.id === companyId);
 }

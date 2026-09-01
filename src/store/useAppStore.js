@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { APPLICATION_STATUSES } from '@/src/domain/constants';
+import { mockApplications } from '@/src/data/mockData';
 
 export const APP_STORAGE_KEY = 'careerbridge.mock.v1';
 
@@ -8,8 +9,8 @@ export const useAppStore = create(
   persist(
     (set, get) => ({
       session: null,
-      savedJobIds: [],
-      applications: [],
+      savedJobIds: ['product-design-intern-paperplane', 'backend-engineer-clinivo'],
+      applications: mockApplications,
       recruiterDrafts: [],
       recruiterNotes: {},
       profile: {

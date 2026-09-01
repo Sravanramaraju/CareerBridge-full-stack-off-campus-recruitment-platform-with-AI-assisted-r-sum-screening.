@@ -9,7 +9,7 @@ function timeSincePosted(date) {
   return days === 1 ? '1 day ago' : `${days} days ago`;
 }
 
-export function JobCard({ job, onSave, isSaved = false }) {
+export function JobCard({ job, onSave, isSaved = false, match }) {
   const company = getCompanyById(job.companyId);
 
   return (
@@ -53,7 +53,7 @@ export function JobCard({ job, onSave, isSaved = false }) {
       </div>
       <div className="mt-auto flex items-center justify-between border-t border-[var(--cb-divider)] pt-4 text-xs text-[var(--cb-text-muted)]">
         <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" aria-hidden="true" />{timeSincePosted(job.postedAt)}</span>
-        <Link to={`/jobs/${job.id}`} className="font-semibold text-[var(--cb-primary)] hover:underline">View role</Link>
+        {match ? <span className="font-semibold text-[var(--cb-emerald)]" title="CareerBridge match is a guidance signal, not an employer decision.">{match}% match</span> : <Link to={`/jobs/${job.id}`} className="font-semibold text-[var(--cb-primary)] hover:underline">View role</Link>}
       </div>
     </article>
   );
