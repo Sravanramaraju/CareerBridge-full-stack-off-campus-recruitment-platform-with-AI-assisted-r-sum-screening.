@@ -6,6 +6,7 @@ import { JobCard } from '@/src/components/jobs/JobCard';
 import { JobFilterPanel } from '@/src/components/jobs/JobFilterPanel';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
+import { Pagination } from '@/src/components/ui/Pagination';
 import { catalogService } from '@/src/services/mockApi';
 import { useAppStore } from '@/src/store/useAppStore';
 
@@ -33,6 +34,7 @@ export function JobsPage() {
     datePosted: '',
   });
   const [sort, setSort] = useState('newest');
+  const [page, setPage] = useState(1);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
 
@@ -54,7 +56,12 @@ export function JobsPage() {
     return result.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
   }, [jobsQuery.data, sort]);
 
+  const pageCount = Math.ceil(sortedJobs.length / 6);
+  const currentPage = Math.min(page, Math.max(pageCount, 1));
+  const visibleJobs = sortedJobs.slice((currentPage - 1) * 6, currentPage * 6);
+
   function toggleFilter(key, value) {
+    setPage(1);
     setFacetFilters((current) => ({
       ...current,
       [key]: current[key].includes(value)
@@ -64,6 +71,7 @@ export function JobsPage() {
   }
 
   function clearFilters() {
+    setPage(1);
     setFacetFilters({ types: [], modes: [], salaryBands: [], industries: [], skills: [], datePosted: '' });
   }
 
@@ -75,7 +83,10 @@ export function JobsPage() {
   const filterContent = <JobFilterPanel
     filters={facetFilters}
     onToggle={toggleFilter}
-    onDateChange={(datePosted) => setFacetFilters((current) => ({ ...current, datePosted }))}
+    onDateChange={(datePosted) => {
+      setPage(1);
+      setFacetFilters((current) => ({ ...current, datePosted }));
+    }}
     onClear={clearFilters}
   />;
 
@@ -109,7 +120,7 @@ export function JobsPage() {
             </div>
             <label className="flex items-center gap-2 text-xs font-semibold text-[var(--cb-text-secondary)]">
               Sort by
-              <select value={sort} onChange={(event) => setSort(event.target.value)} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none focus:border-[var(--cb-primary)]">
+              <select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none focus:border-[var(--cb-primary)]">
                 <option value="newest">Newest</option>
                 <option value="salary">Salary</option>
               </select>
@@ -121,9 +132,10 @@ export function JobsPage() {
           {jobsQuery.isSuccess && sortedJobs.length === 0 && <EmptyState title="No roles match these filters" description="Try a broader keyword, location, or remove one of your filters." actionLabel="Clear filters" onAction={clearFilters} />}
           {jobsQuery.isSuccess && sortedJobs.length > 0 && (
             <div className="grid gap-4 xl:grid-cols-2">
-              {sortedJobs.map((job) => <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
+              {visibleJobs.map((job) => <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
             </div>
           )}
+          {jobsQuery.isSuccess && <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} />}
         </section>
       </div>
     </div>
