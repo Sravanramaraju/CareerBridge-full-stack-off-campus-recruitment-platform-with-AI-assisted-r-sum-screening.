@@ -31,4 +31,22 @@ describe('catalogService', () => {
     const result = await resolveRequest(catalogService.getJob('missing-job'));
     expect(result).toBeNull();
   });
+
+  it('filters by company industry and required skill', async () => {
+    const results = await resolveRequest(catalogService.listJobs({
+      industries: ['Developer tools'],
+      skills: ['JavaScript'],
+    }));
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.every((job) => job.companyId === 'northstar-labs')).toBe(true);
+    expect(results.every((job) => job.skills.includes('JavaScript'))).toBe(true);
+  });
+
+  it('filters salary bands across annual and monthly listings', async () => {
+    const entryLevel = await resolveRequest(catalogService.listJobs({ salaryBands: ['Up to ₹5 LPA'] }));
+
+    expect(entryLevel.some((job) => job.salary.includes('/month'))).toBe(true);
+    expect(entryLevel.every((job) => !job.salary.startsWith('₹8'))).toBe(true);
+  });
 });
