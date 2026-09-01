@@ -17,6 +17,7 @@ import { ApplicantSettingsPage } from '@/src/pages/applicant/ApplicantSettingsPa
 import { ProfilePage } from '@/src/pages/applicant/ProfilePage';
 import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboardPage';
 import { AdminDashboardPage } from '@/src/pages/admin/AdminDashboardPage';
+import { AdminCompaniesPage } from '@/src/pages/admin/AdminCompaniesPage';
 import { RecruiterJobsPage } from '@/src/pages/recruiter/RecruiterJobsPage';
 import { RecruiterCompanyPage } from '@/src/pages/recruiter/RecruiterCompanyPage';
 import { RecruiterNotificationsPage } from '@/src/pages/recruiter/RecruiterNotificationsPage';
@@ -73,6 +74,7 @@ export function App() {
       </Route>
       <Route element={<RoleGuard allowedRole="admin"><AdminLayout /></RoleGuard>}>
         <Route path="admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="admin/companies" element={<AdminCompaniesPage />} />
       </Route>
     </Routes>
   );
