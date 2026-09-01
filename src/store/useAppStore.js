@@ -15,6 +15,16 @@ export const useAppStore = create(
       recruiterJobStates: {},
       recruiterNotes: {},
       candidateStatuses: Object.fromEntries(recruiterCandidates.map((candidate) => [candidate.applicationId, candidate.status])),
+      companyProfile: {
+        name: 'Northstar Labs',
+        industry: 'Developer tools',
+        website: 'https://northstarlabs.example',
+        size: '201–500 employees',
+        about: 'Northstar Labs builds reliable developer infrastructure for fast-moving product teams.',
+        benefits: ['Learning budget', 'Flexible hybrid work', 'Health coverage'],
+        locations: ['Bengaluru', 'Remote within India'],
+        verificationStatus: 'Verified',
+      },
       profile: {
         name: 'Ananya Rao',
         email: 'applicant@careerbridge.demo',
@@ -64,6 +74,7 @@ export const useAppStore = create(
           : application),
       })),
       updateCandidateStatus: (applicationId, status) => set((state) => ({ candidateStatuses: { ...state.candidateStatuses, [applicationId]: status } })),
+      updateCompanyProfile: (updates) => set((state) => ({ companyProfile: { ...state.companyProfile, ...updates } })),
       updateProfile: (updates) => set((state) => ({ profile: { ...state.profile, ...updates } })),
       saveRecruiterDraft: (draft) => set((state) => ({
         recruiterDrafts: [
@@ -91,6 +102,7 @@ export const useAppStore = create(
         recruiterJobStates: state.recruiterJobStates,
         recruiterNotes: state.recruiterNotes,
         candidateStatuses: state.candidateStatuses,
+        companyProfile: state.companyProfile,
         profile: state.profile,
       }),
     },
