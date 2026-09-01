@@ -45,6 +45,7 @@ export function JobDetailPage() {
   const { jobId } = useParams();
   const [coverNote, setCoverNote] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [applicationSubmitted, setApplicationSubmitted] = useState(false);
   const session = useAppStore((state) => state.session);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const applications = useAppStore((state) => state.applications);
@@ -72,6 +73,8 @@ export function JobDetailPage() {
     event.preventDefault();
     submitApplication(job.id, coverNote.trim());
     setModalOpen(false);
+    setApplicationSubmitted(true);
+    window.setTimeout(() => setApplicationSubmitted(false), 3200);
   }
 
   return (
@@ -173,6 +176,11 @@ export function JobDetailPage() {
           <Link to={`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`} className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'flex-1')}>Log in to apply</Link>
         )}
       </div>
+      {applicationSubmitted && (
+        <output className="fixed right-4 top-20 z-50 max-w-sm rounded-xl border border-[var(--cb-emerald)] bg-[var(--cb-surface-raised)] px-4 py-3 text-sm font-semibold shadow-[var(--cb-shadow-raised)]">
+          Application submitted. You can now track it from your dashboard.
+        </output>
+      )}
     </div>
   );
 }
