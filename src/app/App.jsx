@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { RouteLoading } from '@/src/components/feedback/RouteLoading';
 import { AuthLayout } from '@/src/layouts/AuthLayout';
 import { RoleGuard } from '@/src/components/auth/RoleGuard';
 import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
@@ -37,7 +39,8 @@ import { ResourcesPage } from '@/src/pages/public/ResourcesPage';
 
 export function App() {
   return (
-    <Routes>
+    <Suspense fallback={<RouteLoading />}>
+      <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="jobs" element={<JobsPage />} />
@@ -80,6 +83,7 @@ export function App() {
         <Route path="admin/jobs" element={<AdminJobsPage />} />
         <Route path="admin/users" element={<AdminUsersPage />} />
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
