@@ -4,8 +4,10 @@ import { Building2, Search } from 'lucide-react';
 import { CompanyCard } from '@/src/components/companies/CompanyCard';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { catalogService } from '@/src/services/mockApi';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function CompaniesPage() {
+  useDocumentTitle('Explore companies');
   const [search, setSearch] = useState('');
   const companiesQuery = useQuery({ queryKey: ['companies'], queryFn: catalogService.listCompanies });
   const filteredCompanies = useMemo(() => {
