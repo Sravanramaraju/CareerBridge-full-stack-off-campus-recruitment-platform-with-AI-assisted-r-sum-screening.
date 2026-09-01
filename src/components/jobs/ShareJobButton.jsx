@@ -7,11 +7,15 @@ export function ShareJobButton({ jobTitle }) {
 
   async function handleShare() {
     if (navigator.share) {
-      await navigator.share({ title: `${jobTitle} · CareerBridge`, url: window.location.href });
-      return;
+      try {
+        await navigator.share({ title: `${jobTitle} · CareerBridge`, url: window.location.href });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+      }
     }
 
-    await navigator.clipboard.writeText(window.location.href);
+    await navigator.clipboard?.writeText(window.location.href);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   }
