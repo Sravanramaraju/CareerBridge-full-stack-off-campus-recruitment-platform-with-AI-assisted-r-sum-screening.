@@ -11,6 +11,8 @@ import { ApplicantDashboardPage } from '@/src/pages/applicant/ApplicantDashboard
 import { ApplicationDetailPage } from '@/src/pages/applicant/ApplicationDetailPage';
 import { ApplicationsPage } from '@/src/pages/applicant/ApplicationsPage';
 import { SavedJobsPage } from '@/src/pages/applicant/SavedJobsPage';
+import { ApplicantSettingsPage } from '@/src/pages/applicant/ApplicantSettingsPage';
+import { ProfilePage } from '@/src/pages/applicant/ProfilePage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
@@ -44,6 +46,8 @@ export function App() {
         <Route path="applicant/saved-jobs" element={<SavedJobsPage />} />
         <Route path="applicant/applications" element={<ApplicationsPage />} />
         <Route path="applicant/applications/:applicationId" element={<ApplicationDetailPage />} />
+        <Route path="applicant/profile" element={<ProfilePage />} />
+        <Route path="applicant/settings" element={<ApplicantSettingsPage />} />
       </Route>
     </Routes>
   );

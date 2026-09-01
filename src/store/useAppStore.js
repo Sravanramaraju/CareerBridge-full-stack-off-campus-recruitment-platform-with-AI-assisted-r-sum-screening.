@@ -15,9 +15,17 @@ export const useAppStore = create(
       recruiterNotes: {},
       profile: {
         name: 'Ananya Rao',
+        email: 'applicant@careerbridge.demo',
         headline: 'Frontend developer focused on accessible product experiences',
         location: 'Bengaluru, Karnataka',
+        summary: 'Early-career frontend developer who enjoys turning product requirements into accessible, dependable interfaces. Comfortable collaborating through feedback and documenting decisions clearly.',
         skills: ['React', 'JavaScript', 'CSS', 'Git'],
+        education: [{ institution: 'Visvesvaraya Technological University', qualification: 'B.E. in Computer Science', period: '2022–2026' }],
+        projects: [{ name: 'Campus Opportunity Tracker', description: 'Designed a responsive React dashboard for student placement updates and application status tracking.' }],
+        experience: [],
+        certifications: ['Responsive Web Design · freeCodeCamp'],
+        preferences: { locations: ['Bengaluru', 'Hyderabad', 'Remote'], jobTypes: ['Full-time', 'Internship'], workModes: ['Hybrid', 'Remote'] },
+        resumeName: 'Ananya_Rao_Resume.pdf',
         profileCompletion: 78,
       },
 
