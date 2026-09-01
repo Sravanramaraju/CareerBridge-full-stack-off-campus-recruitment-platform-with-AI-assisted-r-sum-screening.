@@ -3,6 +3,7 @@ import { AuthLayout } from '@/src/layouts/AuthLayout';
 import { RoleGuard } from '@/src/components/auth/RoleGuard';
 import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
 import { RecruiterLayout } from '@/src/layouts/RecruiterLayout';
+import { AdminLayout } from '@/src/layouts/AdminLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
 import { ForgotPasswordPage } from '@/src/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/src/pages/auth/LoginPage';
@@ -15,6 +16,7 @@ import { SavedJobsPage } from '@/src/pages/applicant/SavedJobsPage';
 import { ApplicantSettingsPage } from '@/src/pages/applicant/ApplicantSettingsPage';
 import { ProfilePage } from '@/src/pages/applicant/ProfilePage';
 import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboardPage';
+import { AdminDashboardPage } from '@/src/pages/admin/AdminDashboardPage';
 import { RecruiterJobsPage } from '@/src/pages/recruiter/RecruiterJobsPage';
 import { RecruiterCompanyPage } from '@/src/pages/recruiter/RecruiterCompanyPage';
 import { RecruiterNotificationsPage } from '@/src/pages/recruiter/RecruiterNotificationsPage';
@@ -68,6 +70,9 @@ export function App() {
         <Route path="recruiter/company" element={<RecruiterCompanyPage />} />
         <Route path="recruiter/notifications" element={<RecruiterNotificationsPage />} />
         <Route path="recruiter/settings" element={<RecruiterSettingsPage />} />
+      </Route>
+      <Route element={<RoleGuard allowedRole="admin"><AdminLayout /></RoleGuard>}>
+        <Route path="admin/dashboard" element={<AdminDashboardPage />} />
       </Route>
     </Routes>
   );
