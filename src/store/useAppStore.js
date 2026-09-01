@@ -12,6 +12,7 @@ export const useAppStore = create(
       savedJobIds: ['product-design-intern-paperplane', 'backend-engineer-clinivo'],
       applications: mockApplications,
       recruiterDrafts: [],
+      recruiterJobStates: {},
       recruiterNotes: {},
       candidateStatuses: Object.fromEntries(recruiterCandidates.map((candidate) => [candidate.applicationId, candidate.status])),
       profile: {
@@ -70,6 +71,8 @@ export const useAppStore = create(
           ...state.recruiterDrafts.filter((item) => item.id !== draft.id),
         ],
       })),
+      setRecruiterJobState: (jobId, status) => set((state) => ({ recruiterJobStates: { ...state.recruiterJobStates, [jobId]: status } })),
+      deleteRecruiterDraft: (jobId) => set((state) => ({ recruiterDrafts: state.recruiterDrafts.filter((item) => item.id !== jobId) })),
       addRecruiterNote: (applicationId, note) => set((state) => ({
         recruiterNotes: {
           ...state.recruiterNotes,
@@ -85,6 +88,7 @@ export const useAppStore = create(
         savedJobIds: state.savedJobIds,
         applications: state.applications,
         recruiterDrafts: state.recruiterDrafts,
+        recruiterJobStates: state.recruiterJobStates,
         recruiterNotes: state.recruiterNotes,
         candidateStatuses: state.candidateStatuses,
         profile: state.profile,
