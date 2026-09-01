@@ -31,7 +31,7 @@ export function RecruiterCompanyPage() {
 
   return (
     <div>
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--cb-primary)]">Employer presence</p><h1 className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.035em]">Company profile</h1><p className="mt-2 max-w-2xl text-sm text-[var(--cb-text-secondary)]">Give candidates useful context about the organisation before they apply.</p></div>{saved && <p role="status" className="flex items-center gap-2 text-sm font-bold text-[var(--cb-emerald)]"><Check className="size-4" />Changes saved</p>}</header>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--cb-primary)]">Employer presence</p><h1 className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.035em]">Company profile</h1><p className="mt-2 max-w-2xl text-sm text-[var(--cb-text-secondary)]">Give candidates useful context about the organisation before they apply.</p></div>{saved && <output className="flex items-center gap-2 text-sm font-bold text-[var(--cb-emerald)]"><Check className="size-4" />Changes saved</output>}</header>
 
       <div className="mt-7 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
         <form onSubmit={handleSubmit} className="grid gap-5">
