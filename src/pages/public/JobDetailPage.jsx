@@ -23,6 +23,12 @@ const responsibilities = [
   'Improve quality through reviews, testing, and attention to the people using the product.',
 ];
 
+const eligibility = [
+  'You can clearly demonstrate the core skills through coursework, projects, internships, or employment.',
+  'You are available for the stated work mode and location expectations.',
+  'You can communicate your approach, trade-offs, and learning process with the hiring team.',
+];
+
 function JobDetailLoading() {
   return (
     <div className="page-container py-12" aria-label="Loading job details">
@@ -99,6 +105,10 @@ export function JobDetailPage() {
             </ul>
             <h2 className="mt-8 font-heading text-xl font-bold">Skills that help you succeed</h2>
             <div className="mt-4 flex flex-wrap gap-2">{job.skills.map((skill) => <Badge key={skill} variant="primary" className="min-h-8 px-3">{skill}</Badge>)}</div>
+            <h2 className="mt-8 font-heading text-xl font-bold">Eligibility</h2>
+            <ul className="mt-5 grid gap-3">
+              {eligibility.map((item) => <li key={item} className="flex gap-3 text-sm leading-6 text-[var(--cb-text-secondary)]"><Check className="mt-1 size-4 shrink-0 text-[var(--cb-emerald)]" aria-hidden="true" />{item}</li>)}
+            </ul>
           </article>
 
           <article className="surface-card p-6 sm:p-8">
