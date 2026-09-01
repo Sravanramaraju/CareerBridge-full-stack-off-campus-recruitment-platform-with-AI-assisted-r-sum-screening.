@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { APPLICATION_STATUSES } from '@/src/domain/constants';
-import { mockApplications } from '@/src/data/mockData';
+import { mockApplications, recruiterCandidates } from '@/src/data/mockData';
 
 export const APP_STORAGE_KEY = 'careerbridge.mock.v1';
 
@@ -13,6 +13,7 @@ export const useAppStore = create(
       applications: mockApplications,
       recruiterDrafts: [],
       recruiterNotes: {},
+      candidateStatuses: Object.fromEntries(recruiterCandidates.map((candidate) => [candidate.applicationId, candidate.status])),
       profile: {
         name: 'Ananya Rao',
         email: 'applicant@careerbridge.demo',
@@ -61,6 +62,7 @@ export const useAppStore = create(
             }
           : application),
       })),
+      updateCandidateStatus: (applicationId, status) => set((state) => ({ candidateStatuses: { ...state.candidateStatuses, [applicationId]: status } })),
       updateProfile: (updates) => set((state) => ({ profile: { ...state.profile, ...updates } })),
       saveRecruiterDraft: (draft) => set((state) => ({
         recruiterDrafts: [
@@ -84,6 +86,7 @@ export const useAppStore = create(
         applications: state.applications,
         recruiterDrafts: state.recruiterDrafts,
         recruiterNotes: state.recruiterNotes,
+        candidateStatuses: state.candidateStatuses,
         profile: state.profile,
       }),
     },

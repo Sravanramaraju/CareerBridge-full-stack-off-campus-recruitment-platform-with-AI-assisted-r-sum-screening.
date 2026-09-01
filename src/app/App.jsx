@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { AuthLayout } from '@/src/layouts/AuthLayout';
 import { RoleGuard } from '@/src/components/auth/RoleGuard';
 import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
+import { RecruiterLayout } from '@/src/layouts/RecruiterLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
 import { ForgotPasswordPage } from '@/src/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/src/pages/auth/LoginPage';
@@ -13,6 +14,7 @@ import { ApplicationsPage } from '@/src/pages/applicant/ApplicationsPage';
 import { SavedJobsPage } from '@/src/pages/applicant/SavedJobsPage';
 import { ApplicantSettingsPage } from '@/src/pages/applicant/ApplicantSettingsPage';
 import { ProfilePage } from '@/src/pages/applicant/ProfilePage';
+import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboardPage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
@@ -48,6 +50,9 @@ export function App() {
         <Route path="applicant/applications/:applicationId" element={<ApplicationDetailPage />} />
         <Route path="applicant/profile" element={<ProfilePage />} />
         <Route path="applicant/settings" element={<ApplicantSettingsPage />} />
+      </Route>
+      <Route element={<RoleGuard allowedRole="recruiter"><RecruiterLayout /></RoleGuard>}>
+        <Route path="recruiter/dashboard" element={<RecruiterDashboardPage />} />
       </Route>
     </Routes>
   );
