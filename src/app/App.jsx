@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { RouteLoading } from '@/src/components/feedback/RouteLoading';
-import { AuthLayout } from '@/src/layouts/AuthLayout';
 import { RoleGuard } from '@/src/components/auth/RoleGuard';
 import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
 import { RecruiterLayout } from '@/src/layouts/RecruiterLayout';
@@ -15,6 +14,7 @@ const CompaniesPage = lazy(() => import('@/src/pages/public/CompaniesPage').then
 const CompanyDetailPage = lazy(() => import('@/src/pages/public/CompanyDetailPage').then((module) => ({ default: module.CompanyDetailPage })));
 const ResourcesPage = lazy(() => import('@/src/pages/public/ResourcesPage').then((module) => ({ default: module.ResourcesPage })));
 const NotFoundPage = lazy(() => import('@/src/pages/public/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
+const AuthLayout = lazy(() => import('@/src/layouts/AuthLayout').then((module) => ({ default: module.AuthLayout })));
 const LoginPage = lazy(() => import('@/src/pages/auth/LoginPage').then((module) => ({ default: module.LoginPage })));
 const SignupPage = lazy(() => import('@/src/pages/auth/SignupPage').then((module) => ({ default: module.SignupPage })));
 const RoleSignupPage = lazy(() => import('@/src/pages/auth/RoleSignupPage').then((module) => ({ default: module.RoleSignupPage })));
