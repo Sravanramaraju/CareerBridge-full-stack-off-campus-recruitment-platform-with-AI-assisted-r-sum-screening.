@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
+import { ShareJobButton } from '@/src/components/jobs/ShareJobButton';
 import { buttonVariants, Button } from '@/src/components/ui/Button';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { TextArea } from '@/src/components/ui/Input';
@@ -137,6 +138,7 @@ export function JobDetailPage() {
             <Link to={`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`} className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'w-full')}>Log in to apply</Link>
           )}
           <Button variant={isSaved ? 'soft' : 'secondary'} size="lg" className="mt-3 w-full" onClick={() => toggleSavedJob(job.id)}><Bookmark className={isSaved ? 'fill-current' : ''} />{isSaved ? 'Saved' : 'Save job'}</Button>
+          <div className="mt-3"><ShareJobButton jobTitle={job.title} /></div>
           <div className="mt-5 border-t border-[var(--cb-divider)] pt-5 text-xs leading-5 text-[var(--cb-text-muted)]">
             <p>Job ID: {job.id}</p>
             <p className="mt-1">CareerBridge demo listing · Report concerns through the company profile.</p>
