@@ -9,6 +9,7 @@ import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { Pagination } from '@/src/components/ui/Pagination';
 import { catalogService } from '@/src/services/mockApi';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 function JobsLoading() {
   return (
@@ -24,6 +25,7 @@ function JobsLoading() {
 }
 
 export function JobsPage() {
+  useDocumentTitle('Explore jobs');
   const [searchParams] = useSearchParams();
   const [facetFilters, setFacetFilters] = useState({
     types: [],
