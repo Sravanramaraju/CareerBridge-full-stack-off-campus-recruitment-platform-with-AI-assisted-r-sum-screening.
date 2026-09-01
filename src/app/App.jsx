@@ -8,6 +8,8 @@ import { LoginPage } from '@/src/pages/auth/LoginPage';
 import { RoleSignupPage } from '@/src/pages/auth/RoleSignupPage';
 import { SignupPage } from '@/src/pages/auth/SignupPage';
 import { ApplicantDashboardPage } from '@/src/pages/applicant/ApplicantDashboardPage';
+import { ApplicationDetailPage } from '@/src/pages/applicant/ApplicationDetailPage';
+import { ApplicationsPage } from '@/src/pages/applicant/ApplicationsPage';
 import { SavedJobsPage } from '@/src/pages/applicant/SavedJobsPage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
@@ -40,6 +42,8 @@ export function App() {
       <Route element={<RoleGuard allowedRole="applicant"><ApplicantLayout /></RoleGuard>}>
         <Route path="applicant/dashboard" element={<ApplicantDashboardPage />} />
         <Route path="applicant/saved-jobs" element={<SavedJobsPage />} />
+        <Route path="applicant/applications" element={<ApplicationsPage />} />
+        <Route path="applicant/applications/:applicationId" element={<ApplicationDetailPage />} />
       </Route>
     </Routes>
   );
