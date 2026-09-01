@@ -17,6 +17,8 @@ import { ProfilePage } from '@/src/pages/applicant/ProfilePage';
 import { RecruiterDashboardPage } from '@/src/pages/recruiter/RecruiterDashboardPage';
 import { RecruiterJobsPage } from '@/src/pages/recruiter/RecruiterJobsPage';
 import { JobFormPage } from '@/src/pages/recruiter/JobFormPage';
+import { CandidateDetailPage } from '@/src/pages/recruiter/CandidateDetailPage';
+import { CandidatePipelinePage } from '@/src/pages/recruiter/CandidatePipelinePage';
 import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
 import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
 import { HomePage } from '@/src/pages/public/HomePage';
@@ -58,6 +60,8 @@ export function App() {
         <Route path="recruiter/jobs" element={<RecruiterJobsPage />} />
         <Route path="recruiter/jobs/new" element={<JobFormPage />} />
         <Route path="recruiter/jobs/:jobId/edit" element={<JobFormPage />} />
+        <Route path="recruiter/jobs/:jobId/applicants" element={<CandidatePipelinePage />} />
+        <Route path="recruiter/candidates/:applicationId" element={<CandidateDetailPage />} />
       </Route>
     </Routes>
   );
