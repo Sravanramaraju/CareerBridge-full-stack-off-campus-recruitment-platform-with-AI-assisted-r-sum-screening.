@@ -118,7 +118,7 @@ export function JobsPage() {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 id="job-results-title" className="font-heading text-xl font-bold">Job results</h2>
-              <p className="mt-1 text-xs text-[var(--cb-text-muted)]">{jobsQuery.isLoading ? 'Finding roles…' : `${sortedJobs.length} opportunities found`}</p>
+              <p className="mt-1 text-xs text-[var(--cb-text-muted)]" aria-live="polite">{jobsQuery.isLoading ? 'Finding roles…' : `${sortedJobs.length} opportunities found`}</p>
             </div>
             <label className="flex items-center gap-2 text-xs font-semibold text-[var(--cb-text-secondary)]">
               Sort by
