@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { RouteLoading } from '@/src/components/feedback/RouteLoading';
 import { AuthLayout } from '@/src/layouts/AuthLayout';
@@ -29,13 +29,14 @@ import { RecruiterSettingsPage } from '@/src/pages/recruiter/RecruiterSettingsPa
 import { JobFormPage } from '@/src/pages/recruiter/JobFormPage';
 import { CandidateDetailPage } from '@/src/pages/recruiter/CandidateDetailPage';
 import { CandidatePipelinePage } from '@/src/pages/recruiter/CandidatePipelinePage';
-import { CompaniesPage } from '@/src/pages/public/CompaniesPage';
-import { CompanyDetailPage } from '@/src/pages/public/CompanyDetailPage';
-import { HomePage } from '@/src/pages/public/HomePage';
-import { JobDetailPage } from '@/src/pages/public/JobDetailPage';
-import { JobsPage } from '@/src/pages/public/JobsPage';
-import { NotFoundPage } from '@/src/pages/public/NotFoundPage';
-import { ResourcesPage } from '@/src/pages/public/ResourcesPage';
+
+const HomePage = lazy(() => import('@/src/pages/public/HomePage').then((module) => ({ default: module.HomePage })));
+const JobsPage = lazy(() => import('@/src/pages/public/JobsPage').then((module) => ({ default: module.JobsPage })));
+const JobDetailPage = lazy(() => import('@/src/pages/public/JobDetailPage').then((module) => ({ default: module.JobDetailPage })));
+const CompaniesPage = lazy(() => import('@/src/pages/public/CompaniesPage').then((module) => ({ default: module.CompaniesPage })));
+const CompanyDetailPage = lazy(() => import('@/src/pages/public/CompanyDetailPage').then((module) => ({ default: module.CompanyDetailPage })));
+const ResourcesPage = lazy(() => import('@/src/pages/public/ResourcesPage').then((module) => ({ default: module.ResourcesPage })));
+const NotFoundPage = lazy(() => import('@/src/pages/public/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
 
 export function App() {
   return (
