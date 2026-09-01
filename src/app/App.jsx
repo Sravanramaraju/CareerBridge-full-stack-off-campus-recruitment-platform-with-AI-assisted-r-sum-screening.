@@ -7,10 +7,6 @@ import { ApplicantLayout } from '@/src/layouts/ApplicantLayout';
 import { RecruiterLayout } from '@/src/layouts/RecruiterLayout';
 import { AdminLayout } from '@/src/layouts/AdminLayout';
 import { PublicLayout } from '@/src/layouts/PublicLayout';
-import { AdminDashboardPage } from '@/src/pages/admin/AdminDashboardPage';
-import { AdminCompaniesPage } from '@/src/pages/admin/AdminCompaniesPage';
-import { AdminJobsPage } from '@/src/pages/admin/AdminJobsPage';
-import { AdminUsersPage } from '@/src/pages/admin/AdminUsersPage';
 
 const HomePage = lazy(() => import('@/src/pages/public/HomePage').then((module) => ({ default: module.HomePage })));
 const JobsPage = lazy(() => import('@/src/pages/public/JobsPage').then((module) => ({ default: module.JobsPage })));
@@ -37,6 +33,10 @@ const CandidateDetailPage = lazy(() => import('@/src/pages/recruiter/CandidateDe
 const RecruiterCompanyPage = lazy(() => import('@/src/pages/recruiter/RecruiterCompanyPage').then((module) => ({ default: module.RecruiterCompanyPage })));
 const RecruiterNotificationsPage = lazy(() => import('@/src/pages/recruiter/RecruiterNotificationsPage').then((module) => ({ default: module.RecruiterNotificationsPage })));
 const RecruiterSettingsPage = lazy(() => import('@/src/pages/recruiter/RecruiterSettingsPage').then((module) => ({ default: module.RecruiterSettingsPage })));
+const AdminDashboardPage = lazy(() => import('@/src/pages/admin/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
+const AdminCompaniesPage = lazy(() => import('@/src/pages/admin/AdminCompaniesPage').then((module) => ({ default: module.AdminCompaniesPage })));
+const AdminJobsPage = lazy(() => import('@/src/pages/admin/AdminJobsPage').then((module) => ({ default: module.AdminJobsPage })));
+const AdminUsersPage = lazy(() => import('@/src/pages/admin/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })));
 
 export function App() {
   return (
