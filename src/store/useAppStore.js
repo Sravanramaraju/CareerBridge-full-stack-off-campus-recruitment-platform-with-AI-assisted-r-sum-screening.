@@ -25,6 +25,7 @@ export const useAppStore = create(
         locations: ['Bengaluru', 'Remote within India'],
         verificationStatus: 'Verified',
       },
+      readNotificationIds: [],
       profile: {
         name: 'Ananya Rao',
         email: 'applicant@careerbridge.demo',
@@ -75,6 +76,8 @@ export const useAppStore = create(
       })),
       updateCandidateStatus: (applicationId, status) => set((state) => ({ candidateStatuses: { ...state.candidateStatuses, [applicationId]: status } })),
       updateCompanyProfile: (updates) => set((state) => ({ companyProfile: { ...state.companyProfile, ...updates } })),
+      markNotificationRead: (notificationId) => set((state) => ({ readNotificationIds: state.readNotificationIds.includes(notificationId) ? state.readNotificationIds : [...state.readNotificationIds, notificationId] })),
+      markAllNotificationsRead: (notificationIds) => set((state) => ({ readNotificationIds: [...new Set([...state.readNotificationIds, ...notificationIds])] })),
       updateProfile: (updates) => set((state) => ({ profile: { ...state.profile, ...updates } })),
       saveRecruiterDraft: (draft) => set((state) => ({
         recruiterDrafts: [
@@ -103,6 +106,7 @@ export const useAppStore = create(
         recruiterNotes: state.recruiterNotes,
         candidateStatuses: state.candidateStatuses,
         companyProfile: state.companyProfile,
+        readNotificationIds: state.readNotificationIds,
         profile: state.profile,
       }),
     },
