@@ -15,6 +15,7 @@ import { getCompanyById } from '@/src/data/mockData';
 import { catalogService } from '@/src/services/mockApi';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const responsibilities = [
   'Collaborate with product, design, and engineering teammates on focused product outcomes.',
@@ -52,6 +53,7 @@ export function JobDetailPage() {
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
   const submitApplication = useAppStore((state) => state.submitApplication);
   const jobQuery = useQuery({ queryKey: ['job', jobId], queryFn: () => catalogService.getJob(jobId) });
+  useDocumentTitle(jobQuery.data?.title || 'Job details');
 
   if (jobQuery.isLoading) return <JobDetailLoading />;
   if (jobQuery.isError || !jobQuery.data) {
