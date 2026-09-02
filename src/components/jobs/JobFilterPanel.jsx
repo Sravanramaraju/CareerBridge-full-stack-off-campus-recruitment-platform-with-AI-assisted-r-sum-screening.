@@ -9,22 +9,25 @@ const LOCATIONS = [...new Set(jobs.map((job) => job.location.split(',')[0]))];
 
 function CheckboxGroup({ title, options, selected, onToggle }) {
   return (
-    <fieldset className="border-b border-[var(--cb-divider)] pb-6 last:border-0">
-      <legend className="font-heading text-sm font-bold">{title}</legend>
-      <div className="mt-3 grid gap-2.5">
-        {options.map((option) => (
-          <label key={option} className="flex cursor-pointer items-center gap-2.5 text-sm text-[var(--cb-text-secondary)]">
-            <input
-              type="checkbox"
-              className="size-4 rounded border-[var(--cb-border-strong)] accent-[var(--cb-primary)]"
-              checked={selected.includes(option)}
-              onChange={() => onToggle(option)}
-            />
-            {option}
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <details open className="group border-b border-[var(--cb-divider)] pb-6 last:border-0">
+      <summary className="flex cursor-pointer list-none items-center justify-between font-heading text-sm font-bold">{title}<span className="text-xs font-medium text-[var(--cb-primary)]">{selected.length || ''}</span></summary>
+      <fieldset className="mt-3">
+        <legend className="sr-only">{title}</legend>
+        <div className="grid gap-2.5">
+          {options.map((option) => (
+            <label key={option} className="flex cursor-pointer items-center gap-2.5 text-sm text-[var(--cb-text-secondary)]">
+              <input
+                type="checkbox"
+                className="size-4 rounded border-[var(--cb-border-strong)] accent-[var(--cb-primary)]"
+                checked={selected.includes(option)}
+                onChange={() => onToggle(option)}
+              />
+              {option}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    </details>
   );
 }
 
