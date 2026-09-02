@@ -8,6 +8,7 @@ import { ProgressBar } from '@/src/components/ui/Feedback';
 import { getCompanyById, jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
 import { matchService } from '@/src/services/matchService';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const statusMeta = {
   Applied: { label: 'Applied', icon: ClipboardCheck, variant: 'primary' },
@@ -17,6 +18,7 @@ const statusMeta = {
 };
 
 export function ApplicantDashboardPage() {
+  useDocumentTitle('Applicant dashboard');
   const session = useAppStore((state) => state.session);
   const profile = useAppStore((state) => state.profile);
   const applications = useAppStore((state) => state.applications);

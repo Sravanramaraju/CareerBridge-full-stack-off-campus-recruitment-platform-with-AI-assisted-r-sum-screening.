@@ -6,10 +6,12 @@ import { buttonVariants } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/Feedback';
 import { getCompanyById, jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function ApplicationDetailPage() {
   const { applicationId } = useParams();
   const application = useAppStore((state) => state.applications.find((item) => item.id === applicationId));
+  useDocumentTitle(application ? 'Application details' : 'Application not found');
   if (!application) return <div><EmptyState title="Application not found" description="This application may have been removed from local demo storage." /><Link to="/applicant/applications" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to applications</Link></div>;
 
   const job = jobs.find((item) => item.id === application.jobId);

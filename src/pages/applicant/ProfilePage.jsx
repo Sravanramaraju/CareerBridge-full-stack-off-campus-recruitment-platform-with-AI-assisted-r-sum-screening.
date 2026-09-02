@@ -7,6 +7,7 @@ import { ProgressBar } from '@/src/components/ui/Feedback';
 import { Input, TextArea } from '@/src/components/ui/Input';
 import { Modal, ModalContent } from '@/src/components/ui/Modal';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 function ProfileSection({ title, description, action, children }) {
   return (
@@ -18,6 +19,7 @@ function ProfileSection({ title, description, action, children }) {
 }
 
 export function ProfilePage() {
+  useDocumentTitle('My profile');
   const profile = useAppStore((state) => state.profile);
   const updateProfile = useAppStore((state) => state.updateProfile);
   const [basicOpen, setBasicOpen] = useState(false);

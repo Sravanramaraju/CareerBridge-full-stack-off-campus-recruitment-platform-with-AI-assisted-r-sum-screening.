@@ -7,6 +7,7 @@ import { PageHeader } from '@/src/components/ui/PageHeader';
 import { Tabs } from '@/src/components/ui/Tabs';
 import { getCompanyById, jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const tabs = [
   ['All', null], ['Applied', ['Applied']], ['Under review', ['Screening']], ['Shortlisted', ['Assessment']],
@@ -14,6 +15,7 @@ const tabs = [
 ];
 
 export function ApplicationsPage() {
+  useDocumentTitle('My applications');
   const applications = useAppStore((state) => state.applications);
   const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');

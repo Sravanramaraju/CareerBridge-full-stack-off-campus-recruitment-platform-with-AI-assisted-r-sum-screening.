@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/src/components/ui/Button';
 import { PageHeader } from '@/src/components/ui/PageHeader';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function ApplicantSettingsPage() {
+  useDocumentTitle('Applicant settings');
   const session = useAppStore((state) => state.session);
   const logout = useAppStore((state) => state.logout);
   const navigate = useNavigate();

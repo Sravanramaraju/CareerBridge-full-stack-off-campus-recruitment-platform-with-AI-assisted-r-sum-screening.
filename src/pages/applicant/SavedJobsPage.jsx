@@ -7,8 +7,10 @@ import { EmptyState } from '@/src/components/ui/Feedback';
 import { PageHeader } from '@/src/components/ui/PageHeader';
 import { jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function SavedJobsPage() {
+  useDocumentTitle('Saved jobs');
   const navigate = useNavigate();
   const [sort, setSort] = useState('recent');
   const [search, setSearch] = useState('');
