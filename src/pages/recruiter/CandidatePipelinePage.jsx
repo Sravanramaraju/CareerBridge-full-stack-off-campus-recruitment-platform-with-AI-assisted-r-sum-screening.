@@ -16,6 +16,7 @@ export function CandidatePipelinePage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [minimumMatch, setMinimumMatch] = useState('0');
+  const [experience, setExperience] = useState('');
   const [location, setLocation] = useState('');
   const recruiterDrafts = useAppStore((state) => state.recruiterDrafts);
   const statuses = useAppStore((state) => state.candidateStatuses);
@@ -28,9 +29,10 @@ export function CandidatePipelinePage() {
     const matchesSearch = !keyword || [candidate.name, candidate.headline, ...candidate.skills].join(' ').toLocaleLowerCase().includes(keyword);
     const matchesStatus = !statusFilter || currentStatus === statusFilter;
     const matchesScore = candidate.match >= Number(minimumMatch);
+    const matchesExperience = !experience || candidate.experience === experience;
     const matchesLocation = !location.trim() || candidate.location.toLocaleLowerCase().includes(location.trim().toLocaleLowerCase());
-    return candidate.jobId === jobId && matchesSearch && matchesStatus && matchesScore && matchesLocation;
-  }), [jobId, location, minimumMatch, search, statusFilter, statuses]);
+    return candidate.jobId === jobId && matchesSearch && matchesStatus && matchesScore && matchesExperience && matchesLocation;
+  }), [experience, jobId, location, minimumMatch, search, statusFilter, statuses]);
 
   if (!job) return <EmptyState title="Job not found" description="This role may have been removed from your local hiring workspace." />;
   const company = getCompanyById(job.companyId);
@@ -43,10 +45,11 @@ export function CandidatePipelinePage() {
 
       <section className="surface-card mt-7 p-4" aria-label="Candidate filters">
         <div className="flex items-center gap-2 text-xs font-bold text-[var(--cb-text-muted)]"><SlidersHorizontal className="size-4" />FILTER CANDIDATES</div>
-        <div className="mt-3 grid gap-3 md:grid-cols-[1.4fr_0.8fr_0.7fr_0.8fr]">
+        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-[1.4fr_0.8fr_0.7fr_0.8fr_0.8fr]">
           <label className="flex h-10 items-center gap-2 rounded-lg border bg-[var(--cb-surface)] px-3"><Search className="size-4 text-[var(--cb-text-muted)]" /><span className="sr-only">Search candidate name or skill</span><input value={search} onChange={(event) => setSearch(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Name, headline, or skill" /></label>
           <select aria-label="Filter by status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="h-10 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none"><option value="">All statuses</option>{statusOptions.map((status) => <option key={status}>{status}</option>)}</select>
           <select aria-label="Minimum match score" value={minimumMatch} onChange={(event) => setMinimumMatch(event.target.value)} className="h-10 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none"><option value="0">Any match</option><option value="80">80%+</option><option value="85">85%+</option><option value="90">90%+</option></select>
+          <select aria-label="Filter by experience" value={experience} onChange={(event) => setExperience(event.target.value)} className="h-10 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none"><option value="">Any experience</option>{[...new Set(recruiterCandidates.map((candidate) => candidate.experience))].map((item) => <option key={item}>{item}</option>)}</select>
           <input aria-label="Filter by location" value={location} onChange={(event) => setLocation(event.target.value)} className="h-10 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none" placeholder="Location" />
         </div>
       </section>
