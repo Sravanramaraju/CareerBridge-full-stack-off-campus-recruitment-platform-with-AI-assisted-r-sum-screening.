@@ -13,6 +13,7 @@ import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 import { readJobFacets, writeJobFacets } from '@/src/lib/jobFilterParams';
+import { matchService } from '@/src/services/matchService';
 
 function JobsLoading() {
   return (
@@ -31,10 +32,12 @@ export function JobsPage() {
   useDocumentTitle('Explore jobs');
   const [searchParams, setSearchParams] = useSearchParams();
   const [facetFilters, setFacetFilters] = useState(() => readJobFacets(searchParams));
-  const [sort, setSort] = useState('newest');
+  const [sort, setSort] = useState('recommended');
   const [page, setPage] = useState(1);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
+  const session = useAppStore((state) => state.session);
+  const profile = useAppStore((state) => state.profile);
 
   const filters = useMemo(() => ({
     keyword: searchParams.get('q') || '',
@@ -50,9 +53,11 @@ export function JobsPage() {
 
   const sortedJobs = useMemo(() => {
     const result = [...(jobsQuery.data || [])];
+    if (sort === 'match' && session?.role === 'applicant') return result.sort((a, b) => matchService.scoreJob(b, profile).overall - matchService.scoreJob(a, profile).overall);
     if (sort === 'salary') return result.sort((a, b) => b.salary.localeCompare(a.salary));
+    if (sort === 'recommended') return result.sort((a, b) => Number(b.featured) - Number(a.featured) || new Date(b.postedAt) - new Date(a.postedAt));
     return result.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
-  }, [jobsQuery.data, sort]);
+  }, [jobsQuery.data, profile, session?.role, sort]);
 
   const pageCount = Math.ceil(sortedJobs.length / 6);
   const currentPage = Math.min(page, Math.max(pageCount, 1));
@@ -125,7 +130,9 @@ export function JobsPage() {
             <label className="flex items-center gap-2 text-xs font-semibold text-[var(--cb-text-secondary)]">
               Sort by
               <select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none focus:border-[var(--cb-primary)]">
+                <option value="recommended">Recommended</option>
                 <option value="newest">Newest</option>
+                {session?.role === 'applicant' && <option value="match">Match</option>}
                 <option value="salary">Salary</option>
               </select>
             </label>
