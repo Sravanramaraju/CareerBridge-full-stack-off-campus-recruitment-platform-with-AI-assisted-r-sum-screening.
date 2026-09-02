@@ -12,7 +12,8 @@ import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { TextArea } from '@/src/components/ui/Input';
 import { Modal, ModalContent, ModalTrigger } from '@/src/components/ui/Modal';
 import { getCompanyById } from '@/src/data/mockData';
-import { catalogService } from '@/src/services/mockApi';
+import { jobsService } from '@/src/services/jobsService';
+import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
@@ -52,7 +53,7 @@ export function JobDetailPage() {
   const applications = useAppStore((state) => state.applications);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
   const submitApplication = useAppStore((state) => state.submitApplication);
-  const jobQuery = useQuery({ queryKey: ['job', jobId], queryFn: () => catalogService.getJob(jobId) });
+  const jobQuery = useQuery({ queryKey: queryKeys.job(jobId), queryFn: () => jobsService.getJobById(jobId) });
   useDocumentTitle(jobQuery.data?.title || 'Job details');
 
   if (jobQuery.isLoading) return <JobDetailLoading />;
