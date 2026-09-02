@@ -32,7 +32,7 @@ export function RecruiterJobsPage() {
   }, [recruiterDrafts, recruiterJobStates]);
 
   const expectedStatus = tabs.find(([label]) => label === activeTab)?.[1];
-  const departments = [...new Set(allJobs.map((job) => job.department || 'General'))].sort();
+  const departments = [...new Set(allJobs.map((job) => job.department || 'General'))].sort((a, b) => a.localeCompare(b));
   const visibleJobs = allJobs
     .filter((job) => job.status === expectedStatus
       && job.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())
