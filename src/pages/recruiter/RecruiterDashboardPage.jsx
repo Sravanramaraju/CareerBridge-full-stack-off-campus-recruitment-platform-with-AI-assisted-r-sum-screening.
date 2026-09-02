@@ -5,12 +5,14 @@ import { Badge } from '@/src/components/ui/Badge';
 import { buttonVariants } from '@/src/components/ui/Button';
 import { getCompanyById, jobs, recruiterCandidates, recruiterJobStats } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const pipelineStages = ['Applied', 'Under Review', 'Shortlisted', 'Interview', 'Offered'];
 
 function candidateStatus(candidate, statuses) { return statuses[candidate.applicationId] || candidate.status; }
 
 export function RecruiterDashboardPage() {
+  useDocumentTitle('Recruiter dashboard');
   const statuses = useAppStore((state) => state.candidateStatuses);
   const activeJobs = jobs.filter((job) => recruiterJobStats[job.id]).slice(0, 4);
   const metrics = [

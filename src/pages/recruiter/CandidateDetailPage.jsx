@@ -8,12 +8,14 @@ import { EmptyState, ProgressBar } from '@/src/components/ui/Feedback';
 import { TextArea } from '@/src/components/ui/Input';
 import { jobs, recruiterCandidates } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const statusOptions = ['Applied', 'Under Review', 'Shortlisted', 'Interview', 'Offered', 'Rejected'];
 
 export function CandidateDetailPage() {
   const { applicationId } = useParams();
   const candidate = recruiterCandidates.find((item) => item.applicationId === applicationId);
+  useDocumentTitle(candidate?.name ? `${candidate.name} candidate review` : 'Candidate not found');
   const statuses = useAppStore((state) => state.candidateStatuses);
   const updateCandidateStatus = useAppStore((state) => state.updateCandidateStatus);
   const notes = useAppStore((state) => state.recruiterNotes[applicationId] || []);

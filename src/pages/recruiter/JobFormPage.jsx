@@ -11,6 +11,7 @@ import { jobs } from '@/src/data/mockData';
 import { EMPLOYMENT_TYPES, WORK_MODES } from '@/src/domain/constants';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const jobSchema = z.object({
   title: z.string().min(3, 'Enter a clear job title.'),
@@ -49,6 +50,7 @@ function makeSlug(value = '') { return value.toLocaleLowerCase().replace(/[^a-z0
 
 export function JobFormPage() {
   const { jobId } = useParams();
+  useDocumentTitle(jobId ? 'Edit job' : 'Post a job');
   const navigate = useNavigate();
   const recruiterDrafts = useAppStore((state) => state.recruiterDrafts);
   const saveRecruiterDraft = useAppStore((state) => state.saveRecruiterDraft);

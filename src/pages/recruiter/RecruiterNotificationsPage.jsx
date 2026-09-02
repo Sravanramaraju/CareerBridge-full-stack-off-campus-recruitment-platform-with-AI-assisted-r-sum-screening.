@@ -5,10 +5,12 @@ import { EmptyState } from '@/src/components/ui/Feedback';
 import { recruiterNotifications } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const notificationIcons = [UsersRound, CalendarClock, BriefcaseBusiness, CalendarClock, BriefcaseBusiness, UsersRound];
 
 export function RecruiterNotificationsPage() {
+  useDocumentTitle('Recruiter notifications');
   const [filter, setFilter] = useState('All');
   const readIds = useAppStore((state) => state.readNotificationIds);
   const markNotificationRead = useAppStore((state) => state.markNotificationRead);

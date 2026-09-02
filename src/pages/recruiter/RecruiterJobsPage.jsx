@@ -8,10 +8,12 @@ import { Modal, ModalContent } from '@/src/components/ui/Modal';
 import { jobs, recruiterJobStats } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const tabs = [['Active', 'Published'], ['Drafts', 'Draft'], ['Closed', 'Closed']];
 
 export function RecruiterJobsPage() {
+  useDocumentTitle('Manage jobs');
   const [activeTab, setActiveTab] = useState('Active');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('updated');

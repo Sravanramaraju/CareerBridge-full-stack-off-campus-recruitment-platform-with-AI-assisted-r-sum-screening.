@@ -4,8 +4,10 @@ import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
 import { Input, TextArea } from '@/src/components/ui/Input';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function RecruiterCompanyPage() {
+  useDocumentTitle('Company profile');
   const companyProfile = useAppStore((state) => state.companyProfile);
   const updateCompanyProfile = useAppStore((state) => state.updateCompanyProfile);
   const [draft, setDraft] = useState(companyProfile);

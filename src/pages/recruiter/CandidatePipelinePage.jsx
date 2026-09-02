@@ -6,11 +6,13 @@ import { Badge } from '@/src/components/ui/Badge';
 import { EmptyState, ProgressBar } from '@/src/components/ui/Feedback';
 import { getCompanyById, jobs, recruiterCandidates } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const statusOptions = ['Applied', 'Under Review', 'Shortlisted', 'Interview', 'Offered', 'Rejected'];
 
 export function CandidatePipelinePage() {
   const { jobId } = useParams();
+  useDocumentTitle('Candidate pipeline');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [minimumMatch, setMinimumMatch] = useState('0');
