@@ -1,13 +1,10 @@
-import { Bookmark, BriefcaseBusiness, Clock3, IndianRupee, MapPin } from 'lucide-react';
+import { Bookmark, Clock3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
 import { getCompanyById } from '@/src/data/mockData';
-
-function timeSincePosted(date) {
-  const days = Math.max(1, Math.floor((Date.now() - new Date(date).getTime()) / 86400000));
-  return days === 1 ? '1 day ago' : `${days} days ago`;
-}
+import { JobMeta } from '@/src/components/jobs/JobMeta';
+import { formatPostedDate } from '@/src/lib/jobFormatting';
 
 export function JobCard({ job, onSave, isSaved = false, match }) {
   const company = getCompanyById(job.companyId);
@@ -39,11 +36,7 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
         </Button>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-[var(--cb-text-secondary)]">
-        <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" aria-hidden="true" />{job.location}</span>
-        <span className="inline-flex items-center gap-1.5"><BriefcaseBusiness className="size-4" aria-hidden="true" />{job.experience}</span>
-        <span className="inline-flex items-center gap-1.5"><IndianRupee className="size-4" aria-hidden="true" />{job.salary.replace('₹', '')}</span>
-      </div>
+      <JobMeta job={job} />
 
       <p className="mt-4 line-clamp-2 text-sm leading-6 text-[var(--cb-text-secondary)]">{job.summary}</p>
       <div className="mt-4 flex flex-wrap gap-2">
@@ -52,7 +45,7 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
         {job.skills.slice(0, 2).map((skill) => <Badge key={skill}>{skill}</Badge>)}
       </div>
       <div className="mt-auto flex items-center justify-between border-t border-[var(--cb-divider)] pt-4 text-xs text-[var(--cb-text-muted)]">
-        <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" aria-hidden="true" />{timeSincePosted(job.postedAt)}</span>
+        <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" aria-hidden="true" />{formatPostedDate(job.postedAt)}</span>
         {match ? <span className="font-semibold text-[var(--cb-emerald)]" title="CareerBridge match is a guidance signal, not an employer decision.">{match}% match</span> : <Link to={`/jobs/${job.id}`} className="font-semibold text-[var(--cb-primary)] hover:underline">View role</Link>}
       </div>
     </article>
