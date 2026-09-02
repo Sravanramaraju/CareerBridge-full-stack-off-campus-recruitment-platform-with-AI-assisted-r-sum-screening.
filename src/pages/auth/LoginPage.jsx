@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { Button } from '@/src/components/ui/Button';
 import { FormField, Input } from '@/src/components/ui/Input';
 import { DEMO_ACCOUNTS } from '@/src/domain/constants';
-import { authService } from '@/src/services/mockApi';
+import { authService } from '@/src/services/authService';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
@@ -33,7 +33,7 @@ export function LoginPage() {
   async function onSubmit(values) {
     setServerError('');
     try {
-      const session = await authService.login(values.email, values.password);
+      const session = await authService.login(values);
       setSession(session);
       const requestedPath = searchParams.get('redirect');
       const destination = requestedPath && session.role === 'applicant' ? requestedPath : roleHome[session.role];
