@@ -1,10 +1,11 @@
 import { X } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 import { companies, jobs } from '@/src/data/mockData';
-import { DATE_POSTED_OPTIONS, EMPLOYMENT_TYPES, SALARY_BANDS, WORK_MODES } from '@/src/domain/constants';
+import { COMPANY_TYPES, DATE_POSTED_OPTIONS, EMPLOYMENT_TYPES, EXPERIENCE_LEVELS, SALARY_BANDS, WORK_MODES } from '@/src/domain/constants';
 
 const INDUSTRIES = [...new Set(companies.map((company) => company.industry))];
 const POPULAR_SKILLS = [...new Set(jobs.flatMap((job) => job.skills))].slice(0, 10);
+const LOCATIONS = [...new Set(jobs.map((job) => job.location.split(',')[0]))];
 
 function CheckboxGroup({ title, options, selected, onToggle }) {
   return (
@@ -33,13 +34,19 @@ export function JobFilterPanel({ filters, onToggle, onDateChange, onClear }) {
     + filters.salaryBands.length
     + filters.industries.length
     + filters.skills.length
+    + filters.experiences.length
+    + filters.locations.length
+    + filters.companyTypes.length
     + (filters.datePosted ? 1 : 0);
 
   return (
     <div className="grid gap-6">
       <CheckboxGroup title="Employment type" options={EMPLOYMENT_TYPES} selected={filters.types} onToggle={(value) => onToggle('types', value)} />
       <CheckboxGroup title="Work mode" options={WORK_MODES} selected={filters.modes} onToggle={(value) => onToggle('modes', value)} />
+      <CheckboxGroup title="Experience" options={EXPERIENCE_LEVELS} selected={filters.experiences} onToggle={(value) => onToggle('experiences', value)} />
+      <CheckboxGroup title="Location" options={LOCATIONS} selected={filters.locations} onToggle={(value) => onToggle('locations', value)} />
       <CheckboxGroup title="Salary" options={SALARY_BANDS} selected={filters.salaryBands} onToggle={(value) => onToggle('salaryBands', value)} />
+      <CheckboxGroup title="Company type" options={COMPANY_TYPES} selected={filters.companyTypes} onToggle={(value) => onToggle('companyTypes', value)} />
       <CheckboxGroup title="Company industry" options={INDUSTRIES} selected={filters.industries} onToggle={(value) => onToggle('industries', value)} />
       <CheckboxGroup title="Popular skills" options={POPULAR_SKILLS} selected={filters.skills} onToggle={(value) => onToggle('skills', value)} />
       <label className="grid gap-2 text-sm font-bold">

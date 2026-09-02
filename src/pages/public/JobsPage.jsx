@@ -34,6 +34,9 @@ export function JobsPage() {
     salaryBands: [],
     industries: [],
     skills: [],
+    experiences: [],
+    locations: [],
+    companyTypes: [],
     datePosted: '',
   });
   const [sort, setSort] = useState('newest');
@@ -75,7 +78,7 @@ export function JobsPage() {
 
   function clearFilters() {
     setPage(1);
-    setFacetFilters({ types: [], modes: [], salaryBands: [], industries: [], skills: [], datePosted: '' });
+    setFacetFilters({ types: [], modes: [], salaryBands: [], industries: [], skills: [], experiences: [], locations: [], companyTypes: [], datePosted: '' });
   }
 
   const selectedFilterCount = Object.values(facetFilters).reduce(
