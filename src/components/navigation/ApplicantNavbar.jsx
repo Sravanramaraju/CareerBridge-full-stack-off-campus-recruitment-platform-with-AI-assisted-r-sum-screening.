@@ -5,9 +5,9 @@ import { ThemeToggle } from '@/src/components/navigation/ThemeToggle';
 import { Avatar } from '@/src/components/ui/Avatar';
 import { Button } from '@/src/components/ui/Button';
 import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from '@/src/components/ui/Drawer';
-import { mockNotifications } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
+import { ApplicantNotificationMenu } from '@/src/components/notifications/ApplicantNotificationMenu';
 
 const links = [
   ['Jobs', '/jobs'], ['Companies', '/companies'], ['Applications', '/applicant/applications'], ['Resources', '/resources'],
@@ -20,9 +20,7 @@ const accountLinks = [
 export function ApplicantNavbar() {
   const session = useAppStore((state) => state.session);
   const logout = useAppStore((state) => state.logout);
-  const readNotificationIds = useAppStore((state) => state.readNotificationIds);
   const navigate = useNavigate();
-  const unreadCount = mockNotifications.filter((item) => !item.read && !readNotificationIds.includes(item.id)).length;
 
   function handleLogout() {
     logout();
@@ -38,7 +36,7 @@ export function ApplicantNavbar() {
         <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label="Applicant navigation">{links.map(([label, to]) => <NavLink key={to} to={to} className={navClass}>{label}</NavLink>)}</nav>
         <div className="ml-auto flex items-center gap-1">
           <Link to="/jobs" className="hidden rounded-lg p-2 text-[var(--cb-text-secondary)] hover:bg-[var(--cb-bg-subtle)] sm:block" aria-label="Search jobs"><Search className="size-5" /></Link>
-          <Link to="/applicant/notifications" className="relative rounded-lg p-2 text-[var(--cb-text-secondary)] hover:bg-[var(--cb-bg-subtle)]" aria-label={`${unreadCount} unread notifications`}><Bell className="size-5" />{unreadCount > 0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-[var(--cb-danger)]" />}</Link>
+          <ApplicantNotificationMenu />
           <ThemeToggle />
           <details className="relative hidden sm:block">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-xl p-1.5 hover:bg-[var(--cb-bg-subtle)]">
