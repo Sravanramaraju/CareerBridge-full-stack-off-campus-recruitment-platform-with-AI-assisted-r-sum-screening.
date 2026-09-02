@@ -12,6 +12,7 @@ import { jobsService } from '@/src/services/jobsService';
 import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
+import { readJobFacets, writeJobFacets } from '@/src/lib/jobFilterParams';
 
 function JobsLoading() {
   return (
@@ -28,18 +29,8 @@ function JobsLoading() {
 
 export function JobsPage() {
   useDocumentTitle('Explore jobs');
-  const [searchParams] = useSearchParams();
-  const [facetFilters, setFacetFilters] = useState({
-    types: [],
-    modes: [],
-    salaryBands: [],
-    industries: [],
-    skills: [],
-    experiences: [],
-    locations: [],
-    companyTypes: [],
-    datePosted: '',
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [facetFilters, setFacetFilters] = useState(() => readJobFacets(searchParams));
   const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(1);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
@@ -67,19 +58,24 @@ export function JobsPage() {
   const currentPage = Math.min(page, Math.max(pageCount, 1));
   const visibleJobs = sortedJobs.slice((currentPage - 1) * 6, currentPage * 6);
 
+  function updateFacetFilters(next) {
+    setFacetFilters(next);
+    setSearchParams(writeJobFacets(searchParams, next), { replace: true });
+  }
+
   function toggleFilter(key, value) {
     setPage(1);
-    setFacetFilters((current) => ({
-      ...current,
-      [key]: current[key].includes(value)
-        ? current[key].filter((item) => item !== value)
-        : [...current[key], value],
-    }));
+    updateFacetFilters({
+      ...facetFilters,
+      [key]: facetFilters[key].includes(value)
+        ? facetFilters[key].filter((item) => item !== value)
+        : [...facetFilters[key], value],
+    });
   }
 
   function clearFilters() {
     setPage(1);
-    setFacetFilters({ types: [], modes: [], salaryBands: [], industries: [], skills: [], experiences: [], locations: [], companyTypes: [], datePosted: '' });
+    updateFacetFilters({ types: [], modes: [], salaryBands: [], industries: [], skills: [], experiences: [], locations: [], companyTypes: [], datePosted: '' });
   }
 
   const selectedFilterCount = Object.values(facetFilters).reduce(
@@ -92,7 +88,7 @@ export function JobsPage() {
     onToggle={toggleFilter}
     onDateChange={(datePosted) => {
       setPage(1);
-      setFacetFilters((current) => ({ ...current, datePosted }));
+      updateFacetFilters({ ...facetFilters, datePosted });
     }}
     onClear={clearFilters}
   />;
