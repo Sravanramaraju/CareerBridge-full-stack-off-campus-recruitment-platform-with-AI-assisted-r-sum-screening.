@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BriefcaseBusiness, SlidersHorizontal } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { JobCard } from '@/src/components/jobs/JobCard';
 import { JobFilterPanel } from '@/src/components/jobs/JobFilterPanel';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
@@ -33,6 +33,7 @@ function JobsLoading() {
 export function JobsPage() {
   useDocumentTitle('Explore jobs');
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [facetFilters, setFacetFilters] = useState(() => readJobFacets(searchParams));
   const [sort, setSort] = useState('recommended');
   const [page, setPage] = useState(1);
@@ -150,7 +151,7 @@ export function JobsPage() {
           {jobsQuery.isSuccess && sortedJobs.length === 0 && <EmptyState title="No roles match these filters" description="Try a broader keyword, location, or remove one of your filters." actionLabel="Clear filters" onAction={clearFilters} />}
           {jobsQuery.isSuccess && sortedJobs.length > 0 && (
             <div className="grid gap-4 xl:grid-cols-2">
-              {visibleJobs.map((job) => <JobCard key={job.id} job={job} match={session?.role === 'applicant' ? matchService.scoreJob(job, profile).overall : undefined} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
+              {visibleJobs.map((job) => <JobCard key={job.id} job={job} detailState={{ from: `${location.pathname}${location.search}` }} match={session?.role === 'applicant' ? matchService.scoreJob(job, profile).overall : undefined} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
             </div>
           )}
           {jobsQuery.isSuccess && <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} />}

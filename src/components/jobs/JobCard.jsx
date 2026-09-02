@@ -8,7 +8,7 @@ import { MatchSummary } from '@/src/components/jobs/MatchSummary';
 import { formatPostedDate } from '@/src/lib/jobFormatting';
 import { useToast } from '@/src/components/feedback/ToastProvider';
 
-export function JobCard({ job, onSave, isSaved = false, match }) {
+export function JobCard({ job, onSave, isSaved = false, match, detailState }) {
   const company = getCompanyById(job.companyId);
   const { showToast } = useToast();
 
@@ -28,7 +28,7 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
           {company.initials}
         </div>
         <div className="min-w-0 flex-1">
-          <Link to={`/jobs/${job.id}`} className="font-heading text-lg font-bold tracking-[-0.02em] hover:text-[var(--cb-primary)]">
+          <Link to={`/jobs/${job.id}`} state={detailState} className="font-heading text-lg font-bold tracking-[-0.02em] hover:text-[var(--cb-primary)]">
             {job.title}
           </Link>
           <Link to={`/companies/${company.id}`} className="mt-1 inline-block text-sm font-medium text-[var(--cb-text-secondary)] hover:text-[var(--cb-primary)] hover:underline">{company.name}</Link>
@@ -55,7 +55,7 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
       </div>
       <div className="mt-auto flex items-center justify-between border-t border-[var(--cb-divider)] pt-4 text-xs text-[var(--cb-text-muted)]">
         <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" aria-hidden="true" />{formatPostedDate(job.postedAt)}</span>
-        {match ? <MatchSummary score={match} label="match" /> : <Link to={`/jobs/${job.id}`} className="font-semibold text-[var(--cb-primary)] hover:underline">View role</Link>}
+        {match ? <MatchSummary score={match} label="match" /> : <Link to={`/jobs/${job.id}`} state={detailState} className="font-semibold text-[var(--cb-primary)] hover:underline">View role</Link>}
       </div>
     </article>
   );

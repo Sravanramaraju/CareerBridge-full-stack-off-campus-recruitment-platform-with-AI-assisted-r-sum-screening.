@@ -4,7 +4,7 @@ import {
   ArrowLeft, BadgeCheck, Bookmark, BriefcaseBusiness, CalendarDays, Check,
   IndianRupee, MapPin, Send, Sparkles,
 } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { ShareJobButton } from '@/src/components/jobs/ShareJobButton';
 import { MatchBreakdown } from '@/src/components/jobs/MatchBreakdown';
@@ -49,6 +49,7 @@ function JobDetailLoading() {
 
 export function JobDetailPage() {
   const { jobId } = useParams();
+  const location = useLocation();
   const [coverNote, setCoverNote] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -61,13 +62,14 @@ export function JobDetailPage() {
   const submitApplication = useAppStore((state) => state.submitApplication);
   const jobQuery = useQuery({ queryKey: queryKeys.job(jobId), queryFn: () => jobsService.getJobById(jobId) });
   useDocumentTitle(jobQuery.data?.title || 'Job details');
+  const backToJobs = typeof location.state?.from === 'string' && location.state.from.startsWith('/jobs') ? location.state.from : '/jobs';
 
   if (jobQuery.isLoading) return <JobDetailLoading />;
   if (jobQuery.isError || !jobQuery.data) {
     return (
       <div className="page-container py-16">
         <EmptyState title="This role is not available" description="The job may have closed or the link may be incorrect." />
-        <Link to="/jobs" className="mx-auto mt-5 flex w-fit items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
+        <Link to={backToJobs} className="mx-auto mt-5 flex w-fit items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
       </div>
     );
   }
@@ -97,7 +99,7 @@ export function JobDetailPage() {
 
   return (
     <div className="page-container py-8 pb-28 sm:py-10 lg:pb-10">
-      <Link to="/jobs" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--cb-text-secondary)] hover:text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
+      <Link to={backToJobs} className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--cb-text-secondary)] hover:text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="grid gap-6">
