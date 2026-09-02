@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { FileSearch, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Badge } from '@/src/components/ui/Badge';
+import { ApplicationStatusBadge } from '@/src/components/applications/ApplicationStatusBadge';
 import { EmptyState } from '@/src/components/ui/Feedback';
 import { PageHeader } from '@/src/components/ui/PageHeader';
 import { getCompanyById, jobs } from '@/src/data/mockData';
@@ -12,13 +12,6 @@ const tabs = [
   ['All', null], ['Applied', ['Applied']], ['Under review', ['Screening']], ['Shortlisted', ['Assessment']],
   ['Interview', ['Interview']], ['Offered', ['Offer']], ['Rejected', ['Not selected']],
 ];
-
-function statusVariant(status) {
-  if (status === 'Offer' || status === 'Interview') return 'success';
-  if (status === 'Not selected') return 'danger';
-  if (status === 'Assessment') return 'warning';
-  return 'primary';
-}
 
 export function ApplicationsPage() {
   const applications = useAppStore((state) => state.applications);
@@ -63,7 +56,7 @@ export function ApplicationsPage() {
                 <article key={application.id} className="grid gap-4 p-5 transition-colors hover:bg-[var(--cb-bg-subtle)] md:grid-cols-[minmax(0,1.4fr)_0.8fr_0.8fr_auto] md:items-center">
                   <div className="flex min-w-0 items-center gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl text-xs font-extrabold text-white" style={{ backgroundColor: company.accent }}>{company.initials}</span><span className="min-w-0"><Link to={`/applicant/applications/${application.id}`} className="block truncate text-sm font-bold hover:text-[var(--cb-primary)]">{job.title}</Link><span className="block truncate text-xs text-[var(--cb-text-muted)]">{company.name}</span></span></div>
                   <div><span className="text-[10px] font-bold uppercase text-[var(--cb-text-muted)] md:hidden">Applied </span><span className="text-sm text-[var(--cb-text-secondary)]">{new Date(application.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
-                  <div><Badge variant={statusVariant(application.status)}>{application.status}</Badge><p className="mt-1 text-[10px] text-[var(--cb-text-muted)]">Updated {new Date(application.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p></div>
+                  <div><ApplicationStatusBadge status={application.status} /><p className="mt-1 text-[10px] text-[var(--cb-text-muted)]">Updated {new Date(application.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p></div>
                   <Link to={`/applicant/applications/${application.id}`} className="text-sm font-bold text-[var(--cb-primary)] hover:underline">View details</Link>
                 </article>
               );
