@@ -8,6 +8,7 @@ export const DATE_POSTED_OPTIONS = [
   { label: 'Past week', value: '7' },
   { label: 'Past 30 days', value: '30' },
 ];
+export const COMPANY_TYPES = ['Startup', 'MNC', 'Product', 'Consulting'];
 
 export const APPLICATION_STATUSES = {
   APPLIED: 'Applied',
