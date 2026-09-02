@@ -6,9 +6,16 @@ import { getCompanyById } from '@/src/data/mockData';
 import { JobMeta } from '@/src/components/jobs/JobMeta';
 import { MatchSummary } from '@/src/components/jobs/MatchSummary';
 import { formatPostedDate } from '@/src/lib/jobFormatting';
+import { useToast } from '@/src/components/feedback/ToastProvider';
 
 export function JobCard({ job, onSave, isSaved = false, match }) {
   const company = getCompanyById(job.companyId);
+  const { showToast } = useToast();
+
+  function handleSave() {
+    onSave?.(job.id);
+    showToast(isSaved ? 'Removed from saved jobs.' : 'Job saved.');
+  }
 
   return (
     <article className="surface-card group flex h-full flex-col p-5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--cb-border-strong)] hover:shadow-[var(--cb-shadow-raised)] sm:p-6">
@@ -30,7 +37,7 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
           type="button"
           variant={isSaved ? 'soft' : 'ghost'}
           size="iconSm"
-          onClick={() => onSave?.(job.id)}
+          onClick={handleSave}
           aria-label={isSaved ? `Remove ${job.title} from saved jobs` : `Save ${job.title}`}
         >
           <Bookmark aria-hidden="true" className={isSaved ? 'fill-current' : ''} />
