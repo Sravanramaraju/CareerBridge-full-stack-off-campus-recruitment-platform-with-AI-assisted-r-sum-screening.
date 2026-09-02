@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight, Check, Eye, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -52,7 +52,7 @@ export function JobFormPage() {
   const saveRecruiterDraft = useAppStore((state) => state.saveRecruiterDraft);
   const existing = recruiterDrafts.find((item) => item.id === jobId) || jobs.find((item) => item.id === jobId);
   const [step, setStep] = useState(0);
-  const { register, handleSubmit, getValues, trigger, watch, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, getValues, trigger, watch, formState: { errors, isDirty, isSubmitting, isSubmitSuccessful } } = useForm({
     resolver: zodResolver(jobSchema),
     defaultValues: {
       title: existing?.title || '', department: existing?.department || '', category: existing?.category || 'Engineering', employmentType: existing?.employmentType || '', workMode: existing?.workMode || '', location: existing?.location || '', openings: existing?.openings || 1,
@@ -61,6 +61,13 @@ export function JobFormPage() {
     },
   });
   const values = watch();
+
+  useEffect(() => {
+    if (!isDirty || isSubmitSuccessful) return undefined;
+    const warnBeforeLeaving = (event) => event.preventDefault();
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [isDirty, isSubmitSuccessful]);
 
   async function nextStep() {
     const valid = await trigger(stepFields[step]);
