@@ -41,3 +41,20 @@ npm run build
 ## Technology
 
 React 19, Vite, React Router, TanStack Query, Zustand, React Hook Form, Zod, Tailwind CSS, Lucide icons, Vitest, and Testing Library.
+
+## Frontend architecture
+
+- `src/app` owns routing and top-level providers.
+- `src/pages` contains route-level public, applicant, recruiter, and admin experiences.
+- `src/components` contains domain components and reusable UI primitives.
+- `src/services` provides asynchronous mock boundaries that can later be replaced by backend APIs.
+- `src/store` persists demo sessions and workflow changes in browser storage.
+- `src/schemas` centralizes Zod validation for complex forms.
+
+Route modules are lazy-loaded, public pages provide page-specific document titles, and role guards redirect users to the correct workspace. Job matching is deterministic and explainable: it uses job-relevant profile evidence only and is presented as guidance rather than an automated hiring decision.
+
+## Local data behavior
+
+This phase is deliberately frontend-only. Saving jobs, applying, posting roles, changing candidate status, adding recruiter notes, moderating records, and marking notifications as read are stored locally in the current browser. Clearing site storage restores the seeded demonstration state.
+
+The automated suite covers application duplicate prevention, saved jobs, recruiter status history, moderation state, catalog filtering, URL filter persistence, route guards, accessible controls, JobCard behavior, authentication, and matching guardrails.
