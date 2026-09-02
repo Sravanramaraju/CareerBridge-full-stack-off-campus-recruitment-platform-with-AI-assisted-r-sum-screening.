@@ -85,6 +85,11 @@ export function JobDetailPage() {
     showToast('Application submitted. You can now track it from your dashboard.');
   }
 
+  function handleSave() {
+    toggleSavedJob(job.id);
+    showToast(isSaved ? 'Removed from saved jobs.' : 'Job saved.');
+  }
+
   return (
     <div className="page-container py-8 pb-28 sm:py-10 lg:pb-10">
       <Link to="/jobs" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--cb-text-secondary)] hover:text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
@@ -159,7 +164,7 @@ export function JobDetailPage() {
           ) : (
             <Link to={`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`} className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'w-full')}>Log in to apply</Link>
           )}
-          <Button variant={isSaved ? 'soft' : 'secondary'} size="lg" className="mt-3 w-full" onClick={() => toggleSavedJob(job.id)}><Bookmark className={isSaved ? 'fill-current' : ''} />{isSaved ? 'Saved' : 'Save job'}</Button>
+          <Button variant={isSaved ? 'soft' : 'secondary'} size="lg" className="mt-3 w-full" onClick={handleSave}><Bookmark className={isSaved ? 'fill-current' : ''} />{isSaved ? 'Saved' : 'Save job'}</Button>
           <div className="mt-3"><ShareJobButton jobTitle={job.title} /></div>
           <div className="mt-5 border-t border-[var(--cb-divider)] pt-5 text-xs leading-5 text-[var(--cb-text-muted)]">
             <p>Job ID: {job.id}</p>
@@ -172,7 +177,7 @@ export function JobDetailPage() {
         <Button
           variant={isSaved ? 'soft' : 'secondary'}
           size="iconSm"
-          onClick={() => toggleSavedJob(job.id)}
+          onClick={handleSave}
           aria-label={isSaved ? 'Remove saved job' : 'Save job'}
         >
           <Bookmark className={isSaved ? 'fill-current' : ''} aria-hidden="true" />
