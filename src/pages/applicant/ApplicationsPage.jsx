@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 import { ApplicationStatusBadge } from '@/src/components/applications/ApplicationStatusBadge';
 import { EmptyState } from '@/src/components/ui/Feedback';
 import { PageHeader } from '@/src/components/ui/PageHeader';
+import { Tabs } from '@/src/components/ui/Tabs';
 import { getCompanyById, jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
-import { cn } from '@/src/lib/utils';
 
 const tabs = [
   ['All', null], ['Applied', ['Applied']], ['Under review', ['Screening']], ['Shortlisted', ['Assessment']],
@@ -18,6 +18,11 @@ export function ApplicationsPage() {
   const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');
   const currentStatuses = tabs.find(([label]) => label === activeTab)?.[1];
+  const tabItems = tabs.map(([label, statuses]) => ({
+    value: label,
+    label,
+    count: statuses ? applications.filter((item) => statuses.includes(item.status)).length : applications.length,
+  }));
 
   const filteredApplications = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase();
@@ -35,12 +40,7 @@ export function ApplicationsPage() {
     <div>
       <PageHeader eyebrow="Your progress" title="My applications" description="Follow each application from submission to final outcome, with the latest update easy to find." />
       <div className="mt-7 flex flex-col gap-4 border-b border-[var(--cb-divider)] pb-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex gap-1 overflow-x-auto pb-1" role="tablist" aria-label="Application status">
-          {tabs.map(([label, statuses]) => {
-            const count = statuses ? applications.filter((item) => statuses.includes(item.status)).length : applications.length;
-            return <button key={label} type="button" role="tab" aria-selected={activeTab === label} onClick={() => setActiveTab(label)} className={cn('shrink-0 rounded-lg px-3 py-2 text-xs font-bold transition-colors', activeTab === label ? 'bg-[var(--cb-primary-soft)] text-[var(--cb-primary)]' : 'text-[var(--cb-text-secondary)] hover:bg-[var(--cb-bg-subtle)]')}>{label}<span className="ml-1.5 text-[10px] opacity-70">{count}</span></button>;
-          })}
-        </div>
+        <Tabs items={tabItems} value={activeTab} onValueChange={setActiveTab} label="Application status" />
         <label className="flex h-10 items-center gap-2 rounded-lg border bg-[var(--cb-surface)] px-3 lg:w-72"><Search className="size-4 text-[var(--cb-text-muted)]" /><span className="sr-only">Search applications</span><input value={search} onChange={(event) => setSearch(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Search title or company" /></label>
       </div>
 
