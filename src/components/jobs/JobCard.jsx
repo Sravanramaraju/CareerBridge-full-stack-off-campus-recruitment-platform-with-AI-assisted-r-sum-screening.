@@ -4,6 +4,7 @@ import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
 import { getCompanyById } from '@/src/data/mockData';
 import { JobMeta } from '@/src/components/jobs/JobMeta';
+import { MatchSummary } from '@/src/components/jobs/MatchSummary';
 import { formatPostedDate } from '@/src/lib/jobFormatting';
 
 export function JobCard({ job, onSave, isSaved = false, match }) {
@@ -47,7 +48,7 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
       </div>
       <div className="mt-auto flex items-center justify-between border-t border-[var(--cb-divider)] pt-4 text-xs text-[var(--cb-text-muted)]">
         <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" aria-hidden="true" />{formatPostedDate(job.postedAt)}</span>
-        {match ? <span className="font-semibold text-[var(--cb-emerald)]" title="CareerBridge match is a guidance signal, not an employer decision.">{match}% match</span> : <Link to={`/jobs/${job.id}`} className="font-semibold text-[var(--cb-primary)] hover:underline">View role</Link>}
+        {match ? <MatchSummary score={match} label="match" /> : <Link to={`/jobs/${job.id}`} className="font-semibold text-[var(--cb-primary)] hover:underline">View role</Link>}
       </div>
     </article>
   );
