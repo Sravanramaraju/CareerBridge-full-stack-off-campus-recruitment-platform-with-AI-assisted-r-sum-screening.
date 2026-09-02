@@ -4,7 +4,9 @@ import { Link, useParams } from 'react-router-dom';
 import { JobCard } from '@/src/components/jobs/JobCard';
 import { Badge } from '@/src/components/ui/Badge';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
-import { catalogService } from '@/src/services/mockApi';
+import { companiesService } from '@/src/services/companiesService';
+import { jobsService } from '@/src/services/jobsService';
+import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
@@ -18,8 +20,8 @@ export function CompanyDetailPage() {
   const { companyId } = useParams();
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
-  const companyQuery = useQuery({ queryKey: ['company', companyId], queryFn: () => catalogService.getCompany(companyId) });
-  const jobsQuery = useQuery({ queryKey: ['company-jobs', companyId], queryFn: () => catalogService.listJobs({}), enabled: companyQuery.isSuccess });
+  const companyQuery = useQuery({ queryKey: queryKeys.company(companyId), queryFn: () => companiesService.getCompanyById(companyId) });
+  const jobsQuery = useQuery({ queryKey: queryKeys.companyJobs(companyId), queryFn: () => jobsService.getJobs({}), enabled: companyQuery.isSuccess });
   useDocumentTitle(companyQuery.data?.name || 'Company profile');
 
   if (companyQuery.isLoading) return <div className="page-container py-12"><Skeleton className="h-5 w-32" /><div className="surface-card mt-7 p-8"><Skeleton className="size-16" /><Skeleton className="mt-5 h-9 w-1/2" /><Skeleton className="mt-3 h-5 w-1/3" /></div></div>;
