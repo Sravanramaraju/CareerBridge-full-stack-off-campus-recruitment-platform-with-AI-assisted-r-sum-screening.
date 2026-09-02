@@ -16,6 +16,7 @@ export const useAppStore = create(
       recruiterJobStates: {},
       recruiterNotes: {},
       candidateStatuses: Object.fromEntries(recruiterCandidates.map((candidate) => [candidate.applicationId, candidate.status])),
+      candidateStatusHistory: Object.fromEntries(recruiterCandidates.map((candidate) => [candidate.applicationId, [{ status: candidate.status, changedAt: candidate.appliedAt }]])),
       companyProfile: {
         name: 'Northstar Labs',
         industry: 'Developer tools',
@@ -78,7 +79,16 @@ export const useAppStore = create(
             }
           : application),
       })),
-      updateCandidateStatus: (applicationId, status) => set((state) => ({ candidateStatuses: { ...state.candidateStatuses, [applicationId]: status } })),
+      updateCandidateStatus: (applicationId, status) => set((state) => {
+        if (state.candidateStatuses[applicationId] === status) return state;
+        return {
+          candidateStatuses: { ...state.candidateStatuses, [applicationId]: status },
+          candidateStatusHistory: {
+            ...state.candidateStatusHistory,
+            [applicationId]: [...(state.candidateStatusHistory[applicationId] || []), { status, changedAt: new Date().toISOString() }],
+          },
+        };
+      }),
       updateCompanyProfile: (updates) => set((state) => ({ companyProfile: { ...state.companyProfile, ...updates } })),
       markNotificationRead: (notificationId) => set((state) => ({ readNotificationIds: state.readNotificationIds.includes(notificationId) ? state.readNotificationIds : [...state.readNotificationIds, notificationId] })),
       markAllNotificationsRead: (notificationIds) => set((state) => ({ readNotificationIds: [...new Set([...state.readNotificationIds, ...notificationIds])] })),
@@ -112,6 +122,7 @@ export const useAppStore = create(
         recruiterJobStates: state.recruiterJobStates,
         recruiterNotes: state.recruiterNotes,
         candidateStatuses: state.candidateStatuses,
+        candidateStatusHistory: state.candidateStatusHistory,
         companyProfile: state.companyProfile,
         readNotificationIds: state.readNotificationIds,
         adminCompanyStates: state.adminCompanyStates,
