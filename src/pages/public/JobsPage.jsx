@@ -7,7 +7,8 @@ import { JobFilterPanel } from '@/src/components/jobs/JobFilterPanel';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { Pagination } from '@/src/components/ui/Pagination';
-import { catalogService } from '@/src/services/mockApi';
+import { jobsService } from '@/src/services/jobsService';
+import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
@@ -48,8 +49,8 @@ export function JobsPage() {
   }), [facetFilters, searchParams]);
 
   const jobsQuery = useQuery({
-    queryKey: ['jobs', filters],
-    queryFn: () => catalogService.listJobs(filters),
+    queryKey: queryKeys.jobs(filters),
+    queryFn: () => jobsService.getJobs(filters),
   });
 
   const sortedJobs = useMemo(() => {
