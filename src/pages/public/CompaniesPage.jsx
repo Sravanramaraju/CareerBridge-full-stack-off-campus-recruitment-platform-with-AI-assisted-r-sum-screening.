@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Building2, Search } from 'lucide-react';
 import { CompanyCard } from '@/src/components/companies/CompanyCard';
+import { CompanyFilters } from '@/src/components/companies/CompanyFilters';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { companiesService } from '@/src/services/companiesService';
 import { queryKeys } from '@/src/services/queryKeys';
@@ -10,12 +11,19 @@ import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 export function CompaniesPage() {
   useDocumentTitle('Explore companies');
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState({ industry: '', size: '', location: '', companyType: '' });
   const companiesQuery = useQuery({ queryKey: queryKeys.companies(), queryFn: companiesService.getCompanies });
   const filteredCompanies = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase();
-    if (!keyword) return companiesQuery.data || [];
-    return (companiesQuery.data || []).filter((company) => [company.name, company.industry, company.location].join(' ').toLocaleLowerCase().includes(keyword));
-  }, [companiesQuery.data, search]);
+    return (companiesQuery.data || []).filter((company) => {
+      const matchesSearch = !keyword || [company.name, company.industry, company.location].join(' ').toLocaleLowerCase().includes(keyword);
+      return matchesSearch
+        && (!filters.industry || company.industry === filters.industry)
+        && (!filters.size || company.size === filters.size)
+        && (!filters.location || company.location.startsWith(filters.location))
+        && (!filters.companyType || company.companyType === filters.companyType);
+    });
+  }, [companiesQuery.data, filters, search]);
 
   return (
     <div className="page-container py-10 sm:py-14">
@@ -33,6 +41,8 @@ export function CompaniesPage() {
           </label>
         </search>
       </header>
+
+      <div className="surface-card mt-6 p-4"><CompanyFilters filters={filters} onChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))} /></div>
 
       <section className="mt-9" aria-labelledby="company-results-title">
         <div className="flex items-center justify-between gap-4">
