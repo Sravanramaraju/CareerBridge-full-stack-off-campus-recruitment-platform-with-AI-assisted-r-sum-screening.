@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import { BriefcaseBusiness, MapPin, Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/src/components/ui/Button';
 
 export function JobSearchBar({ initialValues = {}, compact = false }) {
   const navigate = useNavigate();
+  const routeLocation = useLocation();
   const [keyword, setKeyword] = useState(initialValues.keyword || '');
-  const [location, setLocation] = useState(initialValues.location || '');
+  const [locationValue, setLocationValue] = useState(initialValues.location || '');
   const [experience, setExperience] = useState(initialValues.experience || '');
 
   function handleSubmit(event) {
     event.preventDefault();
-    const params = new URLSearchParams();
-    if (keyword.trim()) params.set('q', keyword.trim());
-    if (location.trim()) params.set('location', location.trim());
-    if (experience) params.set('experience', experience);
+    const params = routeLocation.pathname === '/jobs' ? new URLSearchParams(routeLocation.search) : new URLSearchParams();
+    if (keyword.trim()) params.set('q', keyword.trim()); else params.delete('q');
+    if (locationValue.trim()) params.set('location', locationValue.trim()); else params.delete('location');
+    if (experience) params.set('experience', experience); else params.delete('experience');
     void navigate(`/jobs${params.size ? `?${params.toString()}` : ''}`);
   }
 
@@ -38,8 +39,8 @@ export function JobSearchBar({ initialValues = {}, compact = false }) {
         <MapPin className="size-5 text-[var(--cb-text-muted)]" aria-hidden="true" />
         <span className="sr-only">City or remote</span>
         <input
-          value={location}
-          onChange={(event) => setLocation(event.target.value)}
+          value={locationValue}
+          onChange={(event) => setLocationValue(event.target.value)}
           className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-[var(--cb-text-muted)]"
           placeholder="City or remote"
         />
