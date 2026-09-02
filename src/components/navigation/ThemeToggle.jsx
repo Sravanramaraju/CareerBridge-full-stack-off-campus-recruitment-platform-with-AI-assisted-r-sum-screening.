@@ -1,5 +1,6 @@
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
+import { Tooltip } from '@/src/components/ui/Tooltip';
 import { useTheme } from '@/src/features/theme/ThemeProvider';
 
 export function ThemeToggle() {
@@ -7,15 +8,16 @@ export function ThemeToggle() {
   const isDark = theme === 'dark';
 
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="iconSm"
-      onClick={toggleTheme}
-      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-    >
-      {isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-    </Button>
+    <Tooltip label={`Switch to ${isDark ? 'light' : 'dark'} mode`}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="iconSm"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      >
+        {isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+      </Button>
+    </Tooltip>
   );
 }
