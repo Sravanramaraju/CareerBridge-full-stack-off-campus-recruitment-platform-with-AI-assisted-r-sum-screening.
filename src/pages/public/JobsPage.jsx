@@ -8,6 +8,8 @@ import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { SelectedFilterChips } from '@/src/components/jobs/SelectedFilterChips';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { Pagination } from '@/src/components/ui/Pagination';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/src/components/ui/Drawer';
+import { Button } from '@/src/components/ui/Button';
 import { jobsService } from '@/src/services/jobsService';
 import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -107,10 +109,15 @@ export function JobsPage() {
       </header>
       <div className="mt-7"><JobSearchBar compact initialValues={filters} /></div>
 
-      <details className="surface-card mt-5 p-4 lg:hidden">
-        <summary className="flex cursor-pointer list-none items-center justify-between font-semibold"><span className="inline-flex items-center gap-2"><SlidersHorizontal className="size-4" />Filters</span><span className="text-xs text-[var(--cb-primary)]">{selectedFilterCount} selected</span></summary>
-        <div className="mt-5">{filterContent}</div>
-      </details>
+      <div className="mt-5 lg:hidden">
+        <Drawer>
+          <DrawerTrigger render={<Button variant="secondary" className="w-full justify-between" />}>
+            <span className="inline-flex items-center gap-2"><SlidersHorizontal className="size-4" />Filters</span>
+            <span className="text-xs text-[var(--cb-primary)]">{selectedFilterCount} selected</span>
+          </DrawerTrigger>
+          <DrawerContent side="bottom" title="Filter jobs" description="Narrow opportunities by role requirements and work preferences.">{filterContent}</DrawerContent>
+        </Drawer>
+      </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[230px_minmax(0,1fr)]">
         <aside className="hidden lg:block" aria-label="Job filters">
