@@ -25,6 +25,7 @@ const ApplicationsPage = lazy(() => import('@/src/pages/applicant/ApplicationsPa
 const ApplicationDetailPage = lazy(() => import('@/src/pages/applicant/ApplicationDetailPage').then((module) => ({ default: module.ApplicationDetailPage })));
 const ProfilePage = lazy(() => import('@/src/pages/applicant/ProfilePage').then((module) => ({ default: module.ProfilePage })));
 const ApplicantSettingsPage = lazy(() => import('@/src/pages/applicant/ApplicantSettingsPage').then((module) => ({ default: module.ApplicantSettingsPage })));
+const ApplicantNotificationsPage = lazy(() => import('@/src/pages/applicant/ApplicantNotificationsPage').then((module) => ({ default: module.ApplicantNotificationsPage })));
 const RecruiterDashboardPage = lazy(() => import('@/src/pages/recruiter/RecruiterDashboardPage').then((module) => ({ default: module.RecruiterDashboardPage })));
 const RecruiterJobsPage = lazy(() => import('@/src/pages/recruiter/RecruiterJobsPage').then((module) => ({ default: module.RecruiterJobsPage })));
 const JobFormPage = lazy(() => import('@/src/pages/recruiter/JobFormPage').then((module) => ({ default: module.JobFormPage })));
@@ -65,6 +66,7 @@ export function App() {
         <Route path="applicant/applications" element={<ApplicationsPage />} />
         <Route path="applicant/applications/:applicationId" element={<ApplicationDetailPage />} />
         <Route path="applicant/profile" element={<ProfilePage />} />
+        <Route path="applicant/notifications" element={<ApplicantNotificationsPage />} />
         <Route path="applicant/settings" element={<ApplicantSettingsPage />} />
       </Route>
       <Route element={<RoleGuard allowedRole="recruiter"><RecruiterLayout /></RoleGuard>}>
