@@ -51,6 +51,7 @@ export function JobDetailPage() {
   const { jobId } = useParams();
   const [coverNote, setCoverNote] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [consent, setConsent] = useState(false);
   const { showToast } = useToast();
   const session = useAppStore((state) => state.session);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
@@ -154,10 +155,18 @@ export function JobDetailPage() {
               <ModalTrigger render={<Button size="lg" className="w-full" />}><Send />Apply now</ModalTrigger>
               <ModalContent title={`Apply for ${job.title}`} description={`Your CareerBridge profile will be shared with ${company.name}.`}>
                 <form onSubmit={handleApply}>
-                  <label htmlFor="cover-note" className="text-sm font-semibold">Short note <span className="font-normal text-[var(--cb-text-muted)]">(optional)</span></label>
+                  <fieldset>
+                    <legend className="text-sm font-semibold">Resume</legend>
+                    <label aria-label={`Use ${profile.resumeName}`} className="mt-2 flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--cb-primary)] bg-[var(--cb-primary-soft)] p-4">
+                      <input type="radio" name="resume" defaultChecked className="mt-0.5 accent-[var(--cb-primary)]" />
+                      <span><strong className="block text-sm">{profile.resumeName}</strong><span className="mt-1 block text-xs text-[var(--cb-text-muted)]">Default resume from your CareerBridge profile</span></span>
+                    </label>
+                  </fieldset>
+                  <label htmlFor="cover-note" className="mt-5 block text-sm font-semibold">Short note <span className="font-normal text-[var(--cb-text-muted)]">(optional)</span></label>
                   <TextArea id="cover-note" className="mt-2" value={coverNote} maxLength={500} onChange={(event) => setCoverNote(event.target.value)} placeholder="Share why this opportunity is relevant to you…" />
                   <p className="mt-1 text-right text-xs text-[var(--cb-text-muted)]">{coverNote.length}/500</p>
-                  <div className="mt-5 flex justify-end"><Button type="submit"><Send />Submit application</Button></div>
+                  <label className="mt-4 flex cursor-pointer items-start gap-3 text-xs leading-5 text-[var(--cb-text-secondary)]"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1 accent-[var(--cb-primary)]" />I confirm this profile and resume are accurate and may be shared with {company.name} for this application.</label>
+                  <div className="mt-5 flex justify-end"><Button type="submit" disabled={!consent}><Send />Submit application</Button></div>
                 </form>
               </ModalContent>
             </Modal>
