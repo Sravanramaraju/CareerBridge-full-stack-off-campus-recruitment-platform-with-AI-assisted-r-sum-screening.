@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, BadgeCheck, Building2, MapPin, UsersRound } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, Building2, CalendarDays, Globe2, MapPin, Sparkles, UsersRound } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { JobCard } from '@/src/components/jobs/JobCard';
 import { Badge } from '@/src/components/ui/Badge';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
+import { Tabs } from '@/src/components/ui/Tabs';
 import { companiesService } from '@/src/services/companiesService';
 import { jobsService } from '@/src/services/jobsService';
 import { queryKeys } from '@/src/services/queryKeys';
@@ -18,6 +20,7 @@ const values = [
 
 export function CompanyDetailPage() {
   const { companyId } = useParams();
+  const [activeTab, setActiveTab] = useState('overview');
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
   const companyQuery = useQuery({ queryKey: queryKeys.company(companyId), queryFn: () => companiesService.getCompanyById(companyId) });
@@ -49,27 +52,61 @@ export function CompanyDetailPage() {
         </div>
       </header>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="grid gap-6">
+      <Tabs
+        className="mt-6 border-b border-[var(--cb-divider)]"
+        label={`${company.name} profile sections`}
+        value={activeTab}
+        onValueChange={setActiveTab}
+        items={[
+          { value: 'overview', label: 'Overview' },
+          { value: 'jobs', label: 'Open jobs', count: companyJobs.length },
+          { value: 'culture', label: 'Culture & benefits' },
+        ]}
+      />
+
+      {activeTab === 'overview' && (
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <article className="surface-card p-6 sm:p-8">
             <h2 className="font-heading text-xl font-bold">About the company</h2>
             <p className="mt-3 text-sm leading-7 text-[var(--cb-text-secondary)]">{company.description} This fictional company profile demonstrates how CareerBridge gives candidates useful context before they commit time to an application.</p>
           </article>
-          <section aria-labelledby="company-jobs-title">
-            <h2 id="company-jobs-title" className="font-heading text-xl font-bold">Open opportunities</h2>
-            {jobsQuery.isLoading && <div className="mt-4 grid gap-4"><Skeleton className="h-64" /><Skeleton className="h-64" /></div>}
-            {jobsQuery.isSuccess && companyJobs.length === 0 && <EmptyState className="mt-4" title="No open roles right now" description="Follow the company and check back when new opportunities are published." />}
-            {jobsQuery.isSuccess && companyJobs.length > 0 && <div className="mt-4 grid gap-4">{companyJobs.map((job) => <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}</div>}
-          </section>
+          <aside className="surface-card h-fit p-6">
+            <h2 className="font-heading text-lg font-bold">Company facts</h2>
+            <dl className="mt-5 grid gap-4 text-sm">
+              <div className="flex items-center gap-3"><CalendarDays className="size-4 text-[var(--cb-primary)]" /><div><dt className="text-xs text-[var(--cb-text-muted)]">Founded</dt><dd className="font-semibold">{company.founded}</dd></div></div>
+              <div className="flex items-center gap-3"><Building2 className="size-4 text-[var(--cb-primary)]" /><div><dt className="text-xs text-[var(--cb-text-muted)]">Company type</dt><dd className="font-semibold">{company.companyType}</dd></div></div>
+              <div className="flex items-center gap-3"><Globe2 className="size-4 text-[var(--cb-primary)]" /><div><dt className="text-xs text-[var(--cb-text-muted)]">Website</dt><dd className="font-semibold">{company.website}</dd></div></div>
+            </dl>
+          </aside>
         </div>
-        <aside className="surface-card h-fit p-6 lg:sticky lg:top-24">
-          <h2 className="font-heading text-lg font-bold">How this team works</h2>
-          <div className="mt-5 grid gap-5">
-            {values.map(([title, copy]) => <div key={title}><h3 className="text-sm font-bold">{title}</h3><p className="mt-1 text-xs leading-5 text-[var(--cb-text-secondary)]">{copy}</p></div>)}
-          </div>
-          <p className="mt-6 border-t border-[var(--cb-divider)] pt-5 text-xs leading-5 text-[var(--cb-text-muted)]">Company information is fictional and created for this portfolio demonstration.</p>
-        </aside>
-      </div>
+      )}
+
+      {activeTab === 'jobs' && (
+        <section className="mt-6" aria-labelledby="company-jobs-title">
+          <h2 id="company-jobs-title" className="font-heading text-xl font-bold">Open opportunities</h2>
+          {jobsQuery.isLoading && <div className="mt-4 grid gap-4"><Skeleton className="h-64" /><Skeleton className="h-64" /></div>}
+          {jobsQuery.isSuccess && companyJobs.length === 0 && <EmptyState className="mt-4" title="No open roles right now" description="Follow the company and check back when new opportunities are published." />}
+          {jobsQuery.isSuccess && companyJobs.length > 0 && <div className="mt-4 grid gap-4 lg:grid-cols-2">{companyJobs.map((job) => <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}</div>}
+        </section>
+      )}
+
+      {activeTab === 'culture' && (
+        <section className="mt-6 grid gap-6 lg:grid-cols-2" aria-labelledby="company-culture-title">
+          <article className="surface-card p-6 sm:p-8">
+            <h2 id="company-culture-title" className="font-heading text-xl font-bold">How this team works</h2>
+            <div className="mt-6 grid gap-5">
+              {values.map(([title, copy]) => <div key={title}><h3 className="text-sm font-bold">{title}</h3><p className="mt-1 text-xs leading-5 text-[var(--cb-text-secondary)]">{copy}</p></div>)}
+            </div>
+          </article>
+          <article className="surface-card p-6 sm:p-8">
+            <h2 className="font-heading text-xl font-bold">Benefits</h2>
+            <ul className="mt-6 grid gap-3">
+              {company.benefits.map((benefit) => <li key={benefit} className="flex items-center gap-3 rounded-xl bg-[var(--cb-bg-subtle)] p-3 text-sm font-semibold"><Sparkles className="size-4 text-[var(--cb-emerald)]" />{benefit}</li>)}
+            </ul>
+            <p className="mt-6 border-t border-[var(--cb-divider)] pt-5 text-xs leading-5 text-[var(--cb-text-muted)]">Company information is fictional and created for this portfolio demonstration.</p>
+          </article>
+        </section>
+      )}
     </div>
   );
 }
