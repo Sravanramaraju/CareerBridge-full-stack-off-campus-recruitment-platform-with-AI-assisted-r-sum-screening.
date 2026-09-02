@@ -1,13 +1,11 @@
-import { ArrowLeft, Check, Clock3, FileText, Mail, X } from 'lucide-react';
+import { ArrowLeft, Clock3, FileText, Mail } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { Badge } from '@/src/components/ui/Badge';
+import { ApplicationStatusBadge } from '@/src/components/applications/ApplicationStatusBadge';
+import { ApplicationTimeline } from '@/src/components/applications/ApplicationTimeline';
 import { buttonVariants } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/Feedback';
 import { getCompanyById, jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
-import { cn } from '@/src/lib/utils';
-
-const progressStages = ['Applied', 'Screening', 'Assessment', 'Interview', 'Offer'];
 
 export function ApplicationDetailPage() {
   const { applicationId } = useParams();
@@ -16,8 +14,6 @@ export function ApplicationDetailPage() {
 
   const job = jobs.find((item) => item.id === application.jobId);
   const company = getCompanyById(job.companyId);
-  const isRejected = application.status === 'Not selected';
-  const currentIndex = isRejected ? Math.max(0, progressStages.indexOf(application.timeline.at(-2)?.status)) : progressStages.indexOf(application.status);
 
   return (
     <div>
@@ -25,7 +21,7 @@ export function ApplicationDetailPage() {
       <header className="surface-card mt-5 p-6 sm:p-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex gap-4"><span className="grid size-14 shrink-0 place-items-center rounded-2xl text-sm font-extrabold text-white" style={{ backgroundColor: company.accent }}>{company.initials}</span><div><p className="text-sm font-semibold text-[var(--cb-text-secondary)]">{company.name}</p><h1 className="mt-1 font-heading text-2xl font-extrabold tracking-[-0.03em]">{job.title}</h1><p className="mt-2 text-xs text-[var(--cb-text-muted)]">Application ID {application.id}</p></div></div>
-          <Badge variant={isRejected ? 'danger' : application.status === 'Offer' || application.status === 'Interview' ? 'success' : 'primary'} className="w-fit">{application.status}</Badge>
+          <ApplicationStatusBadge status={application.status} className="w-fit" />
         </div>
       </header>
 
@@ -33,21 +29,7 @@ export function ApplicationDetailPage() {
         <div className="grid gap-6">
           <section className="surface-card p-6 sm:p-8" aria-labelledby="timeline-title">
             <h2 id="timeline-title" className="font-heading text-xl font-bold">Application timeline</h2>
-            <ol className="mt-6">
-              {progressStages.map((stage, index) => {
-                const event = application.timeline.find((item) => item.status === stage);
-                const completed = index < currentIndex || (application.status === 'Offer' && index <= currentIndex);
-                const current = !isRejected && index === currentIndex && application.status !== 'Offer';
-                return (
-                  <li key={stage} className="relative flex gap-4 pb-7 last:pb-0">
-                    {index < progressStages.length - 1 && <span className={cn('absolute left-[15px] top-8 h-[calc(100%-16px)] w-0.5', completed ? 'bg-[var(--cb-emerald)]' : 'bg-[var(--cb-border)]')} />}
-                    <span className={cn('relative z-10 grid size-8 shrink-0 place-items-center rounded-full border-2', completed ? 'border-[var(--cb-emerald)] bg-[var(--cb-emerald)] text-white' : current ? 'border-[var(--cb-primary)] bg-[var(--cb-primary)] text-white' : 'border-[var(--cb-border-strong)] bg-[var(--cb-surface)] text-[var(--cb-text-muted)]')}>{completed || current ? <Check className="size-4" /> : <span className="size-2 rounded-full bg-current" />}</span>
-                    <div><h3 className={cn('text-sm font-bold', !event && !current && 'text-[var(--cb-text-muted)]')}>{stage === 'Offer' ? 'Offer / final outcome' : stage}</h3><p className="mt-1 text-xs leading-5 text-[var(--cb-text-secondary)]">{event ? event.note : current ? 'This is the current stage.' : 'No update yet.'}</p>{event && <p className="mt-1 text-[10px] text-[var(--cb-text-muted)]">{new Date(event.date).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</p>}</div>
-                  </li>
-                );
-              })}
-              {isRejected && <li className="mt-6 flex gap-4 border-t border-[var(--cb-divider)] pt-6"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--cb-danger)] text-white"><X className="size-4" /></span><div><h3 className="text-sm font-bold text-[var(--cb-danger)]">Not selected</h3><p className="mt-1 text-xs leading-5 text-[var(--cb-text-secondary)]">{application.timeline.at(-1)?.note}</p></div></li>}
-            </ol>
+            <ApplicationTimeline application={application} />
           </section>
 
           <section className="surface-card p-6 sm:p-8">
