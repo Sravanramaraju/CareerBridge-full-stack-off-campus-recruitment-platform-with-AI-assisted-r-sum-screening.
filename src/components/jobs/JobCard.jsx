@@ -31,7 +31,7 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
           <Link to={`/jobs/${job.id}`} className="font-heading text-lg font-bold tracking-[-0.02em] hover:text-[var(--cb-primary)]">
             {job.title}
           </Link>
-          <p className="mt-1 text-sm font-medium text-[var(--cb-text-secondary)]">{company.name}</p>
+          <Link to={`/companies/${company.id}`} className="mt-1 inline-block text-sm font-medium text-[var(--cb-text-secondary)] hover:text-[var(--cb-primary)] hover:underline">{company.name}</Link>
         </div>
         <Button
           type="button"
