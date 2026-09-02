@@ -1,14 +1,7 @@
 import { companies, getCompanyById, jobs } from '@/src/data/mockData';
 import { DEMO_ACCOUNTS } from '@/src/domain/constants';
 import { useAppStore } from '@/src/store/useAppStore';
-
-const NETWORK_DELAY = 220;
-
-function respond(value, delay = NETWORK_DELAY) {
-  return new Promise((resolve) => {
-    window.setTimeout(() => resolve(value), delay);
-  });
-}
+import { mockResponse } from '@/src/services/mockTransport';
 
 function normalise(value = '') {
   return value.trim().toLocaleLowerCase();
@@ -70,19 +63,19 @@ export const catalogService = {
         && matchesDate;
     });
 
-    return respond(result);
+    return mockResponse(result);
   },
 
   async getJob(jobId) {
-    return respond(availableJobs().find((job) => job.id === jobId) || null);
+    return mockResponse(availableJobs().find((job) => job.id === jobId) || null);
   },
 
   async listCompanies() {
-    return respond(companies);
+    return mockResponse(companies);
   },
 
   async getCompany(companyId) {
-    return respond(companies.find((company) => company.id === companyId) || null);
+    return mockResponse(companies.find((company) => company.id === companyId) || null);
   },
 };
 
@@ -92,10 +85,10 @@ export const authService = {
       (item) => item.email.toLocaleLowerCase() === email.trim().toLocaleLowerCase() && item.password === password,
     );
     if (!account) {
-      await respond(null, 360);
+      await mockResponse(null, 360);
       throw new Error('Email or password is incorrect. Try one of the demo accounts.');
     }
-    return respond({
+    return mockResponse({
       id: `demo-${account.role}`,
       email: account.email,
       role: account.role,
