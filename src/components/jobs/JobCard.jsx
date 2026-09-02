@@ -42,7 +42,8 @@ export function JobCard({ job, onSave, isSaved = false, match }) {
       <div className="mt-4 flex flex-wrap gap-2">
         <Badge variant="primary">{job.workMode}</Badge>
         <Badge>{job.employmentType}</Badge>
-        {job.skills.slice(0, 2).map((skill) => <Badge key={skill}>{skill}</Badge>)}
+        {job.skills.slice(0, 3).map((skill) => <Badge key={skill}>{skill}</Badge>)}
+        {job.skills.length > 3 && <Badge>+{job.skills.length - 3} more</Badge>}
       </div>
       <div className="mt-auto flex items-center justify-between border-t border-[var(--cb-divider)] pt-4 text-xs text-[var(--cb-text-muted)]">
         <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" aria-hidden="true" />{formatPostedDate(job.postedAt)}</span>
