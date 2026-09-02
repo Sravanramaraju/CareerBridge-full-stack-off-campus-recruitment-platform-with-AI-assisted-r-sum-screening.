@@ -14,6 +14,7 @@ import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 const loginSchema = z.object({
   email: z.email('Enter a valid email address.'),
   password: z.string().min(8, 'Password must be at least 8 characters.'),
+  rememberMe: z.boolean(),
 });
 
 const roleHome = { applicant: '/applicant/dashboard', recruiter: '/recruiter/dashboard', admin: '/admin/dashboard' };
@@ -27,7 +28,7 @@ export function LoginPage() {
   const setSession = useAppStore((state) => state.setSession);
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: '', password: '', rememberMe: true },
   });
 
   async function onSubmit(values) {
@@ -62,7 +63,10 @@ export function LoginPage() {
             <button type="button" onClick={() => setShowPassword((current) => !current)} className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-[var(--cb-text-muted)] hover:bg-[var(--cb-bg-subtle)]" aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>
           </div>
         )}</FormField>
-        <div className="-mt-2 flex justify-end"><Link to="/forgot-password" className="text-xs font-bold text-[var(--cb-primary)] hover:underline">Forgot password?</Link></div>
+        <div className="-mt-2 flex items-center justify-between gap-4">
+          <label className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--cb-text-secondary)]"><input type="checkbox" className="size-4 accent-[var(--cb-primary)]" {...register('rememberMe')} />Remember me</label>
+          <Link to="/forgot-password" className="text-xs font-bold text-[var(--cb-primary)] hover:underline">Forgot password?</Link>
+        </div>
         {serverError && <p role="alert" className="rounded-xl border border-[var(--cb-danger)] bg-[var(--cb-danger-soft)] p-3 text-sm text-[var(--cb-danger)]">{serverError}</p>}
         <Button type="submit" size="lg" disabled={isSubmitting}>{isSubmitting && <LoaderCircle className="animate-spin" />} {isSubmitting ? 'Logging in…' : 'Log in'}</Button>
       </form>
