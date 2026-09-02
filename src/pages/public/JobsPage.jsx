@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { JobCard } from '@/src/components/jobs/JobCard';
 import { JobFilterPanel } from '@/src/components/jobs/JobFilterPanel';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
+import { SelectedFilterChips } from '@/src/components/jobs/SelectedFilterChips';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { Pagination } from '@/src/components/ui/Pagination';
 import { jobsService } from '@/src/services/jobsService';
@@ -119,6 +120,7 @@ export function JobsPage() {
         </aside>
 
         <section aria-labelledby="job-results-title">
+          <SelectedFilterChips filters={facetFilters} onRemove={toggleFilter} />
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 id="job-results-title" className="font-heading text-xl font-bold">Job results</h2>
