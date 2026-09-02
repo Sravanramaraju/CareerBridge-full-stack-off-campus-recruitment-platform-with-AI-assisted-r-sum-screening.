@@ -42,7 +42,7 @@ export function CompaniesPage() {
         </search>
       </header>
 
-      <div className="surface-card mt-6 p-4"><CompanyFilters filters={filters} onChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))} /></div>
+      <div className="surface-card mt-6 p-4"><CompanyFilters filters={filters} onChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))} onClear={() => setFilters({ industry: '', size: '', location: '', companyType: '' })} /></div>
 
       <section className="mt-9" aria-labelledby="company-results-title">
         <div className="flex items-center justify-between gap-4">
@@ -55,7 +55,7 @@ export function CompaniesPage() {
           </div>
         )}
         {companiesQuery.isError && <EmptyState className="mt-5" icon={Building2} title="Companies could not be loaded" description="Please try again in a moment." actionLabel="Try again" onAction={() => companiesQuery.refetch()} />}
-        {companiesQuery.isSuccess && filteredCompanies.length === 0 && <EmptyState className="mt-5" icon={Building2} title="No companies found" description="Try a different company, industry, or location." actionLabel="Clear search" onAction={() => setSearch('')} />}
+        {companiesQuery.isSuccess && filteredCompanies.length === 0 && <EmptyState className="mt-5" icon={Building2} title="No companies found" description="Try a different company, industry, or location." actionLabel="Clear all filters" onAction={() => { setSearch(''); setFilters({ industry: '', size: '', location: '', companyType: '' }); }} />}
         {companiesQuery.isSuccess && filteredCompanies.length > 0 && (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{filteredCompanies.map((company) => <CompanyCard key={company.id} company={company} />)}</div>
         )}
