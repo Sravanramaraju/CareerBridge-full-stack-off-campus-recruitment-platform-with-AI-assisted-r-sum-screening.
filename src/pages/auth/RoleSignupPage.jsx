@@ -9,19 +9,24 @@ import { FormField, Input } from '@/src/components/ui/Input';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
-const signupSchema = z.object({
+function createSignupSchema(accountType) {
+  return z.object({
   name: z.string().min(2, 'Enter your full name.'),
+  companyName: z.string(),
   email: z.email('Enter a valid email address.'),
   password: z.string().min(8, 'Use at least 8 characters.'),
   confirmPassword: z.string(),
-}).refine((values) => values.password === values.confirmPassword, { message: 'Passwords do not match.', path: ['confirmPassword'] });
+  })
+    .refine((values) => values.password === values.confirmPassword, { message: 'Passwords do not match.', path: ['confirmPassword'] })
+    .refine((values) => accountType !== 'recruiter' || values.companyName.trim().length >= 2, { message: 'Enter your company name.', path: ['companyName'] });
+}
 
 export function RoleSignupPage({ accountType }) {
   useDocumentTitle(accountType === 'recruiter' ? 'Recruiter sign up' : 'Applicant sign up');
   const [complete, setComplete] = useState(false);
   const navigate = useNavigate();
   const setSession = useAppStore((state) => state.setSession);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({ resolver: zodResolver(signupSchema), defaultValues: { name: '', email: '', password: '', confirmPassword: '' } });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({ resolver: zodResolver(createSignupSchema(accountType)), defaultValues: { name: '', companyName: '', email: '', password: '', confirmPassword: '' } });
   const isRecruiter = accountType === 'recruiter';
 
   async function onSubmit(values) {
@@ -40,6 +45,7 @@ export function RoleSignupPage({ accountType }) {
       <p className="mt-2 text-sm text-[var(--cb-text-secondary)]">This creates a local demo account for the portfolio experience.</p>
       <form onSubmit={handleSubmit(onSubmit)} className="mt-7 grid gap-4" noValidate>
         <FormField label="Full name" error={errors.name?.message} required>{(field) => <Input {...field} autoComplete="name" placeholder="Your full name" {...register('name')} />}</FormField>
+        {isRecruiter && <FormField label="Company name" error={errors.companyName?.message} required>{(field) => <Input {...field} autoComplete="organization" placeholder="Your organization" {...register('companyName')} />}</FormField>}
         <FormField label="Email address" error={errors.email?.message} required>{(field) => <Input {...field} type="email" autoComplete="email" placeholder="you@example.com" {...register('email')} />}</FormField>
         <FormField label="Password" error={errors.password?.message} required>{(field) => <Input {...field} type="password" autoComplete="new-password" placeholder="At least 8 characters" {...register('password')} />}</FormField>
         <FormField label="Confirm password" error={errors.confirmPassword?.message} required>{(field) => <Input {...field} type="password" autoComplete="new-password" placeholder="Repeat your password" {...register('confirmPassword')} />}</FormField>
