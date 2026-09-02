@@ -7,8 +7,10 @@ import { EmptyState } from '@/src/components/ui/Feedback';
 import { Modal, ModalContent } from '@/src/components/ui/Modal';
 import { adminUsers } from '@/src/data/adminData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function AdminUsersPage() {
+  useDocumentTitle('User administration');
   const [search, setSearch] = useState('');
   const [role, setRole] = useState('All');
   const [accountState, setAccountState] = useState('All');

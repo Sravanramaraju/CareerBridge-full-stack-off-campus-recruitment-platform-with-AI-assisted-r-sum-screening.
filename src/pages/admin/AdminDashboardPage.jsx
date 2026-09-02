@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { adminCompanyReviews, adminJobReviews, adminUsers } from '@/src/data/adminData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function AdminDashboardPage() {
+  useDocumentTitle('Admin dashboard');
   const companyStates = useAppStore((state) => state.adminCompanyStates);
   const jobStates = useAppStore((state) => state.adminJobStates);
   const userStates = useAppStore((state) => state.adminUserStates);

@@ -5,6 +5,7 @@ import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/Feedback';
 import { adminCompanyReviews } from '@/src/data/adminData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 function statusVariant(status) {
   if (status === 'Verified') return 'success';
@@ -13,6 +14,7 @@ function statusVariant(status) {
 }
 
 export function AdminCompaniesPage() {
+  useDocumentTitle('Company verification');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
   const states = useAppStore((state) => state.adminCompanyStates);

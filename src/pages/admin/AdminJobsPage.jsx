@@ -6,8 +6,10 @@ import { EmptyState } from '@/src/components/ui/Feedback';
 import { Modal, ModalContent } from '@/src/components/ui/Modal';
 import { adminJobReviews } from '@/src/data/adminData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function AdminJobsPage() {
+  useDocumentTitle('Job moderation');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
   const [selectedJob, setSelectedJob] = useState(null);
