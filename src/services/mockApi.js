@@ -37,6 +37,9 @@ export const catalogService = {
     const selectedModes = filters.modes || [];
     const selectedIndustries = filters.industries || [];
     const selectedSkills = filters.skills || [];
+    const selectedExperiences = filters.experiences || [];
+    const selectedLocations = filters.locations || [];
+    const selectedCompanyTypes = filters.companyTypes || [];
     const dateCutoff = filters.datePosted
       ? Date.now() - Number(filters.datePosted) * 86400000
       : null;
@@ -47,17 +50,23 @@ export const catalogService = {
       const matchesKeyword = !keyword || searchable.includes(keyword);
       const matchesLocation = !location || normalise(job.location).includes(location) || normalise(job.workMode).includes(location);
       const matchesExperience = !filters.experience || job.experience === filters.experience;
+      const matchesExperienceFacet = !selectedExperiences.length || selectedExperiences.includes(job.experience);
+      const matchesLocationFacet = !selectedLocations.length || selectedLocations.some((selected) => job.location.includes(selected));
       const matchesType = !selectedTypes.length || selectedTypes.includes(job.employmentType);
       const matchesMode = !selectedModes.length || selectedModes.includes(job.workMode);
       const matchesIndustry = !selectedIndustries.length || selectedIndustries.includes(company?.industry);
+      const matchesCompanyType = !selectedCompanyTypes.length || selectedCompanyTypes.includes(company?.companyType);
       const matchesSkills = !selectedSkills.length || selectedSkills.some((skill) => job.skills.includes(skill));
       const matchesDate = !dateCutoff || new Date(job.postedAt).getTime() >= dateCutoff;
       return matchesKeyword
         && matchesLocation
         && matchesExperience
+        && matchesExperienceFacet
+        && matchesLocationFacet
         && matchesType
         && matchesMode
         && matchesIndustry
+        && matchesCompanyType
         && matchesSkills
         && matchesSalaryBand(job, filters.salaryBands)
         && matchesDate;
