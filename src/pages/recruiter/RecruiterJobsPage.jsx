@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Archive, BriefcaseBusiness, Edit3, Eye, FilePlus2, Search, Trash2, UsersRound } from 'lucide-react';
+import { Archive, BriefcaseBusiness, Edit3, Eye, FilePlus2, RotateCcw, Search, Trash2, UsersRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { buttonVariants, Button } from '@/src/components/ui/Button';
@@ -45,7 +45,7 @@ export function RecruiterJobsPage() {
   function confirmAction() {
     if (!selectedAction) return;
     if (selectedAction.type === 'delete') deleteRecruiterDraft(selectedAction.job.id);
-    else setRecruiterJobState(selectedAction.job.id, 'Closed');
+    else setRecruiterJobState(selectedAction.job.id, selectedAction.type === 'reopen' ? 'Published' : 'Closed');
     setSelectedAction(null);
   }
 
@@ -77,6 +77,7 @@ export function RecruiterJobsPage() {
                 <Link to={`/recruiter/jobs/${job.id}/edit`} className="rounded-lg p-2 text-[var(--cb-text-muted)] hover:bg-[var(--cb-bg-subtle)] hover:text-[var(--cb-primary)]" aria-label={`Edit ${job.title}`}><Edit3 className="size-4" /></Link>
                 {job.status === 'Published' && <Link to={`/recruiter/jobs/${job.id}/applicants`} className="rounded-lg p-2 text-[var(--cb-text-muted)] hover:bg-[var(--cb-bg-subtle)] hover:text-[var(--cb-primary)]" aria-label={`View applicants for ${job.title}`}><UsersRound className="size-4" /></Link>}
                 {job.status === 'Published' && <Button variant="ghost" size="iconSm" onClick={() => setSelectedAction({ type: 'close', job })} aria-label={`Close ${job.title}`}><Archive /></Button>}
+                {job.status === 'Closed' && <Button variant="ghost" size="iconSm" onClick={() => setSelectedAction({ type: 'reopen', job })} aria-label={`Reopen ${job.title}`}><RotateCcw /></Button>}
                 {job.status === 'Draft' && <Button variant="dangerSoft" size="iconSm" onClick={() => setSelectedAction({ type: 'delete', job })} aria-label={`Delete ${job.title}`}><Trash2 /></Button>}
               </div>
             </article>
@@ -84,7 +85,7 @@ export function RecruiterJobsPage() {
         </div>
       )}
 
-      <Modal open={Boolean(selectedAction)} onOpenChange={(open) => !open && setSelectedAction(null)}><ModalContent title={selectedAction?.type === 'delete' ? 'Delete this draft?' : 'Close this job?'} description={selectedAction?.type === 'delete' ? 'This locally saved draft will be removed and cannot be recovered.' : 'Candidates will no longer see this role as active. Its hiring history will remain available.'}><div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setSelectedAction(null)}>Cancel</Button><Button variant="danger" onClick={confirmAction}>{selectedAction?.type === 'delete' ? <Trash2 /> : <Archive />}{selectedAction?.type === 'delete' ? 'Delete draft' : 'Close job'}</Button></div></ModalContent></Modal>
+      <Modal open={Boolean(selectedAction)} onOpenChange={(open) => !open && setSelectedAction(null)}><ModalContent title={selectedAction?.type === 'delete' ? 'Delete this draft?' : selectedAction?.type === 'reopen' ? 'Reopen this job?' : 'Close this job?'} description={selectedAction?.type === 'delete' ? 'This locally saved draft will be removed and cannot be recovered.' : selectedAction?.type === 'reopen' ? 'The role will return to the active list and become visible to candidates.' : 'Candidates will no longer see this role as active. Its hiring history will remain available.'}><div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setSelectedAction(null)}>Cancel</Button><Button variant={selectedAction?.type === 'reopen' ? 'primary' : 'danger'} onClick={confirmAction}>{selectedAction?.type === 'delete' ? <Trash2 /> : selectedAction?.type === 'reopen' ? <RotateCcw /> : <Archive />}{selectedAction?.type === 'delete' ? 'Delete draft' : selectedAction?.type === 'reopen' ? 'Reopen job' : 'Close job'}</Button></div></ModalContent></Modal>
     </div>
   );
 }
