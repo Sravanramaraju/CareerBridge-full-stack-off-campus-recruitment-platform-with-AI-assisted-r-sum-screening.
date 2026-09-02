@@ -8,12 +8,14 @@ import { EmptyState, ProgressBar } from '@/src/components/ui/Feedback';
 import { getCompanyById, jobs, recruiterCandidates } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
+import { useToast } from '@/src/components/feedback/ToastProvider';
 
 const statusOptions = ['Applied', 'Under Review', 'Shortlisted', 'Interview', 'Offered', 'Rejected'];
 
 export function CandidatePipelinePage() {
   const { jobId } = useParams();
   useDocumentTitle('Candidate pipeline');
+  const { showToast } = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [minimumMatch, setMinimumMatch] = useState('0');
@@ -39,6 +41,11 @@ export function CandidatePipelinePage() {
   if (!job) return <EmptyState title="Job not found" description="This role may have been removed from your local hiring workspace." />;
   const company = getCompanyById(job.companyId);
   const totalCandidates = recruiterCandidates.filter((candidate) => candidate.jobId === jobId).length;
+
+  function changeCandidateStatus(candidate, status) {
+    updateCandidateStatus(candidate.applicationId, status);
+    showToast(`${candidate.name} moved to ${status}.`);
+  }
 
   return (
     <div>
@@ -69,7 +76,7 @@ export function CandidatePipelinePage() {
                 <div className="flex flex-wrap gap-1">{candidate.skills.slice(0, 2).map((skill) => <Badge key={skill} className="text-[10px]">{skill}</Badge>)}{candidate.skills.length > 2 && <span className="text-[10px] text-[var(--cb-text-muted)]">+{candidate.skills.length - 2}</span>}</div>
                 <span className="truncate text-xs text-[var(--cb-text-secondary)]">{candidate.location}</span>
                 <span className="text-xs text-[var(--cb-text-secondary)]">{new Date(candidate.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
-                <select aria-label={`Status for ${candidate.name}`} value={currentStatus} onChange={(event) => updateCandidateStatus(candidate.applicationId, event.target.value)} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-2 text-xs font-semibold outline-none focus:border-[var(--cb-primary)]">{statusOptions.map((status) => <option key={status}>{status}</option>)}</select>
+                <select aria-label={`Status for ${candidate.name}`} value={currentStatus} onChange={(event) => changeCandidateStatus(candidate, event.target.value)} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-2 text-xs font-semibold outline-none focus:border-[var(--cb-primary)]">{statusOptions.map((status) => <option key={status}>{status}</option>)}</select>
                 <Link to={`/recruiter/candidates/${candidate.applicationId}`} className="text-xs font-bold text-[var(--cb-primary)] hover:underline">Review</Link>
               </article>
             ); })}</div>
