@@ -12,6 +12,7 @@ import { EMPLOYMENT_TYPES, WORK_MODES } from '@/src/domain/constants';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
+import { useToast } from '@/src/components/feedback/ToastProvider';
 
 const jobSchema = z.object({
   title: z.string().min(3, 'Enter a clear job title.'),
@@ -52,6 +53,7 @@ export function JobFormPage() {
   const { jobId } = useParams();
   useDocumentTitle(jobId ? 'Edit job' : 'Post a job');
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const recruiterDrafts = useAppStore((state) => state.recruiterDrafts);
   const saveRecruiterDraft = useAppStore((state) => state.saveRecruiterDraft);
   const existing = recruiterDrafts.find((item) => item.id === jobId) || jobs.find((item) => item.id === jobId);
@@ -89,12 +91,14 @@ export function JobFormPage() {
 
   function saveDraft() {
     saveRecruiterDraft(normaliseJob(getValues(), 'Draft'));
+    showToast('Draft saved to your hiring workspace.');
     void navigate('/recruiter/jobs');
   }
 
   async function publish(formValues) {
     await new Promise((resolve) => window.setTimeout(resolve, 350));
     saveRecruiterDraft(normaliseJob(formValues, 'Published'));
+    showToast(jobId ? 'Job changes published.' : 'Job published successfully.');
     void navigate('/recruiter/jobs');
   }
 
