@@ -81,7 +81,11 @@ export function JobDetailPage() {
 
   function handleApply(event) {
     event.preventDefault();
-    submitApplication(job.id, coverNote.trim());
+    const createdApplication = submitApplication(job.id, coverNote.trim());
+    if (!createdApplication) {
+      showToast('You already applied to this role.', { tone: 'error' });
+      return;
+    }
     setModalOpen(false);
     showToast('Application submitted. You can now track it from your dashboard.');
   }
