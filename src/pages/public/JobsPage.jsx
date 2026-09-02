@@ -143,7 +143,7 @@ export function JobsPage() {
           {jobsQuery.isSuccess && sortedJobs.length === 0 && <EmptyState title="No roles match these filters" description="Try a broader keyword, location, or remove one of your filters." actionLabel="Clear filters" onAction={clearFilters} />}
           {jobsQuery.isSuccess && sortedJobs.length > 0 && (
             <div className="grid gap-4 xl:grid-cols-2">
-              {visibleJobs.map((job) => <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
+              {visibleJobs.map((job) => <JobCard key={job.id} job={job} match={session?.role === 'applicant' ? matchService.scoreJob(job, profile).overall : undefined} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
             </div>
           )}
           {jobsQuery.isSuccess && <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} />}
