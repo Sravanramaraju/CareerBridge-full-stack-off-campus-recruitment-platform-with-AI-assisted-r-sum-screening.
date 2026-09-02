@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowLeft, Search, SlidersHorizontal, UserRoundSearch } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Avatar } from '@/src/components/ui/Avatar';
+import { CandidateMatchDialog } from '@/src/components/candidates/CandidateMatchDialog';
 import { Badge } from '@/src/components/ui/Badge';
 import { EmptyState, ProgressBar } from '@/src/components/ui/Feedback';
 import { getCompanyById, jobs, recruiterCandidates } from '@/src/data/mockData';
@@ -18,6 +19,7 @@ export function CandidatePipelinePage() {
   const [minimumMatch, setMinimumMatch] = useState('0');
   const [experience, setExperience] = useState('');
   const [location, setLocation] = useState('');
+  const [matchCandidate, setMatchCandidate] = useState(null);
   const recruiterDrafts = useAppStore((state) => state.recruiterDrafts);
   const statuses = useAppStore((state) => state.candidateStatuses);
   const updateCandidateStatus = useAppStore((state) => state.updateCandidateStatus);
@@ -62,7 +64,7 @@ export function CandidatePipelinePage() {
             <div className="divide-y divide-[var(--cb-divider)]">{candidates.map((candidate) => { const currentStatus = statuses[candidate.applicationId] || candidate.status; return (
               <article key={candidate.applicationId} className="grid grid-cols-[1.3fr_110px_90px_1fr_90px_90px_150px_70px] items-center gap-3 px-5 py-4 hover:bg-[var(--cb-bg-subtle)]">
                 <div className="flex min-w-0 items-center gap-3"><Avatar name={candidate.name} size="sm" /><div className="min-w-0"><Link to={`/recruiter/candidates/${candidate.applicationId}`} className="block truncate text-sm font-bold hover:text-[var(--cb-primary)]">{candidate.name}</Link><p className="truncate text-[10px] text-[var(--cb-text-muted)]">{candidate.headline}</p></div></div>
-                <div><div className="flex items-center justify-between text-xs font-bold text-[var(--cb-emerald)]"><span>{candidate.match}%</span></div><ProgressBar value={candidate.match} className="mt-1" /></div>
+                <button type="button" onClick={() => setMatchCandidate(candidate)} className="rounded-lg p-1 text-left hover:bg-[var(--cb-emerald-soft)]" aria-label={`Explain ${candidate.match}% match for ${candidate.name}`}><span className="block text-xs font-bold text-[var(--cb-emerald)]">{candidate.match}%</span><ProgressBar value={candidate.match} className="mt-1" /></button>
                 <span className="text-xs text-[var(--cb-text-secondary)]">{candidate.experience}</span>
                 <div className="flex flex-wrap gap-1">{candidate.skills.slice(0, 2).map((skill) => <Badge key={skill} className="text-[10px]">{skill}</Badge>)}{candidate.skills.length > 2 && <span className="text-[10px] text-[var(--cb-text-muted)]">+{candidate.skills.length - 2}</span>}</div>
                 <span className="truncate text-xs text-[var(--cb-text-secondary)]">{candidate.location}</span>
@@ -75,6 +77,7 @@ export function CandidatePipelinePage() {
         </div>
       )}
       <p className="mt-4 text-xs leading-5 text-[var(--cb-text-muted)]">Match percentages are mock assistance signals based only on job-relevant skills, experience, eligibility, and work preferences. They are not hiring decisions.</p>
+      <CandidateMatchDialog candidate={matchCandidate} onClose={() => setMatchCandidate(null)} />
     </div>
   );
 }
