@@ -15,5 +15,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
+    pool: 'threads',
+    maxWorkers: 1,
+    fileParallelism: false,
+    teardownTimeout: 1000,
   },
 });
