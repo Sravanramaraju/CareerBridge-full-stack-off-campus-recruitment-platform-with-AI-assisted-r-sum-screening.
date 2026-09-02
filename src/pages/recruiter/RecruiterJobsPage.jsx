@@ -15,6 +15,7 @@ export function RecruiterJobsPage() {
   const [activeTab, setActiveTab] = useState('Active');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('updated');
+  const [department, setDepartment] = useState('');
   const [selectedAction, setSelectedAction] = useState(null);
   const recruiterDrafts = useAppStore((state) => state.recruiterDrafts);
   const recruiterJobStates = useAppStore((state) => state.recruiterJobStates);
@@ -31,8 +32,11 @@ export function RecruiterJobsPage() {
   }, [recruiterDrafts, recruiterJobStates]);
 
   const expectedStatus = tabs.find(([label]) => label === activeTab)?.[1];
+  const departments = [...new Set(allJobs.map((job) => job.department || 'General'))].sort();
   const visibleJobs = allJobs
-    .filter((job) => job.status === expectedStatus && job.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+    .filter((job) => job.status === expectedStatus
+      && job.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())
+      && (!department || (job.department || 'General') === department))
     .sort((a, b) => sort === 'applications'
       ? (b.applications || 0) - (a.applications || 0)
       : new Date(b.updatedAt || b.postedAt) - new Date(a.updatedAt || a.postedAt));
@@ -53,6 +57,7 @@ export function RecruiterJobsPage() {
         <div className="flex gap-1" role="tablist" aria-label="Job status">{tabs.map(([label, status]) => <button key={label} type="button" role="tab" aria-selected={activeTab === label} onClick={() => setActiveTab(label)} className={cn('rounded-lg px-4 py-2 text-sm font-bold', activeTab === label ? 'bg-[var(--cb-primary-soft)] text-[var(--cb-primary)]' : 'text-[var(--cb-text-secondary)] hover:bg-[var(--cb-bg-subtle)]')}>{label}<span className="ml-2 text-xs opacity-70">{tabCount(status)}</span></button>)}</div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <label className="flex h-10 items-center gap-2 rounded-lg border bg-[var(--cb-surface)] px-3 lg:w-64"><Search className="size-4 text-[var(--cb-text-muted)]" /><span className="sr-only">Search jobs</span><input value={search} onChange={(event) => setSearch(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Search job title" /></label>
+          <select aria-label="Filter jobs by department" value={department} onChange={(event) => setDepartment(event.target.value)} className="h-10 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none"><option value="">All departments</option>{departments.map((item) => <option key={item}>{item}</option>)}</select>
           <select aria-label="Sort recruiter jobs" value={sort} onChange={(event) => setSort(event.target.value)} className="h-10 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none"><option value="updated">Recently updated</option><option value="applications">Most applicants</option></select>
         </div>
       </div>
