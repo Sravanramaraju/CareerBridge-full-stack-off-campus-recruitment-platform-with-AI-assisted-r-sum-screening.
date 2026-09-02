@@ -3,13 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Building2, Search } from 'lucide-react';
 import { CompanyCard } from '@/src/components/companies/CompanyCard';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
-import { catalogService } from '@/src/services/mockApi';
+import { companiesService } from '@/src/services/companiesService';
+import { queryKeys } from '@/src/services/queryKeys';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 export function CompaniesPage() {
   useDocumentTitle('Explore companies');
   const [search, setSearch] = useState('');
-  const companiesQuery = useQuery({ queryKey: ['companies'], queryFn: catalogService.listCompanies });
+  const companiesQuery = useQuery({ queryKey: queryKeys.companies(), queryFn: companiesService.getCompanies });
   const filteredCompanies = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase();
     if (!keyword) return companiesQuery.data || [];
