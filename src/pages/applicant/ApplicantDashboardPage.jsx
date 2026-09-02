@@ -7,6 +7,7 @@ import { buttonVariants } from '@/src/components/ui/Button';
 import { ProgressBar } from '@/src/components/ui/Feedback';
 import { getCompanyById, jobs } from '@/src/data/mockData';
 import { useAppStore } from '@/src/store/useAppStore';
+import { matchService } from '@/src/services/matchService';
 
 const statusMeta = {
   Applied: { label: 'Applied', icon: ClipboardCheck, variant: 'primary' },
@@ -44,7 +45,7 @@ export function ApplicantDashboardPage() {
 
       <section aria-labelledby="recommended-title">
         <div className="flex items-end justify-between gap-4"><div><h2 id="recommended-title" className="font-heading text-xl font-extrabold">Recommended for you</h2><p className="mt-1 text-sm text-[var(--cb-text-secondary)]">Based on your skills, preferences, and early-career goals.</p></div><Link to="/jobs" className="hidden items-center gap-2 text-sm font-bold text-[var(--cb-primary)] hover:underline sm:flex">View all <ArrowRight className="size-4" /></Link></div>
-        <div className="mt-5 grid gap-4 xl:grid-cols-2">{recommended.map((job, index) => <JobCard key={job.id} job={job} match={[91, 86, 82, 78][index]} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}</div>
+        <div className="mt-5 grid gap-4 xl:grid-cols-2">{recommended.map((job) => <JobCard key={job.id} job={job} match={matchService.scoreJob(job, profile).overall} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}</div>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
