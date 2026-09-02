@@ -7,6 +7,8 @@ import {
 import { Link, useParams } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { ShareJobButton } from '@/src/components/jobs/ShareJobButton';
+import { MatchBreakdown } from '@/src/components/jobs/MatchBreakdown';
+import { MatchSummary } from '@/src/components/jobs/MatchSummary';
 import { buttonVariants, Button } from '@/src/components/ui/Button';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { TextArea } from '@/src/components/ui/Input';
@@ -17,6 +19,7 @@ import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
+import { matchService } from '@/src/services/matchService';
 
 const responsibilities = [
   'Collaborate with product, design, and engineering teammates on focused product outcomes.',
@@ -51,6 +54,7 @@ export function JobDetailPage() {
   const session = useAppStore((state) => state.session);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const applications = useAppStore((state) => state.applications);
+  const profile = useAppStore((state) => state.profile);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
   const submitApplication = useAppStore((state) => state.submitApplication);
   const jobQuery = useQuery({ queryKey: queryKeys.job(jobId), queryFn: () => jobsService.getJobById(jobId) });
@@ -71,6 +75,7 @@ export function JobDetailPage() {
   const isSaved = savedJobIds.includes(job.id);
   const application = applications.find((item) => item.jobId === job.id);
   const isApplicant = session?.role === 'applicant';
+  const match = matchService.scoreJob(job, profile);
 
   function handleApply(event) {
     event.preventDefault();
@@ -127,8 +132,9 @@ export function JobDetailPage() {
         <aside className="surface-card top-24 p-5 lg:sticky" aria-label="Application actions">
           {isApplicant && !application && (
             <div className="mb-5 rounded-xl bg-[var(--cb-primary-soft)] p-4">
-              <p className="flex items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><Sparkles className="size-4" />Strong starting match</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--cb-text-secondary)]">Your saved profile shares {Math.min(job.skills.length, 3)} skills with this role. Review the full requirements before applying.</p>
+              <p className="flex items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><Sparkles className="size-4" />Your match guidance</p>
+              <MatchSummary score={match.overall} className="mt-3" />
+              <details className="mt-4"><summary className="cursor-pointer text-xs font-bold text-[var(--cb-primary)]">Why this match?</summary><div className="mt-4"><MatchBreakdown breakdown={match} /></div></details>
             </div>
           )}
           {application ? (
