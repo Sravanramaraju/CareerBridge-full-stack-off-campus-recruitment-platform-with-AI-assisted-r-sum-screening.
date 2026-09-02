@@ -10,6 +10,9 @@ export const companies = [
     verified: true,
     openRoles: 4,
     accent: '#2658d8',
+    founded: 2018,
+    website: 'northstarlabs.example',
+    benefits: ['Learning budget', 'Hybrid flexibility', 'Health insurance', 'Mentor programme'],
     description: 'Northstar Labs builds reliable developer infrastructure for fast-moving product teams.',
   },
   {
@@ -23,6 +26,9 @@ export const companies = [
     verified: true,
     openRoles: 3,
     accent: '#168a67',
+    founded: 2019,
+    website: 'greenroute.example',
+    benefits: ['Electric commute support', 'Flexible leave', 'Health insurance', 'Field learning days'],
     description: 'GreenRoute makes urban transport cleaner through connected electric mobility systems.',
   },
   {
@@ -36,6 +42,9 @@ export const companies = [
     verified: true,
     openRoles: 2,
     accent: '#0a829b',
+    founded: 2016,
+    website: 'meridianfintech.example',
+    benefits: ['Learning allowance', 'Hybrid flexibility', 'Wellness cover', 'Volunteer leave'],
     description: 'Meridian creates accessible financial tools for growing businesses across India.',
   },
   {
@@ -49,6 +58,9 @@ export const companies = [
     verified: true,
     openRoles: 2,
     accent: '#b97813',
+    founded: 2020,
+    website: 'paperplane.example',
+    benefits: ['Remote-first work', 'Design conference budget', 'Studio retreats', 'Flexible hours'],
     description: 'Paperplane is a research-led design studio shaping thoughtful digital products.',
   },
   {
@@ -62,6 +74,9 @@ export const companies = [
     verified: true,
     openRoles: 2,
     accent: '#c43d4f',
+    founded: 2017,
+    website: 'clinivo.example',
+    benefits: ['Family health cover', 'Hybrid flexibility', 'Learning budget', 'Wellness days'],
     description: 'Clinivo helps care teams coordinate patient journeys with secure digital tools.',
   },
   {
@@ -75,6 +90,9 @@ export const companies = [
     verified: true,
     openRoles: 1,
     accent: '#6c5ce7',
+    founded: 2021,
+    website: 'orbitlearning.example',
+    benefits: ['Remote-friendly work', 'Course allowance', 'Flexible leave', 'Quarterly offsites'],
     description: 'Orbit builds practical learning experiences for students entering the modern workplace.',
   },
   {
@@ -88,6 +106,9 @@ export const companies = [
     verified: true,
     openRoles: 2,
     accent: '#2a6fd6',
+    founded: 2014,
+    website: 'harborcommerce.example',
+    benefits: ['Health insurance', 'Learning allowance', 'Hybrid flexibility', 'Employee assistance'],
     description: 'Harbor helps independent retailers manage catalogues, fulfilment, and customer insight.',
   },
 ];
