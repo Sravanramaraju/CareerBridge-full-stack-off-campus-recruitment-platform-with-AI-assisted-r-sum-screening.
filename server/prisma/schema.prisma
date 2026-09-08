@@ -37,6 +37,33 @@ enum CompanyMemberRole {
   RECRUITER
 }
 
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum JobModerationStatus {
+  PENDING
+  CLEARED
+  FLAGGED
+  DEACTIVATED
+}
+
+enum WorkMode {
+  ON_SITE
+  HYBRID
+  REMOTE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+}
+
 model User {
   id                  String               @id @default(cuid())
   email               String               @unique
@@ -53,6 +80,7 @@ model User {
   applicantProfile    ApplicantProfile?
   recruiterProfile    RecruiterProfile?
   companyMemberships  CompanyMember[]
+  createdJobs         Job[]                @relation("JobCreator")
 
   @@index([role])
   @@index([status])
@@ -251,6 +279,7 @@ model Company {
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
   members            CompanyMember[]
+  jobs               Job[]
 
   @@index([industry])
   @@index([companyType])
@@ -268,4 +297,47 @@ model CompanyMember {
 
   @@id([companyId, userId])
   @@index([userId])
+}
+
+model Job {
+  id               String              @id @default(cuid())
+  slug             String              @unique
+  companyId        String
+  createdByUserId  String
+  title            String
+  department       String?
+  category         String?
+  location         String
+  workMode         WorkMode
+  employmentType   EmploymentType
+  openings         Int                 @default(1)
+  experienceMin    Int                 @default(0)
+  experienceMax    Int                 @default(0)
+  salaryMin        Decimal?            @db.Decimal(12, 2)
+  salaryMax        Decimal?            @db.Decimal(12, 2)
+  currency         String              @default("INR")
+  hideSalary       Boolean             @default(false)
+  summary          String
+  description      String
+  responsibilities String[]            @default([])
+  qualification    String
+  contactVisible   Boolean             @default(true)
+  featured         Boolean             @default(false)
+  status           JobStatus           @default(DRAFT)
+  moderationStatus JobModerationStatus @default(PENDING)
+  deadline         DateTime
+  publishedAt      DateTime?
+  closedAt         DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  company          Company             @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  createdBy        User                @relation("JobCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@index([companyId])
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([moderationStatus])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@index([deadline])
 }
