@@ -101,6 +101,13 @@ enum NotificationType {
   SECURITY
 }
 
+enum EmailOutboxStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
 model User {
   id                       String                     @id @default(cuid())
   email                    String                     @unique
@@ -560,4 +567,23 @@ model Notification {
   @@index([userId, readAt])
   @@index([userId, createdAt])
   @@index([entityType, entityId])
+}
+
+model EmailOutbox {
+  id            String            @id @default(cuid())
+  recipient     String
+  subject       String
+  template      String
+  payload       Json
+  status        EmailOutboxStatus @default(PENDING)
+  attemptCount  Int               @default(0)
+  nextAttemptAt DateTime          @default(now())
+  lockedAt      DateTime?
+  lastError     String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  sentAt        DateTime?
+
+  @@index([status, nextAttemptAt])
+  @@index([createdAt])
 }
