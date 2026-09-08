@@ -91,6 +91,16 @@ enum ApplicationStatus {
   WITHDRAWN
 }
 
+enum NotificationType {
+  APPLICATION_SUBMITTED
+  APPLICATION_RECEIVED
+  APPLICATION_STATUS_CHANGED
+  COMPANY_VERIFICATION_CHANGED
+  JOB_MODERATION_CHANGED
+  JOB_PUBLISHED
+  SECURITY
+}
+
 model User {
   id                       String                     @id @default(cuid())
   email                    String                     @unique
@@ -112,6 +122,7 @@ model User {
   applications             Application[]              @relation("ApplicationApplicant")
   applicationStatusChanges ApplicationStatusHistory[] @relation("ApplicationStatusActor")
   recruiterNotes           RecruiterNote[]            @relation("RecruiterNoteAuthor")
+  notifications            Notification[]
 
   @@index([role])
   @@index([status])
@@ -532,4 +543,21 @@ model RecruiterNote {
 
   @@index([applicationId, createdAt])
   @@index([authorUserId])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  type       NotificationType
+  title      String
+  message    String
+  entityType String?
+  entityId   String?
+  readAt     DateTime?
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
 }
