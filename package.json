@@ -7,11 +7,17 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm --prefix server run dev",
+    "dev:full": "concurrently --kill-others-on-fail --names frontend,server \"npm run dev\" \"npm run dev:server\"",
+    "db:up": "docker compose up -d postgres mailpit",
+    "db:down": "docker compose down",
     "build": "vite build && node scripts/prepare-sites-worker.mjs",
     "preview": "vite preview",
     "lint": "oxlint src",
     "format": "oxfmt .",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "test:server": "npm --prefix server test",
+    "test:all": "npm test && npm run test:server"
   },
   "dependencies": {
     "react": "19.2.6",
@@ -44,6 +50,7 @@
     "@openai/sites-vite-plugin": "0.2.0",
     "@tailwindcss/postcss": "4.2.1",
     "@vitejs/plugin-react": "6.0.2",
+    "concurrently": "^9.2.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
