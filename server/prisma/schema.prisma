@@ -32,6 +32,11 @@ enum CompanyVerificationStatus {
   REJECTED
 }
 
+enum CompanyMemberRole {
+  OWNER
+  RECRUITER
+}
+
 model User {
   id                  String               @id @default(cuid())
   email               String               @unique
@@ -47,6 +52,7 @@ model User {
   preference          UserPreference?
   applicantProfile    ApplicantProfile?
   recruiterProfile    RecruiterProfile?
+  companyMemberships  CompanyMember[]
 
   @@index([role])
   @@index([status])
@@ -244,9 +250,22 @@ model Company {
   verifiedAt         DateTime?
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
+  members            CompanyMember[]
 
   @@index([industry])
   @@index([companyType])
   @@index([verificationStatus])
   @@index([createdAt])
+}
+
+model CompanyMember {
+  companyId String
+  userId    String
+  role      CompanyMemberRole @default(RECRUITER)
+  joinedAt  DateTime          @default(now())
+  company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, userId])
+  @@index([userId])
 }
