@@ -111,6 +111,7 @@ model User {
   savedJobs                SavedJob[]                 @relation("SavedJobApplicant")
   applications             Application[]              @relation("ApplicationApplicant")
   applicationStatusChanges ApplicationStatusHistory[] @relation("ApplicationStatusActor")
+  recruiterNotes           RecruiterNote[]            @relation("RecruiterNoteAuthor")
 
   @@index([role])
   @@index([status])
@@ -458,6 +459,7 @@ model Application {
   screeningAnswers ApplicationScreeningAnswer[]
   statusHistory    ApplicationStatusHistory[]
   match            ApplicationMatch?
+  recruiterNotes   RecruiterNote[]
 
   @@unique([applicantId, jobId])
   @@index([applicantId])
@@ -516,4 +518,18 @@ model ApplicationMatch {
 
   @@index([overallScore])
   @@index([calculatedAt])
+}
+
+model RecruiterNote {
+  id            String      @id @default(cuid())
+  applicationId String
+  authorUserId  String
+  body          String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  author        User        @relation("RecruiterNoteAuthor", fields: [authorUserId], references: [id], onDelete: Restrict)
+
+  @@index([applicationId, createdAt])
+  @@index([authorUserId])
 }
