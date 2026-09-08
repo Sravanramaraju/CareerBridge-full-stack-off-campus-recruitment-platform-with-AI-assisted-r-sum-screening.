@@ -113,6 +113,7 @@ model ApplicantProfile {
   user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   applicantEducations ApplicantEducation[]
   experiences         ApplicantExperience[]
+  projects            ApplicantProject[]
 }
 
 model ApplicantExperience {
@@ -126,6 +127,24 @@ model ApplicantExperience {
   endDate            DateTime?
   isCurrent          Boolean          @default(false)
   description        String?
+  displayOrder       Int              @default(0)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  applicantProfile   ApplicantProfile @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+
+  @@index([applicantProfileId, displayOrder])
+}
+
+model ApplicantProject {
+  id                 String           @id @default(cuid())
+  applicantProfileId String
+  name               String
+  description        String
+  projectUrl         String?
+  repositoryUrl      String?
+  technologies       String[]         @default([])
+  startedAt          DateTime?
+  completedAt        DateTime?
   displayOrder       Int              @default(0)
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
