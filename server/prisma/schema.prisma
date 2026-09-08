@@ -39,6 +39,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   preference          UserPreference?
   applicantProfile    ApplicantProfile?
+  recruiterProfile    RecruiterProfile?
 
   @@index([role])
   @@index([status])
@@ -202,4 +203,15 @@ model ApplicantSkill {
 
   @@id([applicantProfileId, skillId])
   @@index([skillId])
+}
+
+model RecruiterProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  title     String?
+  phone     String?
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
