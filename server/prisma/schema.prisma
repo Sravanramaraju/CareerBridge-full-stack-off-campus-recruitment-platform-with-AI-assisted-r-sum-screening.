@@ -30,6 +30,7 @@ model User {
   updatedAt           DateTime             @updatedAt
   sessions            Session[]
   passwordResetTokens PasswordResetToken[]
+  preference          UserPreference?
 
   @@index([role])
   @@index([status])
@@ -60,4 +61,19 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model UserPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  applicationUpdates Boolean  @default(true)
+  jobRecommendations Boolean  @default(true)
+  careerResources    Boolean  @default(false)
+  newApplications    Boolean  @default(true)
+  candidateReminders Boolean  @default(true)
+  jobExpiryReminders Boolean  @default(true)
+  weeklySummary      Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
