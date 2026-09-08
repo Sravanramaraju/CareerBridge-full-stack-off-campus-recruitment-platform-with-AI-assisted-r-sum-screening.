@@ -391,14 +391,15 @@ model JobSkill {
 }
 
 model JobScreeningQuestion {
-  id        String   @id @default(cuid())
+  id        String                       @id @default(cuid())
   jobId     String
   question  String
   sortOrder Int
-  required  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  required  Boolean                      @default(false)
+  createdAt DateTime                     @default(now())
+  updatedAt DateTime                     @updatedAt
+  job       Job                          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  answers   ApplicationScreeningAnswer[]
 
   @@unique([jobId, sortOrder])
   @@index([jobId])
@@ -442,17 +443,18 @@ model SavedJob {
 }
 
 model Application {
-  id          String            @id @default(cuid())
-  applicantId String
-  jobId       String
-  resumeId    String
-  coverNote   String?
-  status      ApplicationStatus @default(APPLIED)
-  appliedAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  applicant   User              @relation("ApplicationApplicant", fields: [applicantId], references: [id], onDelete: Restrict)
-  job         Job               @relation(fields: [jobId], references: [id], onDelete: Restrict)
-  resume      Resume            @relation(fields: [resumeId], references: [id], onDelete: Restrict)
+  id               String                       @id @default(cuid())
+  applicantId      String
+  jobId            String
+  resumeId         String
+  coverNote        String?
+  status           ApplicationStatus            @default(APPLIED)
+  appliedAt        DateTime                     @default(now())
+  updatedAt        DateTime                     @updatedAt
+  applicant        User                         @relation("ApplicationApplicant", fields: [applicantId], references: [id], onDelete: Restrict)
+  job              Job                          @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  resume           Resume                       @relation(fields: [resumeId], references: [id], onDelete: Restrict)
+  screeningAnswers ApplicationScreeningAnswer[]
 
   @@unique([applicantId, jobId])
   @@index([applicantId])
@@ -460,4 +462,18 @@ model Application {
   @@index([resumeId])
   @@index([status])
   @@index([appliedAt])
+}
+
+model ApplicationScreeningAnswer {
+  id               String               @id @default(cuid())
+  applicationId    String
+  questionId       String
+  questionSnapshot String
+  answer           String
+  createdAt        DateTime             @default(now())
+  application      Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  question         JobScreeningQuestion @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@unique([applicationId, questionId])
+  @@index([questionId])
 }
