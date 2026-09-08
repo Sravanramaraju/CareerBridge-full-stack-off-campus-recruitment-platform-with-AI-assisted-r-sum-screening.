@@ -65,31 +65,54 @@ model PasswordResetToken {
 }
 
 model UserPreference {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
-  applicationUpdates Boolean  @default(true)
-  jobRecommendations Boolean  @default(true)
-  careerResources    Boolean  @default(false)
-  newApplications    Boolean  @default(true)
-  candidateReminders Boolean  @default(true)
-  jobExpiryReminders Boolean  @default(true)
-  weeklySummary      Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String               @id @default(cuid())
+  userId             String               @unique
+  applicationUpdates Boolean              @default(true)
+  jobRecommendations Boolean              @default(true)
+  careerResources    Boolean              @default(false)
+  newApplications    Boolean              @default(true)
+  candidateReminders Boolean              @default(true)
+  jobExpiryReminders Boolean              @default(true)
+  weeklySummary      Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  education          ApplicantEducation[]
+}
+
+model ApplicantEducation {
+  id                 String           @id @default(cuid())
+  applicantProfileId String
+  institution        String
+  qualification      String
+  fieldOfStudy       String?
+  startYear          Int?
+  endYear            Int?
+  isCurrent          Boolean          @default(false)
+  grade              String?
+  description        String?
+  displayOrder       Int              @default(0)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  applicantProfile   ApplicantProfile @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+  userPreference     UserPreference?  @relation(fields: [userPreferenceId], references: [id])
+  userPreferenceId   String?
+
+  @@index([applicantProfileId, displayOrder])
 }
 
 model ApplicantProfile {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
-  headline           String?
-  phone              String?
-  location           String?
-  summary            String?
-  preferredLocations String[] @default([])
-  preferredJobTypes  String[] @default([])
-  preferredWorkModes String[] @default([])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String               @id @default(cuid())
+  userId              String               @unique
+  headline            String?
+  phone               String?
+  location            String?
+  summary             String?
+  preferredLocations  String[]             @default([])
+  preferredJobTypes   String[]             @default([])
+  preferredWorkModes  String[]             @default([])
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applicantEducations ApplicantEducation[]
 }
