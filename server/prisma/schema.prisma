@@ -81,6 +81,16 @@ enum ResumeParseStatus {
   FAILED
 }
 
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  REJECTED
+  WITHDRAWN
+}
+
 model User {
   id                  String               @id @default(cuid())
   email               String               @unique
@@ -99,6 +109,7 @@ model User {
   companyMemberships  CompanyMember[]
   createdJobs         Job[]                @relation("JobCreator")
   savedJobs           SavedJob[]           @relation("SavedJobApplicant")
+  applications        Application[]        @relation("ApplicationApplicant")
 
   @@index([role])
   @@index([status])
@@ -355,6 +366,7 @@ model Job {
   skills             JobSkill[]
   screeningQuestions JobScreeningQuestion[]
   savedBy            SavedJob[]
+  applications       Application[]
 
   @@index([companyId])
   @@index([createdByUserId])
@@ -409,6 +421,7 @@ model Resume {
   updatedAt          DateTime          @updatedAt
   deletedAt          DateTime?
   applicantProfile   ApplicantProfile  @relation(fields: [applicantProfileId], references: [id], onDelete: Restrict)
+  applications       Application[]
 
   @@index([applicantProfileId])
   @@index([applicantProfileId, isPrimary])
@@ -426,4 +439,25 @@ model SavedJob {
   @@id([applicantId, jobId])
   @@index([applicantId, createdAt])
   @@index([jobId])
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  applicantId String
+  jobId       String
+  resumeId    String
+  coverNote   String?
+  status      ApplicationStatus @default(APPLIED)
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  applicant   User              @relation("ApplicationApplicant", fields: [applicantId], references: [id], onDelete: Restrict)
+  job         Job               @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  resume      Resume            @relation(fields: [resumeId], references: [id], onDelete: Restrict)
+
+  @@unique([applicantId, jobId])
+  @@index([applicantId])
+  @@index([jobId])
+  @@index([resumeId])
+  @@index([status])
+  @@index([appliedAt])
 }
