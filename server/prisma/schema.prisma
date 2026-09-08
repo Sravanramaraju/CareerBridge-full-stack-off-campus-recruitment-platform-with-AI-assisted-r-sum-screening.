@@ -64,6 +64,11 @@ enum EmploymentType {
   CONTRACT
 }
 
+enum SkillRequirement {
+  REQUIRED
+  PREFERRED
+}
+
 model User {
   id                  String               @id @default(cuid())
   email               String               @unique
@@ -228,6 +233,7 @@ model Skill {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   applicants     ApplicantSkill[]
+  jobs           JobSkill[]
 
   @@index([name])
 }
@@ -332,6 +338,7 @@ model Job {
   updatedAt        DateTime            @updatedAt
   company          Company             @relation(fields: [companyId], references: [id], onDelete: Restrict)
   createdBy        User                @relation("JobCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  skills           JobSkill[]
 
   @@index([companyId])
   @@index([createdByUserId])
@@ -340,4 +347,17 @@ model Job {
   @@index([publishedAt])
   @@index([createdAt])
   @@index([deadline])
+}
+
+model JobSkill {
+  jobId       String
+  skillId     String
+  requirement SkillRequirement @default(REQUIRED)
+  createdAt   DateTime         @default(now())
+  job         Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill       Skill            @relation(fields: [skillId], references: [id], onDelete: Restrict)
+
+  @@id([jobId, skillId])
+  @@index([skillId])
+  @@index([requirement])
 }
