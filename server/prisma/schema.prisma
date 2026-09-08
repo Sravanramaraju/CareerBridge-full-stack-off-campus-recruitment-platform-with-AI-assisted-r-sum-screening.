@@ -98,6 +98,7 @@ model User {
   recruiterProfile    RecruiterProfile?
   companyMemberships  CompanyMember[]
   createdJobs         Job[]                @relation("JobCreator")
+  savedJobs           SavedJob[]           @relation("SavedJobApplicant")
 
   @@index([role])
   @@index([status])
@@ -353,6 +354,7 @@ model Job {
   createdBy          User                   @relation("JobCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
   skills             JobSkill[]
   screeningQuestions JobScreeningQuestion[]
+  savedBy            SavedJob[]
 
   @@index([companyId])
   @@index([createdByUserId])
@@ -412,4 +414,16 @@ model Resume {
   @@index([applicantProfileId, isPrimary])
   @@index([parseStatus])
   @@index([deletedAt])
+}
+
+model SavedJob {
+  applicantId String
+  jobId       String
+  createdAt   DateTime @default(now())
+  applicant   User     @relation("SavedJobApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@id([applicantId, jobId])
+  @@index([applicantId, createdAt])
+  @@index([jobId])
 }
