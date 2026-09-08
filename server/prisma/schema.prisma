@@ -69,6 +69,18 @@ enum SkillRequirement {
   PREFERRED
 }
 
+enum StorageProvider {
+  LOCAL
+  S3
+}
+
+enum ResumeParseStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
 model User {
   id                  String               @id @default(cuid())
   email               String               @unique
@@ -170,6 +182,7 @@ model ApplicantProfile {
   projects            ApplicantProject[]
   certifications      ApplicantCertification[]
   skills              ApplicantSkill[]
+  resumes             Resume[]
 }
 
 model ApplicantExperience {
@@ -375,4 +388,28 @@ model JobScreeningQuestion {
 
   @@unique([jobId, sortOrder])
   @@index([jobId])
+}
+
+model Resume {
+  id                 String            @id @default(cuid())
+  applicantProfileId String
+  originalFileName   String
+  storageProvider    StorageProvider   @default(LOCAL)
+  storageKey         String            @unique
+  mimeType           String
+  fileSize           Int
+  isPrimary          Boolean           @default(false)
+  parseStatus        ResumeParseStatus @default(PENDING)
+  extractedText      String?
+  parsedData         Json?
+  parseError         String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  deletedAt          DateTime?
+  applicantProfile   ApplicantProfile  @relation(fields: [applicantProfileId], references: [id], onDelete: Restrict)
+
+  @@index([applicantProfileId])
+  @@index([applicantProfileId, isPrimary])
+  @@index([parseStatus])
+  @@index([deletedAt])
 }
