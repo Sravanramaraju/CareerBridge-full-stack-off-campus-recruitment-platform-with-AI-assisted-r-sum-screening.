@@ -92,24 +92,25 @@ enum ApplicationStatus {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  email               String               @unique
-  passwordHash        String
-  name                String
-  role                UserRole
-  status              UserStatus           @default(ACTIVE)
-  lastLoginAt         DateTime?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
-  preference          UserPreference?
-  applicantProfile    ApplicantProfile?
-  recruiterProfile    RecruiterProfile?
-  companyMemberships  CompanyMember[]
-  createdJobs         Job[]                @relation("JobCreator")
-  savedJobs           SavedJob[]           @relation("SavedJobApplicant")
-  applications        Application[]        @relation("ApplicationApplicant")
+  id                       String                     @id @default(cuid())
+  email                    String                     @unique
+  passwordHash             String
+  name                     String
+  role                     UserRole
+  status                   UserStatus                 @default(ACTIVE)
+  lastLoginAt              DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  sessions                 Session[]
+  passwordResetTokens      PasswordResetToken[]
+  preference               UserPreference?
+  applicantProfile         ApplicantProfile?
+  recruiterProfile         RecruiterProfile?
+  companyMemberships       CompanyMember[]
+  createdJobs              Job[]                      @relation("JobCreator")
+  savedJobs                SavedJob[]                 @relation("SavedJobApplicant")
+  applications             Application[]              @relation("ApplicationApplicant")
+  applicationStatusChanges ApplicationStatusHistory[] @relation("ApplicationStatusActor")
 
   @@index([role])
   @@index([status])
@@ -455,6 +456,7 @@ model Application {
   job              Job                          @relation(fields: [jobId], references: [id], onDelete: Restrict)
   resume           Resume                       @relation(fields: [resumeId], references: [id], onDelete: Restrict)
   screeningAnswers ApplicationScreeningAnswer[]
+  statusHistory    ApplicationStatusHistory[]
 
   @@unique([applicantId, jobId])
   @@index([applicantId])
@@ -476,4 +478,19 @@ model ApplicationScreeningAnswer {
 
   @@unique([applicationId, questionId])
   @@index([questionId])
+}
+
+model ApplicationStatusHistory {
+  id              String             @id @default(cuid())
+  applicationId   String
+  previousStatus  ApplicationStatus?
+  newStatus       ApplicationStatus
+  changedByUserId String?
+  reason          String?
+  createdAt       DateTime           @default(now())
+  application     Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  changedBy       User?              @relation("ApplicationStatusActor", fields: [changedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([applicationId, createdAt])
+  @@index([changedByUserId])
 }
