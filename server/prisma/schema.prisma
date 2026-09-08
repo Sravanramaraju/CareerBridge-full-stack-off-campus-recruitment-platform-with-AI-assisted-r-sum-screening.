@@ -457,6 +457,7 @@ model Application {
   resume           Resume                       @relation(fields: [resumeId], references: [id], onDelete: Restrict)
   screeningAnswers ApplicationScreeningAnswer[]
   statusHistory    ApplicationStatusHistory[]
+  match            ApplicationMatch?
 
   @@unique([applicantId, jobId])
   @@index([applicantId])
@@ -493,4 +494,26 @@ model ApplicationStatusHistory {
 
   @@index([applicationId, createdAt])
   @@index([changedByUserId])
+}
+
+model ApplicationMatch {
+  id                     String      @id @default(cuid())
+  applicationId          String      @unique
+  overallScore           Int
+  requiredSkillScore     Int
+  preferredSkillScore    Int
+  experienceScore        Int
+  preferenceScore        Int
+  semanticScore          Int?
+  semanticAvailable      Boolean     @default(false)
+  requiredSkillsMatched  String[]    @default([])
+  requiredSkillsMissing  String[]    @default([])
+  preferredSkillsMatched String[]    @default([])
+  explanation            Json
+  modelVersion           String?
+  calculatedAt           DateTime    @default(now())
+  application            Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([overallScore])
+  @@index([calculatedAt])
 }
