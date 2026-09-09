@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { registerApplicant } from '../src/modules/auth/signup.service.js';
+import { registerApplicant, registerRecruiter } from '../src/modules/auth/signup.service.js';
 
 function applicantAccount() {
   return {
@@ -62,5 +62,51 @@ describe('applicant registration', () => {
       ),
     ).rejects.toMatchObject({ code: 'EMAIL_IN_USE', status: 409 });
     expect(createAccount).not.toHaveBeenCalled();
+  });
+});
+
+describe('recruiter registration', () => {
+  it('creates a pending company owner and session in one transaction', async () => {
+    const database = { marker: 'transaction-client' };
+    const account = {
+      id: 'recruiter-1',
+      name: 'Rohan Mehta',
+      email: 'rohan@example.com',
+      role: 'RECRUITER',
+      status: 'ACTIVE',
+      recruiterProfile: { id: 'profile-1' },
+      companyMemberships: [],
+    };
+    const createAccount = vi.fn().mockResolvedValue(account);
+
+    const result = await registerRecruiter(
+      {
+        name: 'Rohan Mehta',
+        email: 'rohan@example.com',
+        password: 'password',
+        companyName: 'Northstar Labs',
+        userAgent: 'browser',
+      },
+      {
+        hash: vi.fn().mockResolvedValue('hash'),
+        runTransaction: (operation) => operation(database),
+        findExisting: vi.fn().mockResolvedValue(null),
+        resolveCompanySlug: vi.fn().mockResolvedValue('northstar-labs'),
+        createAccount,
+        createSession: vi.fn().mockResolvedValue({ token: 'raw-token' }),
+      },
+    );
+
+    expect(createAccount).toHaveBeenCalledWith(
+      {
+        name: 'Rohan Mehta',
+        email: 'rohan@example.com',
+        passwordHash: 'hash',
+        companyName: 'Northstar Labs',
+        companySlug: 'northstar-labs',
+      },
+      database,
+    );
+    expect(result.user.role).toBe('RECRUITER');
   });
 });
