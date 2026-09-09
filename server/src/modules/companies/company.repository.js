@@ -33,6 +33,28 @@ function publicCompanySelection(now) {
   };
 }
 
+const recruiterCompanySelection = {
+  id: true,
+  name: true,
+  slug: true,
+  description: true,
+  website: true,
+  industry: true,
+  companyType: true,
+  size: true,
+  foundedYear: true,
+  headquarters: true,
+  locations: true,
+  benefits: true,
+  logoUrl: true,
+  brandInitials: true,
+  brandColor: true,
+  verificationStatus: true,
+  verifiedAt: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 function buildCompanyFilters({ q, industry, size, location, companyType }) {
   return {
     verificationStatus: 'VERIFIED',
@@ -97,27 +119,7 @@ export function findCompanyMembershipForUser(userId, database = prisma) {
       role: true,
       joinedAt: true,
       company: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          description: true,
-          website: true,
-          industry: true,
-          companyType: true,
-          size: true,
-          foundedYear: true,
-          headquarters: true,
-          locations: true,
-          benefits: true,
-          logoUrl: true,
-          brandInitials: true,
-          brandColor: true,
-          verificationStatus: true,
-          verifiedAt: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: recruiterCompanySelection,
       },
     },
   });
