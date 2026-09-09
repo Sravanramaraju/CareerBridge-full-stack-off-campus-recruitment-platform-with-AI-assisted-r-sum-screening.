@@ -15,6 +15,7 @@ import { companyRouter } from './modules/companies/company.routes.js';
 import { recruiterCompanyRouter } from './modules/companies/recruiterCompany.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { jobRouter } from './modules/jobs/job.routes.js';
+import { applicantEducationRouter } from './modules/profiles/education.routes.js';
 import { applicantProfileRouter } from './modules/profiles/profile.routes.js';
 
 export function createApp({ databaseCheck } = {}) {
@@ -37,6 +38,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/jobs`, jobRouter);
   app.use(`${API_PREFIX}/recruiter/company`, recruiterCompanyRouter);
   app.use(`${API_PREFIX}/applicant/profile`, applicantProfileRouter);
+  app.use(`${API_PREFIX}/applicant/education`, applicantEducationRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
