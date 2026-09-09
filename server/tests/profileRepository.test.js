@@ -2,15 +2,19 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   createApplicantEducation,
   createApplicantExperience,
+  createApplicantProject,
   deleteOwnedApplicantEducation,
   deleteOwnedApplicantExperience,
+  deleteOwnedApplicantProject,
   findApplicantProfileByUserId,
   findOwnedApplicantEducation,
   findOwnedApplicantExperience,
+  findOwnedApplicantProject,
   updateApplicantProfileRecord,
   updateApplicantUserName,
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
+  updateOwnedApplicantProject,
 } from '../src/modules/profiles/profile.repository.js';
 
 describe('applicant profile repository', () => {
@@ -138,6 +142,36 @@ describe('applicant profile repository', () => {
 
     expect(findFirst).toHaveBeenCalledWith({ where: ownership });
     expect(updateMany).toHaveBeenCalledWith({ where: ownership, data: { title: 'Engineer' } });
+    expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
+  });
+
+  it('creates projects through the authenticated applicant profile relation', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'project-1' });
+    const data = { name: 'CareerBridge', description: 'Recruitment platform.' };
+
+    await createApplicantProject('applicant-1', data, { applicantProject: { create } });
+
+    expect(create).toHaveBeenCalledWith({
+      data: { ...data, applicantProfile: { connect: { userId: 'applicant-1' } } },
+    });
+  });
+
+  it('scopes project reads, updates, and deletes by applicant ownership', async () => {
+    const ownership = {
+      id: 'project-1',
+      applicantProfile: { is: { userId: 'applicant-1' } },
+    };
+    const findFirst = vi.fn().mockResolvedValue(null);
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const database = { applicantProject: { findFirst, updateMany, deleteMany } };
+
+    await findOwnedApplicantProject('project-1', 'applicant-1', database);
+    await updateOwnedApplicantProject('project-1', 'applicant-1', { name: 'Updated' }, database);
+    await deleteOwnedApplicantProject('project-1', 'applicant-1', database);
+
+    expect(findFirst).toHaveBeenCalledWith({ where: ownership });
+    expect(updateMany).toHaveBeenCalledWith({ where: ownership, data: { name: 'Updated' } });
     expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
   });
 });

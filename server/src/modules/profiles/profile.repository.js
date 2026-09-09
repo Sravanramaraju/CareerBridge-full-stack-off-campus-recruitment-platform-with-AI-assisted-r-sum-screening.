@@ -173,3 +173,28 @@ export function deleteOwnedApplicantExperience(recordId, userId, database = pris
     where: { id: recordId, applicantProfile: { is: { userId } } },
   });
 }
+
+export function createApplicantProject(userId, data, database = prisma) {
+  return database.applicantProject.create({
+    data: { ...data, applicantProfile: { connect: { userId } } },
+  });
+}
+
+export function findOwnedApplicantProject(recordId, userId, database = prisma) {
+  return database.applicantProject.findFirst({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+  });
+}
+
+export function updateOwnedApplicantProject(recordId, userId, data, database = prisma) {
+  return database.applicantProject.updateMany({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+    data,
+  });
+}
+
+export function deleteOwnedApplicantProject(recordId, userId, database = prisma) {
+  return database.applicantProject.deleteMany({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+  });
+}
