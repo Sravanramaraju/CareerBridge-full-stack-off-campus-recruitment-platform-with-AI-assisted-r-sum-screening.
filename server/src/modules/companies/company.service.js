@@ -1,4 +1,8 @@
-import { listPublicCompanies } from './company.repository.js';
+import { notFoundError } from '../../lib/appError.js';
+import {
+  findPublicCompanyByIdentifier,
+  listPublicCompanies,
+} from './company.repository.js';
 import { toPublicCompany } from './company.presenter.js';
 
 export async function getPublicCompanies(
@@ -16,4 +20,13 @@ export async function getPublicCompanies(
       totalPages: Math.ceil(total / filters.pageSize),
     },
   };
+}
+
+export async function getPublicCompany(
+  identifier,
+  { findCompany = findPublicCompanyByIdentifier, now = () => new Date() } = {},
+) {
+  const company = await findCompany(identifier, now());
+  if (!company) throw notFoundError('The requested company was not found.');
+  return toPublicCompany(company);
 }
