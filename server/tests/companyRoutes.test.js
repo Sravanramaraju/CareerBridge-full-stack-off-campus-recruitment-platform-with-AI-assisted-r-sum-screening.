@@ -25,4 +25,12 @@ describe('public company routes', () => {
 
     expect(response.body.error.fields['params.companyId']).toEqual(expect.any(String));
   });
+
+  it('validates filters on a company-specific jobs collection', async () => {
+    const response = await request(createApp())
+      .get('/api/v1/companies/northstar-labs/jobs?page=0')
+      .expect(422);
+
+    expect(response.body.error.fields['query.page']).toEqual(expect.any(String));
+  });
 });
