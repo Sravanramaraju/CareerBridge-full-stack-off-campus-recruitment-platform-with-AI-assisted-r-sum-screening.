@@ -21,6 +21,9 @@ const environmentSchema = z.object({
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(24),
   REMEMBER_ME_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(5).max(120).default(30),
+  AUTH_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().min(1).max(60).default(15),
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(1_000).default(20),
+  PASSWORD_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(1_000).default(10),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 
