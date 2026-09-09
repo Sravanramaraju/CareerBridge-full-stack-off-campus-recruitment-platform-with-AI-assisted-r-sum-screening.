@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../../middleware/authorization.js';
+import { authAccountRateLimit } from '../../middleware/rateLimits.js';
 import { validateRequest } from '../../middleware/validateRequest.js';
 import {
   applicantSignupHandler,
@@ -16,14 +17,16 @@ import {
 
 export const authRouter = Router();
 
-authRouter.post('/login', validateRequest({ body: loginSchema }), loginHandler);
+authRouter.post('/login', authAccountRateLimit, validateRequest({ body: loginSchema }), loginHandler);
 authRouter.post(
   '/signup/applicant',
+  authAccountRateLimit,
   validateRequest({ body: applicantSignupSchema }),
   applicantSignupHandler,
 );
 authRouter.post(
   '/signup/recruiter',
+  authAccountRateLimit,
   validateRequest({ body: recruiterSignupSchema }),
   recruiterSignupHandler,
 );
