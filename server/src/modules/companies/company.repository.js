@@ -1,0 +1,80 @@
+import { prisma } from '../../lib/database.js';
+
+function publicCompanySelection(now) {
+  return {
+    id: true,
+    name: true,
+    slug: true,
+    description: true,
+    website: true,
+    industry: true,
+    companyType: true,
+    size: true,
+    foundedYear: true,
+    headquarters: true,
+    locations: true,
+    benefits: true,
+    logoUrl: true,
+    brandInitials: true,
+    brandColor: true,
+    verificationStatus: true,
+    verifiedAt: true,
+    _count: {
+      select: {
+        jobs: {
+          where: {
+            status: 'PUBLISHED',
+            moderationStatus: 'CLEARED',
+            deadline: { gt: now },
+          },
+        },
+      },
+    },
+  };
+}
+
+function buildCompanyFilters({ q, industry, size, location, companyType }) {
+  return {
+    verificationStatus: 'VERIFIED',
+    ...(industry ? { industry } : {}),
+    ...(size ? { size } : {}),
+    ...(companyType ? { companyType } : {}),
+    ...(location
+      ? {
+          OR: [
+            { headquarters: { startsWith: location, mode: 'insensitive' } },
+            { locations: { has: location } },
+          ],
+        }
+      : {}),
+    ...(q
+      ? {
+          AND: [
+            {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { industry: { contains: q, mode: 'insensitive' } },
+                { headquarters: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          ],
+        }
+      : {}),
+  };
+}
+
+export async function listPublicCompanies(filters, now = new Date(), database = prisma) {
+  const where = buildCompanyFilters(filters);
+  const [companies, total] = await Promise.all([
+    database.company.findMany({
+      where,
+      select: publicCompanySelection(now),
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      skip: (filters.page - 1) * filters.pageSize,
+      take: filters.pageSize,
+    }),
+    database.company.count({ where }),
+  ]);
+
+  return { companies, total };
+}
