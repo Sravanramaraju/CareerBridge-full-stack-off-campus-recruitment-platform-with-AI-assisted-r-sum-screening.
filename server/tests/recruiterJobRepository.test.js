@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createJobScreeningQuestions,
+  createJobSkills,
   createRecruiterJob,
+  deleteJobScreeningQuestions,
+  deleteJobSkills,
   findOwnedRecruiterJob,
   listRecruiterJobs,
   updateOwnedRecruiterJob,
@@ -44,5 +48,50 @@ describe('recruiter job repository', () => {
       where: { id: 'job-1', companyId: 'company-1' },
       data: { title: 'Updated' },
     });
+  });
+
+  it('replaces normalized job skill links', async () => {
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const createMany = vi.fn().mockResolvedValue({ count: 2 });
+    const database = { jobSkill: { deleteMany, createMany } };
+
+    await deleteJobSkills('job-1', database);
+    await createJobSkills('job-1', [
+      { skillId: 'skill-react', requirement: 'REQUIRED' },
+      { skillId: 'skill-testing', requirement: 'PREFERRED' },
+    ], database);
+
+    expect(deleteMany).toHaveBeenCalledWith({ where: { jobId: 'job-1' } });
+    expect(createMany).toHaveBeenCalledWith({
+      data: [
+        { jobId: 'job-1', skillId: 'skill-react', requirement: 'REQUIRED' },
+        { jobId: 'job-1', skillId: 'skill-testing', requirement: 'PREFERRED' },
+      ],
+    });
+  });
+
+  it('replaces screening questions in stable form order', async () => {
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const createMany = vi.fn().mockResolvedValue({ count: 2 });
+    const database = { jobScreeningQuestion: { deleteMany, createMany } };
+
+    await deleteJobScreeningQuestions('job-1', database);
+    await createJobScreeningQuestions('job-1', [
+      { question: 'Are you available?', required: true },
+      { question: 'When can you start?', required: false },
+    ], database);
+
+    expect(deleteMany).toHaveBeenCalledWith({ where: { jobId: 'job-1' } });
+    expect(createMany).toHaveBeenCalledWith({
+      data: [
+        { jobId: 'job-1', question: 'Are you available?', required: true, sortOrder: 0 },
+        { jobId: 'job-1', question: 'When can you start?', required: false, sortOrder: 1 },
+      ],
+    });
+  });
+
+  it('skips empty relation createMany queries', async () => {
+    await expect(createJobSkills('job-1', [], {})).resolves.toEqual({ count: 0 });
+    await expect(createJobScreeningQuestions('job-1', [], {})).resolves.toEqual({ count: 0 });
   });
 });
