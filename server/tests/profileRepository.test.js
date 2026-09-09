@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createApplicantCertification,
   createApplicantEducation,
   createApplicantExperience,
   createApplicantProject,
@@ -174,4 +175,47 @@ describe('applicant profile repository', () => {
     expect(updateMany).toHaveBeenCalledWith({ where: ownership, data: { name: 'Updated' } });
     expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
   });
+
+  it('creates certifications through the authenticated applicant profile relation', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'certification-1' });
+    const data = { name: 'Cloud Practitioner', issuer: 'Amazon Web Services' };
+
+    await createApplicantCertification('applicant-1', data, {
+      applicantCertification: { create },
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      data: { ...data, applicantProfile: { connect: { userId: 'applicant-1' } } },
+    });
+  });
+
+  it('scopes certification reads, updates, and deletes by applicant ownership', async () => {
+    const ownership = {
+      id: 'certification-1',
+      applicantProfile: { is: { userId: 'applicant-1' } },
+    };
+    const findFirst = vi.fn().mockResolvedValue(null);
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const database = { applicantCertification: { findFirst, updateMany, deleteMany } };
+
+    await findOwnedApplicantCertification('certification-1', 'applicant-1', database);
+    await updateOwnedApplicantCertification(
+      'certification-1',
+      'applicant-1',
+      { credentialId: 'AWS-123' },
+      database,
+    );
+    await deleteOwnedApplicantCertification('certification-1', 'applicant-1', database);
+
+    expect(findFirst).toHaveBeenCalledWith({ where: ownership });
+    expect(updateMany).toHaveBeenCalledWith({
+      where: ownership,
+      data: { credentialId: 'AWS-123' },
+    });
+    expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
+  });
 });
+  deleteOwnedApplicantCertification,
+  findOwnedApplicantCertification,
+  updateOwnedApplicantCertification,

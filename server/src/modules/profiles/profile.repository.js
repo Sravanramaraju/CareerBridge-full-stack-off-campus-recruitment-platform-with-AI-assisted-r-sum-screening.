@@ -198,3 +198,28 @@ export function deleteOwnedApplicantProject(recordId, userId, database = prisma)
     where: { id: recordId, applicantProfile: { is: { userId } } },
   });
 }
+
+export function createApplicantCertification(userId, data, database = prisma) {
+  return database.applicantCertification.create({
+    data: { ...data, applicantProfile: { connect: { userId } } },
+  });
+}
+
+export function findOwnedApplicantCertification(recordId, userId, database = prisma) {
+  return database.applicantCertification.findFirst({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+  });
+}
+
+export function updateOwnedApplicantCertification(recordId, userId, data, database = prisma) {
+  return database.applicantCertification.updateMany({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+    data,
+  });
+}
+
+export function deleteOwnedApplicantCertification(recordId, userId, database = prisma) {
+  return database.applicantCertification.deleteMany({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+  });
+}
