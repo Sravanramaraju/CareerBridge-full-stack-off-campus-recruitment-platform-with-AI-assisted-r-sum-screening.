@@ -5,6 +5,8 @@ import {
   applicantExperienceCreateSchema,
   applicantExperienceUpdateSchema,
   applicantProfileUpdateSchema,
+  applicantProjectCreateSchema,
+  applicantProjectUpdateSchema,
   profileRecordParamsSchema,
 } from '../src/modules/profiles/profile.schemas.js';
 
@@ -116,5 +118,40 @@ describe('applicant experience request schemas', () => {
       }).success,
     ).toBe(false);
     expect(applicantExperienceUpdateSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('applicant project request schemas', () => {
+  it('validates project evidence and normalizes dates', () => {
+    const result = applicantProjectCreateSchema.parse({
+      name: 'CareerBridge',
+      description: 'A full-stack recruitment platform for early-career applicants.',
+      repositoryUrl: 'https://github.com/example/careerbridge',
+      technologies: ['React', 'Node.js', 'PostgreSQL'],
+      startedAt: '2026-01-01',
+      completedAt: '2026-08-01',
+    });
+
+    expect(result.startedAt).toBeInstanceOf(Date);
+    expect(result).toMatchObject({ displayOrder: 0, technologies: ['React', 'Node.js', 'PostgreSQL'] });
+  });
+
+  it('rejects invalid URLs, reversed dates, and empty updates', () => {
+    expect(
+      applicantProjectCreateSchema.safeParse({
+        name: 'CareerBridge',
+        description: 'A full-stack recruitment platform.',
+        projectUrl: 'not-a-url',
+      }).success,
+    ).toBe(false);
+    expect(
+      applicantProjectCreateSchema.safeParse({
+        name: 'CareerBridge',
+        description: 'A full-stack recruitment platform.',
+        startedAt: '2026-08-01',
+        completedAt: '2026-01-01',
+      }).success,
+    ).toBe(false);
+    expect(applicantProjectUpdateSchema.safeParse({}).success).toBe(false);
   });
 });

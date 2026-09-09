@@ -111,3 +111,43 @@ export const applicantExperienceUpdateSchema = z
     message: 'End date must not be earlier than start date.',
     path: ['endDate'],
   });
+
+const optionalUrl = z.union([z.url().max(2_048), z.null()]).optional();
+const projectFields = {
+  name: z.string().trim().min(2).max(200),
+  description: z.string().trim().min(10).max(3_000),
+  projectUrl: optionalUrl,
+  repositoryUrl: optionalUrl,
+  technologies: z.array(z.string().trim().min(1).max(100)).max(30),
+  startedAt: optionalDate,
+  completedAt: optionalDate,
+  displayOrder: z.number().int().min(0).max(1_000),
+};
+
+function validProjectDates(project) {
+  return !project.startedAt || !project.completedAt || project.completedAt >= project.startedAt;
+}
+
+export const applicantProjectCreateSchema = z
+  .object({
+    ...projectFields,
+    technologies: projectFields.technologies.default([]),
+    displayOrder: projectFields.displayOrder.default(0),
+  })
+  .strict()
+  .refine(validProjectDates, {
+    message: 'Completion date must not be earlier than start date.',
+    path: ['completedAt'],
+  });
+
+export const applicantProjectUpdateSchema = z
+  .object(projectFields)
+  .partial()
+  .strict()
+  .refine((updates) => Object.keys(updates).length > 0, {
+    message: 'Provide at least one project field to update.',
+  })
+  .refine(validProjectDates, {
+    message: 'Completion date must not be earlier than start date.',
+    path: ['completedAt'],
+  });
