@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
+const DEVELOPMENT_OUTBOX_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+
 const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
@@ -34,7 +36,16 @@ const environmentSchema = z.object({
   SMTP_PASS: z.string().default(''),
   SMTP_FROM: z.string().min(3).default('CareerBridge <no-reply@careerbridge.local>'),
   EMAIL_WORKER_INTERVAL_MS: z.coerce.number().int().min(1_000).max(300_000).default(10_000),
+  OUTBOX_ENCRYPTION_KEY: z.string().regex(/^[a-fA-F0-9]{64}$/),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+}).superRefine((values, context) => {
+  if (values.NODE_ENV === 'production' && values.OUTBOX_ENCRYPTION_KEY === DEVELOPMENT_OUTBOX_KEY) {
+    context.addIssue({
+      code: 'custom',
+      path: ['OUTBOX_ENCRYPTION_KEY'],
+      message: 'Production must use a unique outbox encryption key',
+    });
+  }
 });
 
 const parsed = environmentSchema.safeParse(process.env);
