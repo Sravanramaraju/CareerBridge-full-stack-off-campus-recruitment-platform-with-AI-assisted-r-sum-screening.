@@ -42,4 +42,19 @@ describe('health API', () => {
 
     expect(response.body.error.code).toBe('INVALID_ORIGIN');
   });
+
+  it('validates login input before accessing authentication services', async () => {
+    const response = await request(createApp())
+      .post('/api/v1/auth/login')
+      .send({ email: 'invalid', password: '' })
+      .expect(422);
+
+    expect(response.body.error).toMatchObject({
+      code: 'VALIDATION_ERROR',
+      fields: {
+        'body.email': expect.any(String),
+        'body.password': expect.any(String),
+      },
+    });
+  });
 });

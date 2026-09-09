@@ -10,6 +10,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { sessionAuth } from './middleware/sessionAuth.js';
+import { authRouter } from './modules/auth/auth.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 
 export function createApp({ databaseCheck } = {}) {
@@ -27,6 +28,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(express.urlencoded({ extended: false, limit: REQUEST_BODY_LIMIT }));
 
   app.use(`${API_PREFIX}/health`, createHealthRouter({ databaseCheck }));
+  app.use(`${API_PREFIX}/auth`, authRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
