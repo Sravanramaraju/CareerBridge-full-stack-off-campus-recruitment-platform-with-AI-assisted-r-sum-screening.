@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { applicantProfileUpdateSchema } from '../src/modules/profiles/profile.schemas.js';
+import {
+  applicantEducationCreateSchema,
+  applicantEducationUpdateSchema,
+  applicantProfileUpdateSchema,
+  profileRecordParamsSchema,
+} from '../src/modules/profiles/profile.schemas.js';
 
 describe('applicant profile request schemas', () => {
   it('normalizes basic profile and preference updates', () => {
@@ -41,5 +46,42 @@ describe('applicant profile request schemas', () => {
     expect(applicantProfileUpdateSchema.safeParse({ summary: 'x'.repeat(1_501) }).success).toBe(
       false,
     );
+  });
+});
+
+describe('applicant education request schemas', () => {
+  it('validates a complete education record', () => {
+    expect(
+      applicantEducationCreateSchema.parse({
+        institution: ' Visvesvaraya Technological University ',
+        qualification: 'B.E. in Computer Science',
+        startYear: 2022,
+        endYear: 2026,
+      }),
+    ).toMatchObject({
+      institution: 'Visvesvaraya Technological University',
+      qualification: 'B.E. in Computer Science',
+      isCurrent: false,
+      displayOrder: 0,
+    });
+  });
+
+  it('rejects reversed year ranges and empty updates', () => {
+    expect(
+      applicantEducationCreateSchema.safeParse({
+        institution: 'University',
+        qualification: 'Degree',
+        startYear: 2026,
+        endYear: 2022,
+      }).success,
+    ).toBe(false);
+    expect(applicantEducationUpdateSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('validates owned profile record identifiers', () => {
+    expect(profileRecordParamsSchema.parse({ recordId: 'education-1' })).toEqual({
+      recordId: 'education-1',
+    });
+    expect(profileRecordParamsSchema.safeParse({ recordId: '' }).success).toBe(false);
   });
 });
