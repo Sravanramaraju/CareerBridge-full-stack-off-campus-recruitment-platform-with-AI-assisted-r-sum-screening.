@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  deleteApplicantResume,
   getApplicantResumes,
+  setPrimaryResume,
   uploadApplicantResume,
 } from '../src/modules/resumes/resume.service.js';
 
@@ -79,5 +81,63 @@ describe('resume service', () => {
       parseError: 'Text extraction failed. Upload a different PDF or DOCX file.',
     });
     expect(deps.storage.delete).not.toHaveBeenCalled();
+  });
+
+  it('sets one owned résumé as primary inside a transaction', async () => {
+    const database = { marker: 'transaction-client' };
+    const clearPrimary = vi.fn().mockResolvedValue({ count: 1 });
+    const updateResume = vi.fn().mockResolvedValue({ count: 1 });
+
+    await expect(setPrimaryResume('applicant-1', 'resume-2', {
+      runTransaction: (operation) => operation(database),
+      findResume: vi.fn().mockResolvedValue({ id: 'resume-2' }),
+      clearPrimary,
+      updateResume,
+      findMetadata: vi.fn().mockResolvedValue({ id: 'resume-2', isPrimary: true }),
+    })).resolves.toMatchObject({ id: 'resume-2', isPrimary: true });
+
+    expect(clearPrimary).toHaveBeenCalledWith('applicant-1', database);
+    expect(updateResume).toHaveBeenCalledWith(
+      'resume-2',
+      'applicant-1',
+      { isPrimary: true },
+      database,
+    );
+  });
+
+  it('soft deletes a résumé and promotes a replacement when needed', async () => {
+    const deletedAt = new Date('2026-09-09T00:00:00.000Z');
+    const database = { marker: 'transaction-client' };
+    const updateResume = vi.fn().mockResolvedValue({ count: 1 });
+
+    await expect(deleteApplicantResume('applicant-1', 'resume-1', {
+      now: () => deletedAt,
+      runTransaction: (operation) => operation(database),
+      findResume: vi.fn().mockResolvedValue({ id: 'resume-1', isPrimary: true }),
+      updateResume,
+      findReplacement: vi.fn().mockResolvedValue({ id: 'resume-2' }),
+    })).resolves.toEqual({ deleted: true });
+
+    expect(updateResume).toHaveBeenNthCalledWith(
+      1,
+      'resume-1',
+      'applicant-1',
+      { deletedAt, isPrimary: false },
+      database,
+    );
+    expect(updateResume).toHaveBeenNthCalledWith(
+      2,
+      'resume-2',
+      'applicant-1',
+      { isPrimary: true },
+      database,
+    );
+  });
+
+  it('uses a generic not-found response for foreign résumé identifiers', async () => {
+    await expect(setPrimaryResume('applicant-1', 'foreign-resume', {
+      runTransaction: (operation) => operation({}),
+      findResume: vi.fn().mockResolvedValue(null),
+    })).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
   });
 });

@@ -1,7 +1,11 @@
 import { notFoundError } from '../../lib/appError.js';
+import { prisma } from '../../lib/database.js';
 import { localStorageService } from './localStorage.service.js';
 import {
+  clearOwnedPrimaryResumes,
   createApplicantResume,
+  findNewestOwnedResume,
+  findOwnedResume,
   findOwnedResumeMetadata,
   listApplicantResumes,
   updateOwnedResume,
@@ -67,4 +71,62 @@ export async function uploadApplicantResume(
   const result = await findResume(resume.id, userId);
   if (!result) throw notFoundError('The uploaded résumé was not found.');
   return result;
+}
+
+function resumeNotFoundError() {
+  return notFoundError('The requested résumé was not found.');
+}
+
+export async function setPrimaryResume(
+  userId,
+  resumeId,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findResume = findOwnedResume,
+    clearPrimary = clearOwnedPrimaryResumes,
+    updateResume = updateOwnedResume,
+    findMetadata = findOwnedResumeMetadata,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const resume = await findResume(resumeId, userId, database);
+    if (!resume) throw resumeNotFoundError();
+    await clearPrimary(userId, database);
+    const updated = await updateResume(resumeId, userId, { isPrimary: true }, database);
+    if (updated.count !== 1) throw resumeNotFoundError();
+    return findMetadata(resumeId, userId, database);
+  });
+}
+
+export async function deleteApplicantResume(
+  userId,
+  resumeId,
+  {
+    now = () => new Date(),
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findResume = findOwnedResume,
+    updateResume = updateOwnedResume,
+    findReplacement = findNewestOwnedResume,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const resume = await findResume(resumeId, userId, database);
+    if (!resume) throw resumeNotFoundError();
+
+    const deleted = await updateResume(
+      resumeId,
+      userId,
+      { deletedAt: now(), isPrimary: false },
+      database,
+    );
+    if (deleted.count !== 1) throw resumeNotFoundError();
+
+    if (resume.isPrimary) {
+      const replacement = await findReplacement(userId, database);
+      if (replacement) {
+        await updateResume(replacement.id, userId, { isPrimary: true }, database);
+      }
+    }
+    return { deleted: true };
+  });
 }
