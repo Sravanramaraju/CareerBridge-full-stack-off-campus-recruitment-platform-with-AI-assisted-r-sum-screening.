@@ -78,3 +78,13 @@ export async function listPublicCompanies(filters, now = new Date(), database = 
 
   return { companies, total };
 }
+
+export function findPublicCompanyByIdentifier(identifier, now = new Date(), database = prisma) {
+  return database.company.findFirst({
+    where: {
+      verificationStatus: 'VERIFIED',
+      OR: [{ id: identifier }, { slug: identifier }],
+    },
+    select: publicCompanySelection(now),
+  });
+}

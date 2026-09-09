@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listPublicCompanies } from '../src/modules/companies/company.repository.js';
+import {
+  findPublicCompanyByIdentifier,
+  listPublicCompanies,
+} from '../src/modules/companies/company.repository.js';
 
 describe('company repository', () => {
   it('lists only verified companies with server-side filters and pagination', async () => {
@@ -48,5 +51,21 @@ describe('company repository', () => {
       moderationStatus: 'CLEARED',
       deadline: { gt: now },
     });
+  });
+
+  it('finds a verified company by either database id or public slug', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    const now = new Date('2026-09-09T00:00:00.000Z');
+
+    await findPublicCompanyByIdentifier('northstar-labs', now, { company: { findFirst } });
+
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          verificationStatus: 'VERIFIED',
+          OR: [{ id: 'northstar-labs' }, { slug: 'northstar-labs' }],
+        },
+      }),
+    );
   });
 });
