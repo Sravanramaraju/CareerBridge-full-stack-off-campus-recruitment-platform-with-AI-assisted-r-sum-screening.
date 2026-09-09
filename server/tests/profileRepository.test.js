@@ -1,12 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createApplicantEducation,
+  createApplicantExperience,
   deleteOwnedApplicantEducation,
+  deleteOwnedApplicantExperience,
   findApplicantProfileByUserId,
   findOwnedApplicantEducation,
+  findOwnedApplicantExperience,
   updateApplicantProfileRecord,
   updateApplicantUserName,
   updateOwnedApplicantEducation,
+  updateOwnedApplicantExperience,
 } from '../src/modules/profiles/profile.repository.js';
 
 describe('applicant profile repository', () => {
@@ -104,6 +108,36 @@ describe('applicant profile repository', () => {
 
     expect(findFirst).toHaveBeenCalledWith({ where: ownership });
     expect(updateMany).toHaveBeenCalledWith({ where: ownership, data: { grade: 'A' } });
+    expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
+  });
+
+  it('creates experience through the authenticated applicant profile relation', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'experience-1' });
+    const data = { title: 'Intern', organization: 'Northstar Labs' };
+
+    await createApplicantExperience('applicant-1', data, { applicantExperience: { create } });
+
+    expect(create).toHaveBeenCalledWith({
+      data: { ...data, applicantProfile: { connect: { userId: 'applicant-1' } } },
+    });
+  });
+
+  it('scopes experience reads, updates, and deletes by applicant ownership', async () => {
+    const ownership = {
+      id: 'experience-1',
+      applicantProfile: { is: { userId: 'applicant-1' } },
+    };
+    const findFirst = vi.fn().mockResolvedValue(null);
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const database = { applicantExperience: { findFirst, updateMany, deleteMany } };
+
+    await findOwnedApplicantExperience('experience-1', 'applicant-1', database);
+    await updateOwnedApplicantExperience('experience-1', 'applicant-1', { title: 'Engineer' }, database);
+    await deleteOwnedApplicantExperience('experience-1', 'applicant-1', database);
+
+    expect(findFirst).toHaveBeenCalledWith({ where: ownership });
+    expect(updateMany).toHaveBeenCalledWith({ where: ownership, data: { title: 'Engineer' } });
     expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
   });
 });
