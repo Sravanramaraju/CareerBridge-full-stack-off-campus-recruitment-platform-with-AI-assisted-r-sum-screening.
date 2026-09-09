@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createApplicantAccount,
+  createRecruiterAccount,
+  findCompanyIdBySlug,
   findUserForLogin,
   findUserIdByEmail,
   recordSuccessfulLogin,
@@ -56,6 +58,49 @@ describe('authentication repository', () => {
           role: 'APPLICANT',
           applicantProfile: { create: {} },
           preference: { create: {} },
+        }),
+      }),
+    );
+  });
+
+  it('checks public company slug collisions', async () => {
+    const findUnique = vi.fn().mockResolvedValue(null);
+
+    await findCompanyIdBySlug('northstar-labs', { company: { findUnique } });
+
+    expect(findUnique).toHaveBeenCalledWith({
+      where: { slug: 'northstar-labs' },
+      select: { id: true },
+    });
+  });
+
+  it('creates a pending company owned by the signing recruiter', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'recruiter-1' });
+
+    await createRecruiterAccount(
+      {
+        name: 'Rohan Mehta',
+        email: 'rohan@example.com',
+        passwordHash: 'hash',
+        companyName: 'Northstar Labs',
+        companySlug: 'northstar-labs',
+      },
+      { user: { create } },
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          role: 'RECRUITER',
+          recruiterProfile: { create: {} },
+          companyMemberships: {
+            create: expect.objectContaining({
+              role: 'OWNER',
+              company: {
+                create: expect.objectContaining({ verificationStatus: 'PENDING' }),
+              },
+            }),
+          },
         }),
       }),
     );

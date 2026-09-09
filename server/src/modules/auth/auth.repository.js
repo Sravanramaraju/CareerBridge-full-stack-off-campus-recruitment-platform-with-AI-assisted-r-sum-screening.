@@ -44,3 +44,36 @@ export function createApplicantAccount({ name, email, passwordHash }, database =
     include: roleContextInclude,
   });
 }
+
+export function findCompanyIdBySlug(slug, database = prisma) {
+  return database.company.findUnique({ where: { slug }, select: { id: true } });
+}
+
+export function createRecruiterAccount(
+  { name, email, passwordHash, companyName, companySlug },
+  database = prisma,
+) {
+  return database.user.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+      role: 'RECRUITER',
+      recruiterProfile: { create: {} },
+      preference: { create: {} },
+      companyMemberships: {
+        create: {
+          role: 'OWNER',
+          company: {
+            create: {
+              name: companyName,
+              slug: companySlug,
+              verificationStatus: 'PENDING',
+            },
+          },
+        },
+      },
+    },
+    include: roleContextInclude,
+  });
+}
