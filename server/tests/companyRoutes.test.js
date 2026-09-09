@@ -16,4 +16,13 @@ describe('public company routes', () => {
       },
     });
   });
+
+  it('validates company identifiers before detail lookup', async () => {
+    const oversizedIdentifier = 'x'.repeat(129);
+    const response = await request(createApp())
+      .get(`/api/v1/companies/${oversizedIdentifier}`)
+      .expect(422);
+
+    expect(response.body.error.fields['params.companyId']).toEqual(expect.any(String));
+  });
 });
