@@ -1,18 +1,22 @@
 import { AppError, notFoundError } from '../../lib/appError.js';
 import { prisma } from '../../lib/database.js';
 import {
+  createApplicantCertification,
   createApplicantEducation,
   createApplicantExperience,
   createApplicantProject,
+  deleteOwnedApplicantCertification,
   deleteOwnedApplicantEducation,
   deleteOwnedApplicantExperience,
   deleteOwnedApplicantProject,
   findApplicantProfileByUserId,
+  findOwnedApplicantCertification,
   findOwnedApplicantEducation,
   findOwnedApplicantExperience,
   findOwnedApplicantProject,
   updateApplicantProfileRecord,
   updateApplicantUserName,
+  updateOwnedApplicantCertification,
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
   updateOwnedApplicantProject,
@@ -217,5 +221,58 @@ export async function deleteProject(
 ) {
   const deleted = await deleteRecord(recordId, userId);
   if (deleted.count !== 1) throw projectNotFoundError();
+  return { deleted: true };
+}
+
+function certificationNotFoundError() {
+  return notFoundError('The requested certification record was not found.');
+}
+
+export function createCertification(
+  userId,
+  input,
+  { createRecord = createApplicantCertification } = {},
+) {
+  return createRecord(userId, input);
+}
+
+export async function updateCertification(
+  userId,
+  recordId,
+  input,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findRecord = findOwnedApplicantCertification,
+    updateRecord = updateOwnedApplicantCertification,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const current = await findRecord(recordId, userId, database);
+    if (!current) throw certificationNotFoundError();
+
+    const issuedAt = input.issuedAt === undefined ? current.issuedAt : input.issuedAt;
+    const expiresAt = input.expiresAt === undefined ? current.expiresAt : input.expiresAt;
+    if (issuedAt && expiresAt && expiresAt < issuedAt) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: 'The request contains invalid certification dates.',
+        status: 422,
+        fields: { 'body.expiresAt': 'Expiration date must not be earlier than issue date.' },
+      });
+    }
+
+    const updated = await updateRecord(recordId, userId, input, database);
+    if (updated.count !== 1) throw certificationNotFoundError();
+    return findRecord(recordId, userId, database);
+  });
+}
+
+export async function deleteCertification(
+  userId,
+  recordId,
+  { deleteRecord = deleteOwnedApplicantCertification } = {},
+) {
+  const deleted = await deleteRecord(recordId, userId);
+  if (deleted.count !== 1) throw certificationNotFoundError();
   return { deleted: true };
 }
