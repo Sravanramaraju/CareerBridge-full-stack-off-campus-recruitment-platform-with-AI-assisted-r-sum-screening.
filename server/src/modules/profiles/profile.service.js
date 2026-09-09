@@ -2,12 +2,16 @@ import { AppError, notFoundError } from '../../lib/appError.js';
 import { prisma } from '../../lib/database.js';
 import {
   createApplicantEducation,
+  createApplicantExperience,
   deleteOwnedApplicantEducation,
+  deleteOwnedApplicantExperience,
   findApplicantProfileByUserId,
   findOwnedApplicantEducation,
+  findOwnedApplicantExperience,
   updateApplicantProfileRecord,
   updateApplicantUserName,
   updateOwnedApplicantEducation,
+  updateOwnedApplicantExperience,
 } from './profile.repository.js';
 import { toApplicantProfile } from './profile.presenter.js';
 
@@ -103,5 +107,58 @@ export async function deleteEducation(
 ) {
   const deleted = await deleteRecord(recordId, userId);
   if (deleted.count !== 1) throw educationNotFoundError();
+  return { deleted: true };
+}
+
+function experienceNotFoundError() {
+  return notFoundError('The requested experience record was not found.');
+}
+
+export function createExperience(
+  userId,
+  input,
+  { createRecord = createApplicantExperience } = {},
+) {
+  return createRecord(userId, input);
+}
+
+export async function updateExperience(
+  userId,
+  recordId,
+  input,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findRecord = findOwnedApplicantExperience,
+    updateRecord = updateOwnedApplicantExperience,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const current = await findRecord(recordId, userId, database);
+    if (!current) throw experienceNotFoundError();
+
+    const startDate = input.startDate === undefined ? current.startDate : input.startDate;
+    const endDate = input.endDate === undefined ? current.endDate : input.endDate;
+    if (startDate && endDate && endDate < startDate) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: 'The request contains invalid experience dates.',
+        status: 422,
+        fields: { 'body.endDate': 'End date must not be earlier than start date.' },
+      });
+    }
+
+    const updated = await updateRecord(recordId, userId, input, database);
+    if (updated.count !== 1) throw experienceNotFoundError();
+    return findRecord(recordId, userId, database);
+  });
+}
+
+export async function deleteExperience(
+  userId,
+  recordId,
+  { deleteRecord = deleteOwnedApplicantExperience } = {},
+) {
+  const deleted = await deleteRecord(recordId, userId);
+  if (deleted.count !== 1) throw experienceNotFoundError();
   return { deleted: true };
 }
