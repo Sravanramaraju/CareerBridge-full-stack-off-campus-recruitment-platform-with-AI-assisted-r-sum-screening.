@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   clearOwnedPrimaryResumes,
   createApplicantResume,
+  findAccessibleResume,
   findNewestOwnedResume,
   findOwnedResume,
   findOwnedResumeMetadata,
@@ -85,5 +86,35 @@ describe('resume repository', () => {
       where: { applicantProfile: { is: { userId: 'applicant-1' } }, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
+  });
+
+  it('allows applicants to access only their active résumé bytes', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    await findAccessibleResume('resume-1', 'applicant-1', 'APPLICANT', {
+      resume: { findFirst },
+    });
+
+    expect(findFirst.mock.calls[0][0].where).toEqual({
+      id: 'resume-1',
+      applicantProfile: { is: { userId: 'applicant-1' } },
+      deletedAt: null,
+    });
+  });
+
+  it('requires a recruiter company application before accessing résumé bytes', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    await findAccessibleResume('resume-1', 'recruiter-1', 'RECRUITER', {
+      resume: { findFirst },
+    });
+
+    expect(findFirst.mock.calls[0][0].where).toEqual({
+      id: 'resume-1',
+      applications: {
+        some: {
+          job: { company: { members: { some: { userId: 'recruiter-1' } } } },
+        },
+      },
+    });
+    expect(findFirst.mock.calls[0][0].select).toHaveProperty('storageKey', true);
   });
 });

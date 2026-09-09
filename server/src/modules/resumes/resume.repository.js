@@ -71,3 +71,26 @@ export function findNewestOwnedResume(userId, database = prisma) {
     orderBy: { createdAt: 'desc' },
   });
 }
+
+export function findAccessibleResume(resumeId, userId, role, database = prisma) {
+  const access = role === 'APPLICANT'
+    ? { applicantProfile: { is: { userId } }, deletedAt: null }
+    : {
+        applications: {
+          some: {
+            job: { company: { members: { some: { userId } } } },
+          },
+        },
+      };
+
+  return database.resume.findFirst({
+    where: { id: resumeId, ...access },
+    select: {
+      originalFileName: true,
+      storageProvider: true,
+      storageKey: true,
+      mimeType: true,
+      fileSize: true,
+    },
+  });
+}
