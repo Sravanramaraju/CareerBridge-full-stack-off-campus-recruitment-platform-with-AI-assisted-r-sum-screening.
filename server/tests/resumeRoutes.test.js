@@ -13,3 +13,12 @@ describe('applicant resume routes', () => {
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
 });
+
+describe('private resume content route', () => {
+  it('requires authentication before resolving résumé ownership', async () => {
+    const response = await request(createApp())
+      .get('/api/v1/resumes/resume-1/content')
+      .expect(401);
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+});
