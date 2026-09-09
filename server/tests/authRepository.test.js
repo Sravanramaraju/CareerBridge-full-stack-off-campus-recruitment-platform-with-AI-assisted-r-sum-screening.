@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   createApplicantAccount,
   createRecruiterAccount,
+  createPasswordResetToken,
+  expirePasswordResetTokens,
   findCompanyIdBySlug,
+  findValidPasswordResetToken,
   findUserForLogin,
   findUserIdByEmail,
   recordSuccessfulLogin,
@@ -102,6 +105,44 @@ describe('authentication repository', () => {
             }),
           },
         }),
+      }),
+    );
+  });
+
+  it('expires prior unused password reset tokens', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const usedAt = new Date('2026-09-09T00:00:00.000Z');
+
+    await expirePasswordResetTokens('user-1', usedAt, { passwordResetToken: { updateMany } });
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', usedAt: null },
+      data: { usedAt },
+    });
+  });
+
+  it('stores reset-token hashes and expiry metadata', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'reset-1' });
+    const data = {
+      userId: 'user-1',
+      tokenHash: 'hash',
+      expiresAt: new Date('2026-09-09T00:30:00.000Z'),
+    };
+
+    await createPasswordResetToken(data, { passwordResetToken: { create } });
+
+    expect(create).toHaveBeenCalledWith({ data });
+  });
+
+  it('only resolves unused and unexpired reset tokens', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    const now = new Date('2026-09-09T00:00:00.000Z');
+
+    await findValidPasswordResetToken('hash', now, { passwordResetToken: { findFirst } });
+
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { tokenHash: 'hash', usedAt: null, expiresAt: { gt: now } },
       }),
     );
   });

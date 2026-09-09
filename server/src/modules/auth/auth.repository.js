@@ -77,3 +77,35 @@ export function createRecruiterAccount(
     include: roleContextInclude,
   });
 }
+
+export function findActiveUserForPasswordReset(email, database = prisma) {
+  return database.user.findFirst({
+    where: { email, status: 'ACTIVE' },
+    select: { id: true, email: true, name: true },
+  });
+}
+
+export function expirePasswordResetTokens(userId, usedAt = new Date(), database = prisma) {
+  return database.passwordResetToken.updateMany({
+    where: { userId, usedAt: null },
+    data: { usedAt },
+  });
+}
+
+export function createPasswordResetToken(data, database = prisma) {
+  return database.passwordResetToken.create({ data });
+}
+
+export function findValidPasswordResetToken(tokenHash, now = new Date(), database = prisma) {
+  return database.passwordResetToken.findFirst({
+    where: { tokenHash, usedAt: null, expiresAt: { gt: now } },
+    include: { user: { select: { id: true, status: true } } },
+  });
+}
+
+export function markPasswordResetTokenUsed(tokenId, usedAt = new Date(), database = prisma) {
+  return database.passwordResetToken.update({
+    where: { id: tokenId },
+    data: { usedAt },
+  });
+}
