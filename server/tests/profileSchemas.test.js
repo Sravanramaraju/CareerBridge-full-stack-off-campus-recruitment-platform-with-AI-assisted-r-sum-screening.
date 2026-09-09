@@ -28,6 +28,7 @@ describe('applicant profile request schemas', () => {
 
   it('rejects empty updates and computed completion values', () => {
     expect(applicantProfileUpdateSchema.safeParse({}).success).toBe(false);
+    expect(applicantProfileUpdateSchema.safeParse({ preferences: {} }).success).toBe(false);
     expect(applicantProfileUpdateSchema.safeParse({ profileCompletion: 100 }).success).toBe(false);
   });
 

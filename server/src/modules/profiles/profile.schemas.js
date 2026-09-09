@@ -17,6 +17,9 @@ export const applicantProfileUpdateSchema = z
         workModes: preferenceList.optional(),
       })
       .strict()
+      .refine((preferences) => Object.keys(preferences).length > 0, {
+        message: 'Provide at least one preference to update.',
+      })
       .optional(),
   })
   .strict()

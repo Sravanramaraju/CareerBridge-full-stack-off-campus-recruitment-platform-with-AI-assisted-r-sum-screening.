@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getApplicantProfile } from '../src/modules/profiles/profile.service.js';
+import {
+  getApplicantProfile,
+  updateApplicantProfile,
+} from '../src/modules/profiles/profile.service.js';
 
 function profileRecord() {
   return {
@@ -37,5 +40,56 @@ describe('applicant profile service', () => {
     await expect(
       getApplicantProfile('applicant-1', { findProfile: vi.fn().mockResolvedValue(null) }),
     ).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
+  });
+
+  it('updates user identity and profile preferences in one transaction', async () => {
+    const database = { marker: 'transaction-client' };
+    const updateName = vi.fn().mockResolvedValue({ id: 'applicant-1' });
+    const updateProfile = vi.fn().mockResolvedValue(profileRecord());
+
+    const result = await updateApplicantProfile(
+      'applicant-1',
+      {
+        name: 'Ananya Rao',
+        headline: 'Frontend developer',
+        preferences: { locations: ['Bengaluru'], workModes: ['Hybrid'] },
+      },
+      {
+        runTransaction: (operation) => operation(database),
+        updateName,
+        updateProfile,
+      },
+    );
+
+    expect(updateName).toHaveBeenCalledWith('applicant-1', 'Ananya Rao', database);
+    expect(updateProfile).toHaveBeenCalledWith(
+      'applicant-1',
+      {
+        headline: 'Frontend developer',
+        preferredLocations: ['Bengaluru'],
+        preferredWorkModes: ['Hybrid'],
+      },
+      database,
+    );
+    expect(result.id).toBe('profile-1');
+  });
+
+  it('reloads profile evidence after a name-only update', async () => {
+    const findProfile = vi.fn().mockResolvedValue(profileRecord());
+    const updateProfile = vi.fn();
+
+    await updateApplicantProfile(
+      'applicant-1',
+      { name: 'Ananya Rao' },
+      {
+        runTransaction: (operation) => operation({}),
+        findProfile,
+        updateName: vi.fn().mockResolvedValue({ id: 'applicant-1' }),
+        updateProfile,
+      },
+    );
+
+    expect(findProfile).toHaveBeenCalled();
+    expect(updateProfile).not.toHaveBeenCalled();
   });
 });
