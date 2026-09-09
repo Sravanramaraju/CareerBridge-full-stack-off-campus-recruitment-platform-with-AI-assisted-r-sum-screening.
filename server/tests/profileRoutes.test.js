@@ -8,4 +8,13 @@ describe('applicant profile routes', () => {
 
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
+
+  it('requires authentication before accepting profile updates', async () => {
+    const response = await request(createApp())
+      .patch('/api/v1/applicant/profile')
+      .send({ headline: 'Unauthorized update' })
+      .expect(401);
+
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
 });
