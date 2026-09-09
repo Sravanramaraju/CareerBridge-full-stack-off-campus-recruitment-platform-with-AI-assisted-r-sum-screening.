@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createApplicantSignupHandler,
+  createForgotPasswordHandler,
   createLoginHandler,
   createLogoutHandler,
   createRecruiterSignupHandler,
@@ -143,5 +144,20 @@ describe('authentication controller', () => {
       expect.objectContaining({ companyName: 'Northstar Labs', userAgent: 'test-agent' }),
     );
     expect(response.status).toHaveBeenCalledWith(201);
+  });
+
+  it('returns a generic accepted response for forgot-password requests', async () => {
+    const requestReset = vi.fn().mockResolvedValue({ accepted: true });
+    const request = { validated: { body: { email: 'user@example.com' } } };
+    const response = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn((body) => body),
+    };
+
+    await createForgotPasswordHandler({ requestReset })(request, response, vi.fn());
+
+    expect(requestReset).toHaveBeenCalledWith('user@example.com');
+    expect(response.status).toHaveBeenCalledWith(202);
+    expect(response.json.mock.calls[0][0].data.message).not.toContain('user@example.com');
   });
 });

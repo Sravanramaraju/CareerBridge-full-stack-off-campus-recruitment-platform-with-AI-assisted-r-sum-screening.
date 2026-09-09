@@ -1,16 +1,21 @@
 import { Router } from 'express';
 import { requireAuth } from '../../middleware/authorization.js';
-import { authAccountRateLimit } from '../../middleware/rateLimits.js';
+import {
+  authAccountRateLimit,
+  passwordRecoveryRateLimit,
+} from '../../middleware/rateLimits.js';
 import { validateRequest } from '../../middleware/validateRequest.js';
 import {
   applicantSignupHandler,
   currentUserHandler,
+  forgotPasswordHandler,
   loginHandler,
   logoutHandler,
   recruiterSignupHandler,
 } from './auth.controller.js';
 import {
   applicantSignupSchema,
+  forgotPasswordSchema,
   loginSchema,
   recruiterSignupSchema,
 } from './auth.schemas.js';
@@ -29,6 +34,12 @@ authRouter.post(
   authAccountRateLimit,
   validateRequest({ body: recruiterSignupSchema }),
   recruiterSignupHandler,
+);
+authRouter.post(
+  '/forgot-password',
+  passwordRecoveryRateLimit,
+  validateRequest({ body: forgotPasswordSchema }),
+  forgotPasswordHandler,
 );
 authRouter.get('/me', requireAuth, currentUserHandler);
 authRouter.post('/logout', logoutHandler);

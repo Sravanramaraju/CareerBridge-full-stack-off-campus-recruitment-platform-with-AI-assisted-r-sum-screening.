@@ -93,4 +93,13 @@ describe('health API', () => {
 
     expect(response.body.error.fields['body.companyName']).toEqual(expect.any(String));
   });
+
+  it('validates forgot-password email input before database access', async () => {
+    const response = await request(createApp())
+      .post('/api/v1/auth/forgot-password')
+      .send({ email: 'invalid' })
+      .expect(422);
+
+    expect(response.body.error.fields['body.email']).toEqual(expect.any(String));
+  });
 });

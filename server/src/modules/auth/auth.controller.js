@@ -6,6 +6,7 @@ import {
   sessionCookieOptions,
 } from './auth.cookies.js';
 import { login } from './login.service.js';
+import { requestPasswordReset } from './passwordRecovery.service.js';
 import { toSafeUser } from './safeUser.js';
 import { revokeSession } from './session.service.js';
 import { registerApplicant, registerRecruiter } from './signup.service.js';
@@ -73,6 +74,23 @@ export function createRecruiterSignupHandler({ register = registerRecruiter } = 
 }
 
 export const recruiterSignupHandler = createRecruiterSignupHandler();
+
+export function createForgotPasswordHandler({ requestReset = requestPasswordReset } = {}) {
+  return async (request, response, next) => {
+    try {
+      await requestReset(request.validated.body.email);
+      return response.status(202).json({
+        data: {
+          message: 'If an account exists for that email, reset instructions have been sent.',
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export const forgotPasswordHandler = createForgotPasswordHandler();
 
 export function currentUserHandler(request, response) {
   return response.json({
