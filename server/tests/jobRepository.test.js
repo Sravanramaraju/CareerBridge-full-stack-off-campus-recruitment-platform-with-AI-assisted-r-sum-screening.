@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listPublicJobs } from '../src/modules/jobs/job.repository.js';
+import {
+  findPublicJobByIdentifier,
+  listPublicJobs,
+} from '../src/modules/jobs/job.repository.js';
 
 describe('public job repository', () => {
   it('applies translated filters, stable pagination, and related display data', async () => {
@@ -49,5 +52,24 @@ describe('public job repository', () => {
       { id: 'northstar-labs' },
       { slug: 'northstar-labs' },
     ]);
+  });
+
+  it('finds job details by id or slug without bypassing public visibility', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    const now = new Date('2026-09-09T00:00:00.000Z');
+
+    await findPublicJobByIdentifier('frontend-engineer', now, { job: { findFirst } });
+
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: 'PUBLISHED',
+          moderationStatus: 'CLEARED',
+          deadline: { gt: now },
+          company: { is: { verificationStatus: 'VERIFIED' } },
+          OR: [{ id: 'frontend-engineer' }, { slug: 'frontend-engineer' }],
+        },
+      }),
+    );
   });
 });

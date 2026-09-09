@@ -71,3 +71,16 @@ export async function listPublicJobs(
 
   return { jobs, total };
 }
+
+export function findPublicJobByIdentifier(identifier, now = new Date(), database = prisma) {
+  return database.job.findFirst({
+    where: {
+      status: 'PUBLISHED',
+      moderationStatus: 'CLEARED',
+      deadline: { gt: now },
+      company: { is: { verificationStatus: 'VERIFIED' } },
+      OR: [{ id: identifier }, { slug: identifier }],
+    },
+    select: publicJobSelection,
+  });
+}
