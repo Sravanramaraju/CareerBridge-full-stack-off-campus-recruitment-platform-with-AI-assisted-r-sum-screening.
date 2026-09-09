@@ -17,7 +17,7 @@ function facetList(itemSchema = z.string().trim().min(1).max(100)) {
 export const publicJobListQuerySchema = z.object({
   q: optionalSearch,
   location: optionalSearch,
-  experience: optionalSearch,
+  experience: experienceLevel.optional(),
   types: facetList(employmentType),
   modes: facetList(workMode),
   salaryBands: facetList(salaryBand),

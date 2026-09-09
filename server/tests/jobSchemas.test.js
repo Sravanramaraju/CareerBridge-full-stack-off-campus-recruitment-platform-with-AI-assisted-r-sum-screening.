@@ -41,6 +41,7 @@ describe('public job request schemas', () => {
     expect(publicJobListQuerySchema.safeParse({ modes: 'Anywhere' }).success).toBe(false);
     expect(publicJobListQuerySchema.safeParse({ salaryBands: 'Negotiable' }).success).toBe(false);
     expect(publicJobListQuerySchema.safeParse({ companyTypes: 'Unknown' }).success).toBe(false);
+    expect(publicJobListQuerySchema.safeParse({ experience: 'Senior' }).success).toBe(false);
   });
 
   it('validates public job identifiers', () => {
