@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { toApplicantProfile } from '../src/modules/profiles/profile.presenter.js';
+import {
+  toApplicantProfile,
+  toApplicantSkillRecords,
+} from '../src/modules/profiles/profile.presenter.js';
 
 function profileRecord() {
   return {
@@ -13,9 +16,9 @@ function profileRecord() {
     preferredJobTypes: ['Full-time'],
     preferredWorkModes: ['Hybrid'],
     skills: [
-      { skill: { name: 'CSS' } },
-      { skill: { name: 'JavaScript' } },
-      { skill: { name: 'React' } },
+      { skill: { id: 'skill-css', name: 'CSS', normalizedName: 'css' }, proficiency: 'ADVANCED', yearsExperience: 2 },
+      { skill: { id: 'skill-javascript', name: 'JavaScript', normalizedName: 'javascript' }, proficiency: 'ADVANCED', yearsExperience: 2.5 },
+      { skill: { id: 'skill-react', name: 'React', normalizedName: 'react' }, proficiency: null, yearsExperience: null },
     ],
     applicantEducations: [
       { id: 'education-1', qualification: 'B.E.', startYear: 2022, endYear: 2026, isCurrent: false },
@@ -33,6 +36,24 @@ function profileRecord() {
 }
 
 describe('applicant profile presenter', () => {
+  it('flattens normalized skill relations for API consumers', () => {
+    const [record] = toApplicantSkillRecords([
+      {
+        skill: { id: 'skill-react', name: 'React', normalizedName: 'react' },
+        proficiency: 'ADVANCED',
+        yearsExperience: { toString: () => '2.5' },
+      },
+    ]);
+
+    expect(record).toEqual({
+      id: 'skill-react',
+      name: 'React',
+      normalizedName: 'react',
+      proficiency: 'ADVANCED',
+      yearsExperience: 2.5,
+    });
+  });
+
   it('adapts normalized evidence to the current frontend profile shape', () => {
     const result = toApplicantProfile(profileRecord());
 
@@ -41,6 +62,11 @@ describe('applicant profile presenter', () => {
       name: 'Ananya Rao',
       email: 'ananya@example.com',
       skills: ['CSS', 'JavaScript', 'React'],
+      skillRecords: [
+        expect.objectContaining({ id: 'skill-css', name: 'CSS', yearsExperience: 2 }),
+        expect.objectContaining({ id: 'skill-javascript', name: 'JavaScript', yearsExperience: 2.5 }),
+        expect.objectContaining({ id: 'skill-react', name: 'React', yearsExperience: null }),
+      ],
       education: [{ id: 'education-1', period: '2022–2026' }],
       certifications: ['Responsive Web Design · freeCodeCamp'],
       preferences: {

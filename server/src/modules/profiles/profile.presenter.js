@@ -9,9 +9,20 @@ function certificationLabel(certification) {
   return [certification.name, certification.issuer].filter(Boolean).join(' · ');
 }
 
+export function toApplicantSkillRecords(records) {
+  return records.map(({ skill, proficiency, yearsExperience }) => ({
+    id: skill.id,
+    name: skill.name,
+    normalizedName: skill.normalizedName,
+    proficiency,
+    yearsExperience: yearsExperience === null ? null : Number(yearsExperience),
+  }));
+}
+
 export function toApplicantProfile(profile) {
   const completion = calculateProfileCompletion(profile);
   const primaryResume = profile.resumes.find((resume) => resume.isPrimary) || profile.resumes[0];
+  const skillRecords = toApplicantSkillRecords(profile.skills);
 
   return {
     id: profile.id,
@@ -21,8 +32,8 @@ export function toApplicantProfile(profile) {
     phone: profile.phone,
     location: profile.location,
     summary: profile.summary,
-    skills: profile.skills.map(({ skill }) => skill.name),
-    skillRecords: profile.skills,
+    skills: skillRecords.map(({ name }) => name),
+    skillRecords,
     education: profile.applicantEducations.map((education) => ({
       ...education,
       period: educationPeriod(education),
