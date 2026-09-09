@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createGetJobHandler,
   createListCompanyJobsHandler,
   createListJobsHandler,
 } from '../src/modules/jobs/job.controller.js';
@@ -46,5 +47,20 @@ describe('public job controller', () => {
     );
 
     expect(next).toHaveBeenCalledWith(error);
+  });
+
+  it('returns a job detail from validated route parameters', async () => {
+    const job = { id: 'job-1', title: 'Frontend Engineer' };
+    const getJob = vi.fn().mockResolvedValue(job);
+    const response = { json: vi.fn((body) => body) };
+
+    await createGetJobHandler({ getJob })(
+      { validated: { params: { jobId: 'frontend-engineer' } } },
+      response,
+      vi.fn(),
+    );
+
+    expect(getJob).toHaveBeenCalledWith('frontend-engineer');
+    expect(response.json).toHaveBeenCalledWith({ data: job });
   });
 });

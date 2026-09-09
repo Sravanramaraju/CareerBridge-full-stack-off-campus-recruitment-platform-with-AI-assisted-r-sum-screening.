@@ -1,4 +1,4 @@
-import { getPublicJobs } from './job.service.js';
+import { getPublicJob, getPublicJobs } from './job.service.js';
 
 export function createListJobsHandler({ getJobs = getPublicJobs } = {}) {
   return async (request, response, next) => {
@@ -26,3 +26,16 @@ export function createListCompanyJobsHandler({ getJobs = getPublicJobs } = {}) {
 
 export const listJobsHandler = createListJobsHandler();
 export const listCompanyJobsHandler = createListCompanyJobsHandler();
+
+export function createGetJobHandler({ getJob = getPublicJob } = {}) {
+  return async (request, response, next) => {
+    try {
+      const job = await getJob(request.validated.params.jobId);
+      return response.json({ data: job });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export const getJobHandler = createGetJobHandler();
