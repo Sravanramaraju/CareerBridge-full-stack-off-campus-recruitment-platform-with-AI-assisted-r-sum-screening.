@@ -11,6 +11,7 @@ import { notFoundHandler } from './middleware/notFound.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { sessionAuth } from './middleware/sessionAuth.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { companyRouter } from './modules/companies/company.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 
 export function createApp({ databaseCheck } = {}) {
@@ -29,6 +30,7 @@ export function createApp({ databaseCheck } = {}) {
 
   app.use(`${API_PREFIX}/health`, createHealthRouter({ databaseCheck }));
   app.use(`${API_PREFIX}/auth`, authRouter);
+  app.use(`${API_PREFIX}/companies`, companyRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
