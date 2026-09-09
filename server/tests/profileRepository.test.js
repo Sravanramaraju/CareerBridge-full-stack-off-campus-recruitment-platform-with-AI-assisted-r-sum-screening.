@@ -1,8 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createApplicantEducation,
+  deleteOwnedApplicantEducation,
   findApplicantProfileByUserId,
+  findOwnedApplicantEducation,
   updateApplicantProfileRecord,
   updateApplicantUserName,
+  updateOwnedApplicantEducation,
 } from '../src/modules/profiles/profile.repository.js';
 
 describe('applicant profile repository', () => {
@@ -69,5 +73,37 @@ describe('applicant profile repository', () => {
       data: updates,
       select: expect.objectContaining({ user: expect.any(Object), resumes: expect.any(Object) }),
     });
+  });
+
+  it('creates education through the authenticated applicant profile relation', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'education-1' });
+    const data = { institution: 'University', qualification: 'B.E.' };
+
+    await createApplicantEducation('applicant-1', data, { applicantEducation: { create } });
+
+    expect(create).toHaveBeenCalledWith({
+      data: { ...data, applicantProfile: { connect: { userId: 'applicant-1' } } },
+    });
+  });
+
+  it('scopes education reads, updates, and deletes by applicant ownership', async () => {
+    const ownership = {
+      id: 'education-1',
+      applicantProfile: { is: { userId: 'applicant-1' } },
+    };
+    const findFirst = vi.fn().mockResolvedValue(null);
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const database = {
+      applicantEducation: { findFirst, updateMany, deleteMany },
+    };
+
+    await findOwnedApplicantEducation('education-1', 'applicant-1', database);
+    await updateOwnedApplicantEducation('education-1', 'applicant-1', { grade: 'A' }, database);
+    await deleteOwnedApplicantEducation('education-1', 'applicant-1', database);
+
+    expect(findFirst).toHaveBeenCalledWith({ where: ownership });
+    expect(updateMany).toHaveBeenCalledWith({ where: ownership, data: { grade: 'A' } });
+    expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
   });
 });

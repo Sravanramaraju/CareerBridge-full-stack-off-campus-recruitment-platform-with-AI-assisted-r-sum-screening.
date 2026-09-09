@@ -117,3 +117,31 @@ export function updateApplicantProfileRecord(userId, updates, database = prisma)
     select: applicantProfileSelection,
   });
 }
+
+export function createApplicantEducation(userId, data, database = prisma) {
+  return database.applicantEducation.create({
+    data: {
+      ...data,
+      applicantProfile: { connect: { userId } },
+    },
+  });
+}
+
+export function findOwnedApplicantEducation(recordId, userId, database = prisma) {
+  return database.applicantEducation.findFirst({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+  });
+}
+
+export function updateOwnedApplicantEducation(recordId, userId, data, database = prisma) {
+  return database.applicantEducation.updateMany({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+    data,
+  });
+}
+
+export function deleteOwnedApplicantEducation(recordId, userId, database = prisma) {
+  return database.applicantEducation.deleteMany({
+    where: { id: recordId, applicantProfile: { is: { userId } } },
+  });
+}
