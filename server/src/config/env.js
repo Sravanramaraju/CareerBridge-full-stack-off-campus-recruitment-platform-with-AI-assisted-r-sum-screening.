@@ -16,6 +16,11 @@ const environmentSchema = z.object({
     })
     .optional(),
   CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
+  SESSION_COOKIE_NAME: z.string().regex(/^[A-Za-z0-9_-]+$/).default('careerbridge_session'),
+  CSRF_COOKIE_NAME: z.string().regex(/^[A-Za-z0-9_-]+$/).default('careerbridge_csrf'),
+  SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(24),
+  REMEMBER_ME_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
+  PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(5).max(120).default(30),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 
