@@ -30,3 +30,15 @@ describe('applicant education routes', () => {
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
 });
+
+describe('applicant experience routes', () => {
+  it.each([
+    ['post', '/api/v1/applicant/experience'],
+    ['patch', '/api/v1/applicant/experience/experience-1'],
+    ['delete', '/api/v1/applicant/experience/experience-1'],
+  ])('requires authentication for %s %s', async (method, path) => {
+    const response = await request(createApp())[method](path).send({}).expect(401);
+
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+});
