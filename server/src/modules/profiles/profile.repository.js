@@ -231,15 +231,6 @@ export function findApplicantProfileIdByUserId(userId, database = prisma) {
   });
 }
 
-export function upsertSkillRecord({ name, normalizedName }, database = prisma) {
-  return database.skill.upsert({
-    where: { normalizedName },
-    create: { name, normalizedName },
-    update: {},
-    select: { id: true, name: true, normalizedName: true },
-  });
-}
-
 export function deleteApplicantSkills(applicantProfileId, database = prisma) {
   return database.applicantSkill.deleteMany({ where: { applicantProfileId } });
 }

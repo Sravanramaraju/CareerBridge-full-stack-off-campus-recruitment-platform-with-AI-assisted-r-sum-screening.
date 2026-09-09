@@ -23,7 +23,6 @@ import {
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
   updateOwnedApplicantProject,
-  upsertSkillRecord,
 } from '../src/modules/profiles/profile.repository.js';
 
 describe('applicant profile repository', () => {
@@ -234,22 +233,6 @@ describe('applicant profile repository', () => {
     expect(findUnique).toHaveBeenCalledWith({
       where: { userId: 'applicant-1' },
       select: { id: true },
-    });
-  });
-
-  it('upserts normalized shared skills without changing an existing display name', async () => {
-    const upsert = vi.fn().mockResolvedValue({ id: 'skill-1' });
-
-    await upsertSkillRecord(
-      { name: 'React', normalizedName: 'react' },
-      { skill: { upsert } },
-    );
-
-    expect(upsert).toHaveBeenCalledWith({
-      where: { normalizedName: 'react' },
-      create: { name: 'React', normalizedName: 'react' },
-      update: {},
-      select: { id: true, name: true, normalizedName: true },
     });
   });
 

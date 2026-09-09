@@ -24,10 +24,10 @@ import {
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
   updateOwnedApplicantProject,
-  upsertSkillRecord,
 } from './profile.repository.js';
 import { toApplicantProfile, toApplicantSkillRecords } from './profile.presenter.js';
 import { normalizeSkillName } from './skillNormalization.js';
+import { upsertSkillRecord } from '../skills/skill.repository.js';
 
 export async function getApplicantProfile(
   userId,
