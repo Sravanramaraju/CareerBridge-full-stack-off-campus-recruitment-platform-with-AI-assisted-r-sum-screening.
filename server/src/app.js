@@ -21,6 +21,7 @@ import { applicantExperienceRouter } from './modules/profiles/experience.routes.
 import { applicantProfileRouter } from './modules/profiles/profile.routes.js';
 import { applicantProjectRouter } from './modules/profiles/project.routes.js';
 import { applicantSkillRouter } from './modules/profiles/skill.routes.js';
+import { settingsRouter } from './modules/settings/settings.routes.js';
 
 export function createApp({ databaseCheck } = {}) {
   const app = express();
@@ -47,6 +48,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/applicant/projects`, applicantProjectRouter);
   app.use(`${API_PREFIX}/applicant/certifications`, applicantCertificationRouter);
   app.use(`${API_PREFIX}/applicant/skills`, applicantSkillRouter);
+  app.use(`${API_PREFIX}/settings`, settingsRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
