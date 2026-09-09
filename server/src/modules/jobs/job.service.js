@@ -1,4 +1,5 @@
-import { listPublicJobs } from './job.repository.js';
+import { notFoundError } from '../../lib/appError.js';
+import { findPublicJobByIdentifier, listPublicJobs } from './job.repository.js';
 import { toPublicJob } from './job.presenter.js';
 
 export async function getPublicJobs(
@@ -20,4 +21,13 @@ export async function getPublicJobs(
       totalPages: Math.ceil(total / filters.pageSize),
     },
   };
+}
+
+export async function getPublicJob(
+  identifier,
+  { findJob = findPublicJobByIdentifier, now = () => new Date() } = {},
+) {
+  const job = await findJob(identifier, now());
+  if (!job) throw notFoundError('The requested job is not available.');
+  return toPublicJob(job);
 }

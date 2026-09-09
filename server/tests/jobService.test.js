@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getPublicJobs } from '../src/modules/jobs/job.service.js';
+import { getPublicJob, getPublicJobs } from '../src/modules/jobs/job.service.js';
 
 function jobRecord() {
   return {
@@ -46,5 +46,20 @@ describe('public job service', () => {
       undefined,
       'northstar-labs',
     );
+  });
+
+  it('returns a presented public job detail', async () => {
+    const findJob = vi.fn().mockResolvedValue(jobRecord());
+
+    const result = await getPublicJob('job-1', { findJob });
+
+    expect(findJob).toHaveBeenCalledWith('job-1', expect.any(Date));
+    expect(result).toMatchObject({ id: 'job-1', employmentType: 'Full-time' });
+  });
+
+  it('returns not found for unavailable or non-public jobs', async () => {
+    await expect(
+      getPublicJob('closed-job', { findJob: vi.fn().mockResolvedValue(null) }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
   });
 });
