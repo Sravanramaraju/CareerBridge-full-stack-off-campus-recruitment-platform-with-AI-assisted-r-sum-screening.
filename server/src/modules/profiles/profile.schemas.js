@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { canonicalizeSkillName, normalizeSkillName } from './skillNormalization.js';
 
 const optionalText = (maximum) => z.string().trim().max(maximum).nullable().optional();
 const preferenceList = z.array(z.string().trim().min(1).max(100)).max(20);
@@ -189,4 +190,37 @@ export const applicantCertificationUpdateSchema = z
   .refine(validCertificationDates, {
     message: 'Expiration date must not be earlier than issue date.',
     path: ['expiresAt'],
+  });
+
+const skillNameSchema = z
+  .string()
+  .transform(canonicalizeSkillName)
+  .pipe(z.string().min(1).max(100));
+
+const applicantSkillSchema = z
+  .object({
+    name: skillNameSchema,
+    proficiency: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']).nullable().optional(),
+    yearsExperience: z.number().min(0).max(80).multipleOf(0.1).nullable().optional(),
+  })
+  .strict();
+
+export const applicantSkillsReplaceSchema = z
+  .object({
+    skills: z.array(applicantSkillSchema).max(50),
+  })
+  .strict()
+  .superRefine(({ skills }, context) => {
+    const names = new Set();
+    skills.forEach((skill, index) => {
+      const normalizedName = normalizeSkillName(skill.name);
+      if (names.has(normalizedName)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Each skill may be included only once.',
+          path: ['skills', index, 'name'],
+        });
+      }
+      names.add(normalizedName);
+    });
   });

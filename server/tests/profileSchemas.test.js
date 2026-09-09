@@ -9,6 +9,7 @@ import {
   applicantProfileUpdateSchema,
   applicantProjectCreateSchema,
   applicantProjectUpdateSchema,
+  applicantSkillsReplaceSchema,
   profileRecordParamsSchema,
 } from '../src/modules/profiles/profile.schemas.js';
 
@@ -193,5 +194,35 @@ describe('applicant certification request schemas', () => {
       }).success,
     ).toBe(false);
     expect(applicantCertificationUpdateSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('applicant skill request schema', () => {
+  it('normalizes structured skills and accepts an empty replacement', () => {
+    expect(
+      applicantSkillsReplaceSchema.parse({
+        skills: [
+          { name: '  Node.js   and Express ', proficiency: 'ADVANCED', yearsExperience: 2.5 },
+        ],
+      }),
+    ).toEqual({
+      skills: [
+        { name: 'Node.js and Express', proficiency: 'ADVANCED', yearsExperience: 2.5 },
+      ],
+    });
+    expect(applicantSkillsReplaceSchema.parse({ skills: [] })).toEqual({ skills: [] });
+  });
+
+  it('rejects case-insensitive duplicates and invalid experience', () => {
+    expect(
+      applicantSkillsReplaceSchema.safeParse({
+        skills: [{ name: 'React' }, { name: ' react ' }],
+      }).success,
+    ).toBe(false);
+    expect(
+      applicantSkillsReplaceSchema.safeParse({
+        skills: [{ name: 'React', yearsExperience: -1 }],
+      }).success,
+    ).toBe(false);
   });
 });
