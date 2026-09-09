@@ -151,3 +151,42 @@ export const applicantProjectUpdateSchema = z
     message: 'Completion date must not be earlier than start date.',
     path: ['completedAt'],
   });
+
+const certificationFields = {
+  name: z.string().trim().min(2).max(200),
+  issuer: z.string().trim().min(2).max(200),
+  issuedAt: optionalDate,
+  expiresAt: optionalDate,
+  credentialId: optionalText(200),
+  credentialUrl: optionalUrl,
+  displayOrder: z.number().int().min(0).max(1_000),
+};
+
+function validCertificationDates(certification) {
+  return !certification.issuedAt
+    || !certification.expiresAt
+    || certification.expiresAt >= certification.issuedAt;
+}
+
+export const applicantCertificationCreateSchema = z
+  .object({
+    ...certificationFields,
+    displayOrder: certificationFields.displayOrder.default(0),
+  })
+  .strict()
+  .refine(validCertificationDates, {
+    message: 'Expiration date must not be earlier than issue date.',
+    path: ['expiresAt'],
+  });
+
+export const applicantCertificationUpdateSchema = z
+  .object(certificationFields)
+  .partial()
+  .strict()
+  .refine((updates) => Object.keys(updates).length > 0, {
+    message: 'Provide at least one certification field to update.',
+  })
+  .refine(validCertificationDates, {
+    message: 'Expiration date must not be earlier than issue date.',
+    path: ['expiresAt'],
+  });

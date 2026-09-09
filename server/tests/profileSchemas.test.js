@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applicantCertificationCreateSchema,
+  applicantCertificationUpdateSchema,
   applicantEducationCreateSchema,
   applicantEducationUpdateSchema,
   applicantExperienceCreateSchema,
@@ -153,5 +155,43 @@ describe('applicant project request schemas', () => {
       }).success,
     ).toBe(false);
     expect(applicantProjectUpdateSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('applicant certification request schemas', () => {
+  it('normalizes certificate metadata and dates', () => {
+    const result = applicantCertificationCreateSchema.parse({
+      name: ' AWS Certified Cloud Practitioner ',
+      issuer: ' Amazon Web Services ',
+      issuedAt: '2026-01-15',
+      expiresAt: '2029-01-15',
+      credentialUrl: 'https://example.com/certificates/aws',
+    });
+
+    expect(result).toMatchObject({
+      name: 'AWS Certified Cloud Practitioner',
+      issuer: 'Amazon Web Services',
+      displayOrder: 0,
+    });
+    expect(result.issuedAt).toBeInstanceOf(Date);
+  });
+
+  it('rejects invalid links, reversed dates, and empty updates', () => {
+    expect(
+      applicantCertificationCreateSchema.safeParse({
+        name: 'Cloud Certificate',
+        issuer: 'Training Provider',
+        credentialUrl: 'not-a-url',
+      }).success,
+    ).toBe(false);
+    expect(
+      applicantCertificationCreateSchema.safeParse({
+        name: 'Cloud Certificate',
+        issuer: 'Training Provider',
+        issuedAt: '2026-06-01',
+        expiresAt: '2026-01-01',
+      }).success,
+    ).toBe(false);
+    expect(applicantCertificationUpdateSchema.safeParse({}).success).toBe(false);
   });
 });
