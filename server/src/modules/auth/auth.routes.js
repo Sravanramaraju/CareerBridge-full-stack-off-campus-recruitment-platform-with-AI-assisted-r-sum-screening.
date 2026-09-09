@@ -6,8 +6,13 @@ import {
   currentUserHandler,
   loginHandler,
   logoutHandler,
+  recruiterSignupHandler,
 } from './auth.controller.js';
-import { applicantSignupSchema, loginSchema } from './auth.schemas.js';
+import {
+  applicantSignupSchema,
+  loginSchema,
+  recruiterSignupSchema,
+} from './auth.schemas.js';
 
 export const authRouter = Router();
 
@@ -16,6 +21,11 @@ authRouter.post(
   '/signup/applicant',
   validateRequest({ body: applicantSignupSchema }),
   applicantSignupHandler,
+);
+authRouter.post(
+  '/signup/recruiter',
+  validateRequest({ body: recruiterSignupSchema }),
+  recruiterSignupHandler,
 );
 authRouter.get('/me', requireAuth, currentUserHandler);
 authRouter.post('/logout', logoutHandler);

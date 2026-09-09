@@ -3,6 +3,7 @@ import {
   createApplicantSignupHandler,
   createLoginHandler,
   createLogoutHandler,
+  createRecruiterSignupHandler,
   currentUserHandler,
 } from '../src/modules/auth/auth.controller.js';
 
@@ -108,6 +109,38 @@ describe('authentication controller', () => {
 
     expect(register).toHaveBeenCalledWith(
       expect.objectContaining({ email: 'ananya@example.com', userAgent: 'test-agent' }),
+    );
+    expect(response.status).toHaveBeenCalledWith(201);
+  });
+
+  it('passes company information to recruiter registration', async () => {
+    const register = vi.fn().mockResolvedValue({
+      user: { id: 'recruiter-1', role: 'RECRUITER' },
+      token: 'session-token',
+      csrfToken: 'csrf-token',
+      expiresAt: new Date('2026-09-10T00:00:00.000Z'),
+    });
+    const request = {
+      validated: {
+        body: {
+          name: 'Rohan Mehta',
+          email: 'rohan@example.com',
+          password: 'password',
+          companyName: 'Northstar Labs',
+        },
+      },
+      get: vi.fn().mockReturnValue('test-agent'),
+    };
+    const response = {
+      cookie: vi.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn((body) => body),
+    };
+
+    await createRecruiterSignupHandler({ register })(request, response, vi.fn());
+
+    expect(register).toHaveBeenCalledWith(
+      expect.objectContaining({ companyName: 'Northstar Labs', userAgent: 'test-agent' }),
     );
     expect(response.status).toHaveBeenCalledWith(201);
   });

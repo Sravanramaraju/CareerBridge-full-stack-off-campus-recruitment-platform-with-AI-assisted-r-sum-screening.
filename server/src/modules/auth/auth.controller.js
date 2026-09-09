@@ -8,7 +8,7 @@ import {
 import { login } from './login.service.js';
 import { toSafeUser } from './safeUser.js';
 import { revokeSession } from './session.service.js';
-import { registerApplicant } from './signup.service.js';
+import { registerApplicant, registerRecruiter } from './signup.service.js';
 
 function sendAuthenticatedResponse(response, result, status = 200) {
   response.cookie(
@@ -57,6 +57,22 @@ export function createApplicantSignupHandler({ register = registerApplicant } = 
 }
 
 export const applicantSignupHandler = createApplicantSignupHandler();
+
+export function createRecruiterSignupHandler({ register = registerRecruiter } = {}) {
+  return async (request, response, next) => {
+    try {
+      const result = await register({
+        ...request.validated.body,
+        userAgent: request.get('user-agent'),
+      });
+      return sendAuthenticatedResponse(response, result, 201);
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export const recruiterSignupHandler = createRecruiterSignupHandler();
 
 export function currentUserHandler(request, response) {
   return response.json({

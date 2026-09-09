@@ -78,4 +78,19 @@ describe('health API', () => {
 
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
   });
+
+  it('requires company identity during recruiter signup', async () => {
+    const response = await request(createApp())
+      .post('/api/v1/auth/signup/recruiter')
+      .send({
+        name: 'Rohan Mehta',
+        companyName: '',
+        email: 'rohan@example.com',
+        password: 'password',
+        acceptedTerms: true,
+      })
+      .expect(422);
+
+    expect(response.body.error.fields['body.companyName']).toEqual(expect.any(String));
+  });
 });
