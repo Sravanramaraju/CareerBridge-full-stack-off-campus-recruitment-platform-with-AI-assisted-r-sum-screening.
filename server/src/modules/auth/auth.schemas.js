@@ -27,3 +27,12 @@ export const applicantSignupSchema = signupBaseSchema;
 export const recruiterSignupSchema = signupBaseSchema.extend({
   companyName: z.string().trim().min(2).max(160),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: normalizedEmailSchema,
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(32).max(128),
+  password: passwordSchema,
+});

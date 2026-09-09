@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   applicantSignupSchema,
+  forgotPasswordSchema,
   loginSchema,
   normalizedEmailSchema,
   recruiterSignupSchema,
+  resetPasswordSchema,
 } from '../src/modules/auth/auth.schemas.js';
 
 describe('authentication validation', () => {
@@ -46,5 +48,17 @@ describe('authentication validation', () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it('normalizes forgot-password email input', () => {
+    expect(forgotPasswordSchema.parse({ email: ' User@Example.com ' })).toEqual({
+      email: 'user@example.com',
+    });
+  });
+
+  it('rejects short reset tokens and weak replacement passwords', () => {
+    expect(resetPasswordSchema.safeParse({ token: 'short', password: 'tiny' }).success).toBe(
+      false,
+    );
   });
 });
