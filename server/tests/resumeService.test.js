@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   deleteApplicantResume,
+  getResumeContent,
   getApplicantResumes,
   setPrimaryResume,
   uploadApplicantResume,
@@ -139,5 +140,38 @@ describe('resume service', () => {
       runTransaction: (operation) => operation({}),
       findResume: vi.fn().mockResolvedValue(null),
     })).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
+  });
+
+  it('opens résumé bytes only after an authorized metadata lookup', async () => {
+    const buffer = Buffer.from('%PDF');
+    const storage = { open: vi.fn().mockResolvedValue(buffer) };
+    const findResume = vi.fn().mockResolvedValue({
+      originalFileName: 'Ananya_Resume.pdf',
+      storageProvider: 'LOCAL',
+      storageKey: 'resumes/2026/09/random.pdf',
+      mimeType: 'application/pdf',
+      fileSize: 4,
+    });
+
+    await expect(getResumeContent('recruiter-1', 'RECRUITER', 'resume-1', {
+      findResume,
+      storage,
+    })).resolves.toEqual({
+      buffer,
+      fileName: 'Ananya_Resume.pdf',
+      mimeType: 'application/pdf',
+      fileSize: 4,
+    });
+    expect(findResume).toHaveBeenCalledWith('resume-1', 'recruiter-1', 'RECRUITER');
+    expect(storage.open).toHaveBeenCalledWith('resumes/2026/09/random.pdf');
+  });
+
+  it('does not open storage for unauthorized résumé identifiers', async () => {
+    const storage = { open: vi.fn() };
+    await expect(getResumeContent('recruiter-1', 'RECRUITER', 'foreign-resume', {
+      findResume: vi.fn().mockResolvedValue(null),
+      storage,
+    })).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
+    expect(storage.open).not.toHaveBeenCalled();
   });
 });

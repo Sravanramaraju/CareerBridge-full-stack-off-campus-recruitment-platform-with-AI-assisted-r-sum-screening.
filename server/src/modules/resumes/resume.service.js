@@ -4,6 +4,7 @@ import { localStorageService } from './localStorage.service.js';
 import {
   clearOwnedPrimaryResumes,
   createApplicantResume,
+  findAccessibleResume,
   findNewestOwnedResume,
   findOwnedResume,
   findOwnedResumeMetadata,
@@ -129,4 +130,28 @@ export async function deleteApplicantResume(
     }
     return { deleted: true };
   });
+}
+
+export async function getResumeContent(
+  userId,
+  role,
+  resumeId,
+  {
+    findResume = findAccessibleResume,
+    storage = localStorageService,
+  } = {},
+) {
+  const resume = await findResume(resumeId, userId, role);
+  if (!resume) throw resumeNotFoundError();
+  if (resume.storageProvider !== 'LOCAL') {
+    throw notFoundError('The requested résumé content is unavailable.');
+  }
+
+  const buffer = await storage.open(resume.storageKey);
+  return {
+    buffer,
+    fileName: resume.originalFileName,
+    mimeType: resume.mimeType,
+    fileSize: resume.fileSize,
+  };
 }
