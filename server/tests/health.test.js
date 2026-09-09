@@ -57,4 +57,10 @@ describe('health API', () => {
       },
     });
   });
+
+  it('protects the current-session endpoint', async () => {
+    const response = await request(createApp()).get('/api/v1/auth/me').expect(401);
+
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
 });

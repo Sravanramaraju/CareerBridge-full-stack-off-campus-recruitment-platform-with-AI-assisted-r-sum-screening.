@@ -1,6 +1,7 @@
 import { env } from '../../config/env.js';
 import { csrfCookieOptions, sessionCookieOptions } from './auth.cookies.js';
 import { login } from './login.service.js';
+import { toSafeUser } from './safeUser.js';
 
 export function createLoginHandler({ authenticate = login } = {}) {
   return async (request, response, next) => {
@@ -33,3 +34,12 @@ export function createLoginHandler({ authenticate = login } = {}) {
 }
 
 export const loginHandler = createLoginHandler();
+
+export function currentUserHandler(request, response) {
+  return response.json({
+    data: {
+      user: toSafeUser(request.auth.user),
+      expiresAt: request.auth.expiresAt,
+    },
+  });
+}
