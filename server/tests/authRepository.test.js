@@ -9,6 +9,7 @@ import {
   findUserForLogin,
   findUserIdByEmail,
   recordSuccessfulLogin,
+  updateUserPassword,
 } from '../src/modules/auth/auth.repository.js';
 
 describe('authentication repository', () => {
@@ -145,5 +146,16 @@ describe('authentication repository', () => {
         where: { tokenHash: 'hash', usedAt: null, expiresAt: { gt: now } },
       }),
     );
+  });
+
+  it('updates a user password using only the supplied hash', async () => {
+    const update = vi.fn().mockResolvedValue({ id: 'user-1' });
+
+    await updateUserPassword('user-1', 'argon2id-hash', { user: { update } });
+
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: { passwordHash: 'argon2id-hash' },
+    });
   });
 });

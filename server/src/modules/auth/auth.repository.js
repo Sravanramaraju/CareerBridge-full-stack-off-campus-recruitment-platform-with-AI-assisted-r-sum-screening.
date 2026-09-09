@@ -109,3 +109,10 @@ export function markPasswordResetTokenUsed(tokenId, usedAt = new Date(), databas
     data: { usedAt },
   });
 }
+
+export function updateUserPassword(userId, passwordHash, database = prisma) {
+  return database.user.update({
+    where: { id: userId },
+    data: { passwordHash },
+  });
+}
