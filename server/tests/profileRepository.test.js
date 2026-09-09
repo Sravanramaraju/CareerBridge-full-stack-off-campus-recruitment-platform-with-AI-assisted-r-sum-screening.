@@ -4,15 +4,18 @@ import {
   createApplicantEducation,
   createApplicantExperience,
   createApplicantProject,
+  deleteOwnedApplicantCertification,
   deleteOwnedApplicantEducation,
   deleteOwnedApplicantExperience,
   deleteOwnedApplicantProject,
   findApplicantProfileByUserId,
+  findOwnedApplicantCertification,
   findOwnedApplicantEducation,
   findOwnedApplicantExperience,
   findOwnedApplicantProject,
   updateApplicantProfileRecord,
   updateApplicantUserName,
+  updateOwnedApplicantCertification,
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
   updateOwnedApplicantProject,
@@ -216,6 +219,3 @@ describe('applicant profile repository', () => {
     expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
   });
 });
-  deleteOwnedApplicantCertification,
-  findOwnedApplicantCertification,
-  updateOwnedApplicantCertification,
