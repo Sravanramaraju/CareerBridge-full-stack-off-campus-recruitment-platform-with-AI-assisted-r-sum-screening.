@@ -124,3 +124,11 @@ export function findCompanyMembershipForUser(userId, database = prisma) {
     },
   });
 }
+
+export function updateCompanyRecord(companyId, updates, database = prisma) {
+  return database.company.update({
+    where: { id: companyId },
+    data: updates,
+    select: recruiterCompanySelection,
+  });
+}

@@ -3,6 +3,7 @@ import {
   findCompanyMembershipForUser,
   findPublicCompanyByIdentifier,
   listPublicCompanies,
+  updateCompanyRecord,
 } from '../src/modules/companies/company.repository.js';
 
 describe('company repository', () => {
@@ -84,5 +85,18 @@ describe('company repository', () => {
         }),
       }),
     );
+  });
+
+  it('updates only the membership-resolved company record', async () => {
+    const update = vi.fn().mockResolvedValue({ id: 'company-1' });
+    const updates = { name: 'Northstar Labs', description: 'Updated company profile.' };
+
+    await updateCompanyRecord('company-1', updates, { company: { update } });
+
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'company-1' },
+      data: updates,
+      select: expect.objectContaining({ id: true, verificationStatus: true }),
+    });
   });
 });
