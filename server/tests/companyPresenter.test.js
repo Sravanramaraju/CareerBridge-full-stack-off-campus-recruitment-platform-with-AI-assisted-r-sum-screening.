@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { toPublicCompany } from '../src/modules/companies/company.presenter.js';
+import {
+  toPublicCompany,
+  toRecruiterCompany,
+} from '../src/modules/companies/company.presenter.js';
 
 describe('public company presenter', () => {
   it('preserves the current frontend contract from canonical fields', () => {
@@ -46,6 +49,30 @@ describe('public company presenter', () => {
       location: 'Remote, India',
       verified: false,
       openRoles: 0,
+    });
+  });
+
+  it('presents membership-owned company data for the existing recruiter form', () => {
+    const result = toRecruiterCompany({
+      role: 'OWNER',
+      company: {
+        id: 'company-1',
+        name: 'Northstar Labs',
+        description: 'Developer infrastructure.',
+        brandInitials: null,
+        brandColor: null,
+        verificationStatus: 'NEEDS_CHANGES',
+      },
+    });
+
+    expect(result).toMatchObject({
+      id: 'company-1',
+      about: 'Developer infrastructure.',
+      initials: 'NL',
+      accent: '#2658d8',
+      verificationCode: 'NEEDS_CHANGES',
+      verificationStatus: 'Needs changes',
+      membershipRole: 'OWNER',
     });
   });
 });
