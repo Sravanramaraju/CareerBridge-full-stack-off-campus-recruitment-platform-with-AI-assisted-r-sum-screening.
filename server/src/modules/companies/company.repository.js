@@ -88,3 +88,37 @@ export function findPublicCompanyByIdentifier(identifier, now = new Date(), data
     select: publicCompanySelection(now),
   });
 }
+
+export function findCompanyMembershipForUser(userId, database = prisma) {
+  return database.companyMember.findFirst({
+    where: { userId },
+    orderBy: [{ joinedAt: 'asc' }, { companyId: 'asc' }],
+    select: {
+      role: true,
+      joinedAt: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          website: true,
+          industry: true,
+          companyType: true,
+          size: true,
+          foundedYear: true,
+          headquarters: true,
+          locations: true,
+          benefits: true,
+          logoUrl: true,
+          brandInitials: true,
+          brandColor: true,
+          verificationStatus: true,
+          verifiedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+}

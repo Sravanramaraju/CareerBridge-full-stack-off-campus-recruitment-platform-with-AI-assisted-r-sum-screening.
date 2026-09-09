@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  findCompanyMembershipForUser,
   findPublicCompanyByIdentifier,
   listPublicCompanies,
 } from '../src/modules/companies/company.repository.js';
@@ -65,6 +66,22 @@ describe('company repository', () => {
           verificationStatus: 'VERIFIED',
           OR: [{ id: 'northstar-labs' }, { slug: 'northstar-labs' }],
         },
+      }),
+    );
+  });
+
+  it('resolves company access from an authenticated user membership', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+
+    await findCompanyMembershipForUser('recruiter-1', { companyMember: { findFirst } });
+
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'recruiter-1' },
+        select: expect.objectContaining({
+          role: true,
+          company: { select: expect.objectContaining({ id: true, verificationStatus: true }) },
+        }),
       }),
     );
   });
