@@ -63,4 +63,10 @@ describe('health API', () => {
 
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
+
+  it('keeps logout idempotent when no session cookie exists', async () => {
+    const response = await request(createApp()).post('/api/v1/auth/logout').expect(200);
+
+    expect(response.body.data.loggedOut).toBe(true);
+  });
 });

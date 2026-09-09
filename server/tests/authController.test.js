@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createLoginHandler,
+  createLogoutHandler,
   currentUserHandler,
 } from '../src/modules/auth/auth.controller.js';
 
@@ -61,5 +62,20 @@ describe('authentication controller', () => {
       },
     });
     expect(response.json.mock.calls[0][0].data.user).not.toHaveProperty('passwordHash');
+  });
+
+  it('revokes the active session and clears both cookies on logout', async () => {
+    const revoke = vi.fn().mockResolvedValue({ count: 1 });
+    const request = { cookies: { careerbridge_session: 'raw-token' } };
+    const response = {
+      clearCookie: vi.fn(),
+      json: vi.fn((body) => body),
+    };
+
+    await createLogoutHandler({ revoke })(request, response, vi.fn());
+
+    expect(revoke).toHaveBeenCalledWith('raw-token');
+    expect(response.clearCookie).toHaveBeenCalledTimes(2);
+    expect(response.json).toHaveBeenCalledWith({ data: { loggedOut: true } });
   });
 });

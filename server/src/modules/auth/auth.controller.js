@@ -1,7 +1,13 @@
 import { env } from '../../config/env.js';
-import { csrfCookieOptions, sessionCookieOptions } from './auth.cookies.js';
+import {
+  clearedCsrfCookieOptions,
+  clearedSessionCookieOptions,
+  csrfCookieOptions,
+  sessionCookieOptions,
+} from './auth.cookies.js';
 import { login } from './login.service.js';
 import { toSafeUser } from './safeUser.js';
+import { revokeSession } from './session.service.js';
 
 export function createLoginHandler({ authenticate = login } = {}) {
   return async (request, response, next) => {
@@ -43,3 +49,18 @@ export function currentUserHandler(request, response) {
     },
   });
 }
+
+export function createLogoutHandler({ revoke = revokeSession } = {}) {
+  return async (request, response, next) => {
+    try {
+      await revoke(request.cookies?.[env.SESSION_COOKIE_NAME]);
+      response.clearCookie(env.SESSION_COOKIE_NAME, clearedSessionCookieOptions());
+      response.clearCookie(env.CSRF_COOKIE_NAME, clearedCsrfCookieOptions());
+      return response.json({ data: { loggedOut: true } });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export const logoutHandler = createLogoutHandler();
