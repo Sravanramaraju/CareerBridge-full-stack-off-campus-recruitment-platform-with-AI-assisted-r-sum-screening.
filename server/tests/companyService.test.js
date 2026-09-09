@@ -3,6 +3,7 @@ import {
   getPublicCompanies,
   getPublicCompany,
   getRecruiterCompany,
+  updateRecruiterCompany,
 } from '../src/modules/companies/company.service.js';
 
 describe('company service', () => {
@@ -89,5 +90,51 @@ describe('company service', () => {
         findMembership: vi.fn().mockResolvedValue(null),
       }),
     ).rejects.toMatchObject({ code: 'COMPANY_MEMBERSHIP_REQUIRED', status: 403 });
+  });
+
+  it('updates the company id derived from membership in one transaction', async () => {
+    const database = { marker: 'transaction-client' };
+    const updateCompany = vi.fn().mockResolvedValue({
+      id: 'company-1',
+      name: 'Northstar Labs',
+      description: 'Updated profile.',
+      brandInitials: 'NL',
+      brandColor: '#2658d8',
+      verificationStatus: 'VERIFIED',
+    });
+
+    const result = await updateRecruiterCompany(
+      'recruiter-1',
+      { name: 'Northstar Labs', about: 'Updated profile.' },
+      {
+        runTransaction: (operation) => operation(database),
+        findMembership: vi.fn().mockResolvedValue({
+          role: 'OWNER',
+          company: { id: 'company-1' },
+        }),
+        updateCompany,
+      },
+    );
+
+    expect(updateCompany).toHaveBeenCalledWith(
+      'company-1',
+      { name: 'Northstar Labs', description: 'Updated profile.' },
+      database,
+    );
+    expect(result).toMatchObject({ id: 'company-1', about: 'Updated profile.' });
+  });
+
+  it('does not update a company when membership is absent', async () => {
+    const updateCompany = vi.fn();
+
+    await expect(
+      updateRecruiterCompany('recruiter-1', { name: 'Unauthorized edit' }, {
+        runTransaction: (operation) => operation({}),
+        findMembership: vi.fn().mockResolvedValue(null),
+        updateCompany,
+      }),
+    ).rejects.toMatchObject({ code: 'COMPANY_MEMBERSHIP_REQUIRED' });
+
+    expect(updateCompany).not.toHaveBeenCalled();
   });
 });

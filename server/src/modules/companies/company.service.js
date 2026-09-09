@@ -1,8 +1,10 @@
 import { AppError, notFoundError } from '../../lib/appError.js';
+import { prisma } from '../../lib/database.js';
 import {
   findCompanyMembershipForUser,
   findPublicCompanyByIdentifier,
   listPublicCompanies,
+  updateCompanyRecord,
 } from './company.repository.js';
 import { toPublicCompany, toRecruiterCompany } from './company.presenter.js';
 
@@ -47,4 +49,25 @@ export async function getRecruiterCompany(
   const membership = await findMembership(userId);
   if (!membership) throw membershipRequiredError();
   return toRecruiterCompany(membership);
+}
+
+export async function updateRecruiterCompany(
+  userId,
+  input,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findMembership = findCompanyMembershipForUser,
+    updateCompany = updateCompanyRecord,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const membership = await findMembership(userId, database);
+    if (!membership) throw membershipRequiredError();
+
+    const { about, ...updates } = input;
+    if (about !== undefined) updates.description = about;
+
+    const company = await updateCompany(membership.company.id, updates, database);
+    return toRecruiterCompany({ ...membership, company });
+  });
 }
