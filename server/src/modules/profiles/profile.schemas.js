@@ -70,3 +70,44 @@ export const applicantEducationUpdateSchema = z
     message: 'End year must not be earlier than start year.',
     path: ['endYear'],
   });
+
+const optionalDate = z.coerce.date().nullable().optional();
+const experienceFields = {
+  title: z.string().trim().min(2).max(160),
+  organization: z.string().trim().min(2).max(200),
+  location: optionalText(160),
+  employmentType: optionalText(100),
+  startDate: optionalDate,
+  endDate: optionalDate,
+  isCurrent: z.boolean(),
+  description: optionalText(2_000),
+  displayOrder: z.number().int().min(0).max(1_000),
+};
+
+function validExperienceDates(experience) {
+  return !experience.startDate || !experience.endDate || experience.endDate >= experience.startDate;
+}
+
+export const applicantExperienceCreateSchema = z
+  .object({
+    ...experienceFields,
+    isCurrent: experienceFields.isCurrent.default(false),
+    displayOrder: experienceFields.displayOrder.default(0),
+  })
+  .strict()
+  .refine(validExperienceDates, {
+    message: 'End date must not be earlier than start date.',
+    path: ['endDate'],
+  });
+
+export const applicantExperienceUpdateSchema = z
+  .object(experienceFields)
+  .partial()
+  .strict()
+  .refine((updates) => Object.keys(updates).length > 0, {
+    message: 'Provide at least one experience field to update.',
+  })
+  .refine(validExperienceDates, {
+    message: 'End date must not be earlier than start date.',
+    path: ['endDate'],
+  });

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   applicantEducationCreateSchema,
   applicantEducationUpdateSchema,
+  applicantExperienceCreateSchema,
+  applicantExperienceUpdateSchema,
   applicantProfileUpdateSchema,
   profileRecordParamsSchema,
 } from '../src/modules/profiles/profile.schemas.js';
@@ -83,5 +85,36 @@ describe('applicant education request schemas', () => {
       recordId: 'education-1',
     });
     expect(profileRecordParamsSchema.safeParse({ recordId: '' }).success).toBe(false);
+  });
+});
+
+describe('applicant experience request schemas', () => {
+  it('coerces form dates and supplies create defaults', () => {
+    const result = applicantExperienceCreateSchema.parse({
+      title: 'Frontend Intern',
+      organization: 'Northstar Labs',
+      startDate: '2026-01-15',
+      endDate: '2026-06-15',
+    });
+
+    expect(result).toMatchObject({
+      title: 'Frontend Intern',
+      organization: 'Northstar Labs',
+      isCurrent: false,
+      displayOrder: 0,
+    });
+    expect(result.startDate).toBeInstanceOf(Date);
+  });
+
+  it('rejects reversed experience dates and empty updates', () => {
+    expect(
+      applicantExperienceCreateSchema.safeParse({
+        title: 'Frontend Intern',
+        organization: 'Northstar Labs',
+        startDate: '2026-06-15',
+        endDate: '2026-01-15',
+      }).success,
+    ).toBe(false);
+    expect(applicantExperienceUpdateSchema.safeParse({}).success).toBe(false);
   });
 });
