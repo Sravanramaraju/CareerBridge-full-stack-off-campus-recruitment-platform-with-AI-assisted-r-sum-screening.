@@ -359,9 +359,9 @@ model Job {
   title              String
   department         String?
   category           String?
-  location           String
-  workMode           WorkMode
-  employmentType     EmploymentType
+  location           String?
+  workMode           WorkMode?
+  employmentType     EmploymentType?
   openings           Int                    @default(1)
   experienceMin      Int                    @default(0)
   experienceMax      Int                    @default(0)
@@ -369,15 +369,15 @@ model Job {
   salaryMax          Decimal?               @db.Decimal(12, 2)
   currency           String                 @default("INR")
   hideSalary         Boolean                @default(false)
-  summary            String
-  description        String
+  summary            String?
+  description        String?
   responsibilities   String[]               @default([])
-  qualification      String
+  qualification      String?
   contactVisible     Boolean                @default(true)
   featured           Boolean                @default(false)
   status             JobStatus              @default(DRAFT)
   moderationStatus   JobModerationStatus    @default(PENDING)
-  deadline           DateTime
+  deadline           DateTime?
   publishedAt        DateTime?
   closedAt           DateTime?
   createdAt          DateTime               @default(now())
