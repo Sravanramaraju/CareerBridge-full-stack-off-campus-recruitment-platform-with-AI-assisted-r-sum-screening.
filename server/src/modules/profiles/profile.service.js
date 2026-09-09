@@ -1,9 +1,13 @@
-import { notFoundError } from '../../lib/appError.js';
+import { AppError, notFoundError } from '../../lib/appError.js';
 import { prisma } from '../../lib/database.js';
 import {
+  createApplicantEducation,
+  deleteOwnedApplicantEducation,
   findApplicantProfileByUserId,
+  findOwnedApplicantEducation,
   updateApplicantProfileRecord,
   updateApplicantUserName,
+  updateOwnedApplicantEducation,
 } from './profile.repository.js';
 import { toApplicantProfile } from './profile.presenter.js';
 
@@ -47,4 +51,57 @@ export async function updateApplicantProfile(
     if (!profile) throw notFoundError('The applicant profile was not found.');
     return toApplicantProfile(profile);
   });
+}
+
+function educationNotFoundError() {
+  return notFoundError('The requested education record was not found.');
+}
+
+export function createEducation(
+  userId,
+  input,
+  { createRecord = createApplicantEducation } = {},
+) {
+  return createRecord(userId, input);
+}
+
+export async function updateEducation(
+  userId,
+  recordId,
+  input,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findRecord = findOwnedApplicantEducation,
+    updateRecord = updateOwnedApplicantEducation,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const current = await findRecord(recordId, userId, database);
+    if (!current) throw educationNotFoundError();
+
+    const startYear = input.startYear === undefined ? current.startYear : input.startYear;
+    const endYear = input.endYear === undefined ? current.endYear : input.endYear;
+    if (startYear && endYear && endYear < startYear) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: 'The request contains invalid education dates.',
+        status: 422,
+        fields: { 'body.endYear': 'End year must not be earlier than start year.' },
+      });
+    }
+
+    const updated = await updateRecord(recordId, userId, input, database);
+    if (updated.count !== 1) throw educationNotFoundError();
+    return findRecord(recordId, userId, database);
+  });
+}
+
+export async function deleteEducation(
+  userId,
+  recordId,
+  { deleteRecord = deleteOwnedApplicantEducation } = {},
+) {
+  const deleted = await deleteRecord(recordId, userId);
+  if (deleted.count !== 1) throw educationNotFoundError();
+  return { deleted: true };
 }
