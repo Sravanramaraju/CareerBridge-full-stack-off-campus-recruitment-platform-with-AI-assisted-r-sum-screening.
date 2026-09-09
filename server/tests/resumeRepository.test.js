@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  clearOwnedPrimaryResumes,
   createApplicantResume,
+  findNewestOwnedResume,
   findOwnedResume,
   findOwnedResumeMetadata,
   listApplicantResumes,
@@ -59,5 +61,29 @@ describe('resume repository', () => {
       data: { parseStatus: 'READY' },
     });
     expect(findFirst.mock.calls[1][0].select).not.toHaveProperty('storageKey');
+  });
+
+  it('clears primary state only across the authenticated applicant résumés', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    await clearOwnedPrimaryResumes('applicant-1', { resume: { updateMany } });
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: {
+        applicantProfile: { is: { userId: 'applicant-1' } },
+        deletedAt: null,
+        isPrimary: true,
+      },
+      data: { isPrimary: false },
+    });
+  });
+
+  it('finds the newest active replacement résumé', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    await findNewestOwnedResume('applicant-1', { resume: { findFirst } });
+
+    expect(findFirst).toHaveBeenCalledWith({
+      where: { applicantProfile: { is: { userId: 'applicant-1' } }, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
   });
 });

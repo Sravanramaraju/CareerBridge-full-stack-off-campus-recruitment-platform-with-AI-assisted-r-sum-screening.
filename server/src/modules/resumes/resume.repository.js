@@ -53,3 +53,21 @@ export function findOwnedResumeMetadata(resumeId, userId, database = prisma) {
     select: resumeMetadataSelection,
   });
 }
+
+export function clearOwnedPrimaryResumes(userId, database = prisma) {
+  return database.resume.updateMany({
+    where: {
+      applicantProfile: { is: { userId } },
+      deletedAt: null,
+      isPrimary: true,
+    },
+    data: { isPrimary: false },
+  });
+}
+
+export function findNewestOwnedResume(userId, database = prisma) {
+  return database.resume.findFirst({
+    where: { applicantProfile: { is: { userId } }, deletedAt: null },
+    orderBy: { createdAt: 'desc' },
+  });
+}
