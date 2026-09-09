@@ -26,3 +26,21 @@ export function recordSuccessfulLogin(userId, lastLoginAt, database = prisma) {
     include: roleContextInclude,
   });
 }
+
+export function findUserIdByEmail(email, database = prisma) {
+  return database.user.findUnique({ where: { email }, select: { id: true } });
+}
+
+export function createApplicantAccount({ name, email, passwordHash }, database = prisma) {
+  return database.user.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+      role: 'APPLICANT',
+      applicantProfile: { create: {} },
+      preference: { create: {} },
+    },
+    include: roleContextInclude,
+  });
+}

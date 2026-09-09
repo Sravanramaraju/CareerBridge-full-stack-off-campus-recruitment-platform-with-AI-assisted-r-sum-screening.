@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createApplicantAccount,
   findUserForLogin,
+  findUserIdByEmail,
   recordSuccessfulLogin,
 } from '../src/modules/auth/auth.repository.js';
 
@@ -25,6 +27,36 @@ describe('authentication repository', () => {
       expect.objectContaining({
         where: { id: 'user-1' },
         data: { lastLoginAt },
+      }),
+    );
+  });
+
+  it('checks duplicate emails using an identifier-only query', async () => {
+    const findUnique = vi.fn().mockResolvedValue(null);
+
+    await findUserIdByEmail('user@example.com', { user: { findUnique } });
+
+    expect(findUnique).toHaveBeenCalledWith({
+      where: { email: 'user@example.com' },
+      select: { id: true },
+    });
+  });
+
+  it('creates applicant profile and preferences with the account', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'user-1' });
+
+    await createApplicantAccount(
+      { name: 'Ananya Rao', email: 'ananya@example.com', passwordHash: 'hash' },
+      { user: { create } },
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          role: 'APPLICANT',
+          applicantProfile: { create: {} },
+          preference: { create: {} },
+        }),
       }),
     );
   });
