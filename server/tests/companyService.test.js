@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   getPublicCompanies,
   getPublicCompany,
+  getRecruiterCompany,
 } from '../src/modules/companies/company.service.js';
 
 describe('company service', () => {
@@ -61,5 +62,32 @@ describe('company service', () => {
         findCompany: vi.fn().mockResolvedValue(null),
       }),
     ).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
+  });
+
+  it('returns only the company derived from recruiter membership', async () => {
+    const findMembership = vi.fn().mockResolvedValue({
+      role: 'OWNER',
+      company: {
+        id: 'company-1',
+        name: 'Northstar Labs',
+        description: 'Developer infrastructure.',
+        brandInitials: 'NL',
+        brandColor: '#2658d8',
+        verificationStatus: 'VERIFIED',
+      },
+    });
+
+    const result = await getRecruiterCompany('recruiter-1', { findMembership });
+
+    expect(findMembership).toHaveBeenCalledWith('recruiter-1');
+    expect(result).toMatchObject({ id: 'company-1', membershipRole: 'OWNER' });
+  });
+
+  it('forbids recruiter company access without a membership', async () => {
+    await expect(
+      getRecruiterCompany('recruiter-1', {
+        findMembership: vi.fn().mockResolvedValue(null),
+      }),
+    ).rejects.toMatchObject({ code: 'COMPANY_MEMBERSHIP_REQUIRED', status: 403 });
   });
 });

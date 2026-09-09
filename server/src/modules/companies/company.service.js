@@ -1,9 +1,18 @@
-import { notFoundError } from '../../lib/appError.js';
+import { AppError, notFoundError } from '../../lib/appError.js';
 import {
+  findCompanyMembershipForUser,
   findPublicCompanyByIdentifier,
   listPublicCompanies,
 } from './company.repository.js';
-import { toPublicCompany } from './company.presenter.js';
+import { toPublicCompany, toRecruiterCompany } from './company.presenter.js';
+
+function membershipRequiredError() {
+  return new AppError({
+    code: 'COMPANY_MEMBERSHIP_REQUIRED',
+    message: 'You do not have access to a recruiter company.',
+    status: 403,
+  });
+}
 
 export async function getPublicCompanies(
   filters,
@@ -29,4 +38,13 @@ export async function getPublicCompany(
   const company = await findCompany(identifier, now());
   if (!company) throw notFoundError('The requested company was not found.');
   return toPublicCompany(company);
+}
+
+export async function getRecruiterCompany(
+  userId,
+  { findMembership = findCompanyMembershipForUser } = {},
+) {
+  const membership = await findMembership(userId);
+  if (!membership) throw membershipRequiredError();
+  return toRecruiterCompany(membership);
 }
