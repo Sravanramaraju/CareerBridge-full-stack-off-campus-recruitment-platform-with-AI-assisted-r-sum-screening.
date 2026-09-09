@@ -1,4 +1,4 @@
-import { getPublicCompanies } from './company.service.js';
+import { getPublicCompanies, getPublicCompany } from './company.service.js';
 
 export function createListCompaniesHandler({ getCompanies = getPublicCompanies } = {}) {
   return async (request, response, next) => {
@@ -12,3 +12,16 @@ export function createListCompaniesHandler({ getCompanies = getPublicCompanies }
 }
 
 export const listCompaniesHandler = createListCompaniesHandler();
+
+export function createGetCompanyHandler({ getCompany = getPublicCompany } = {}) {
+  return async (request, response, next) => {
+    try {
+      const company = await getCompany(request.validated.params.companyId);
+      return response.json({ data: company });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export const getCompanyHandler = createGetCompanyHandler();
