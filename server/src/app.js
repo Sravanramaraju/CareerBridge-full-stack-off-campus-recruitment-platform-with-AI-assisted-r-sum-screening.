@@ -20,6 +20,7 @@ import { applicantEducationRouter } from './modules/profiles/education.routes.js
 import { applicantExperienceRouter } from './modules/profiles/experience.routes.js';
 import { applicantProfileRouter } from './modules/profiles/profile.routes.js';
 import { applicantProjectRouter } from './modules/profiles/project.routes.js';
+import { applicantSkillRouter } from './modules/profiles/skill.routes.js';
 
 export function createApp({ databaseCheck } = {}) {
   const app = express();
@@ -45,6 +46,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/applicant/experience`, applicantExperienceRouter);
   app.use(`${API_PREFIX}/applicant/projects`, applicantProjectRouter);
   app.use(`${API_PREFIX}/applicant/certifications`, applicantCertificationRouter);
+  app.use(`${API_PREFIX}/applicant/skills`, applicantSkillRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 

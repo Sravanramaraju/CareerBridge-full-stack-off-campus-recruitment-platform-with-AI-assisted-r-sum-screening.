@@ -66,3 +66,14 @@ describe('applicant certification routes', () => {
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
 });
+
+describe('applicant skill routes', () => {
+  it('requires authentication before replacing skills', async () => {
+    const response = await request(createApp())
+      .put('/api/v1/applicant/skills')
+      .send({ skills: [] })
+      .expect(401);
+
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+});
