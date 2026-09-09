@@ -36,6 +36,13 @@ describe('public job request schemas', () => {
     expect(publicJobListQuerySchema.safeParse({ pageSize: 51 }).success).toBe(false);
   });
 
+  it('rejects facet values that have no backend domain mapping', () => {
+    expect(publicJobListQuerySchema.safeParse({ types: 'Volunteer' }).success).toBe(false);
+    expect(publicJobListQuerySchema.safeParse({ modes: 'Anywhere' }).success).toBe(false);
+    expect(publicJobListQuerySchema.safeParse({ salaryBands: 'Negotiable' }).success).toBe(false);
+    expect(publicJobListQuerySchema.safeParse({ companyTypes: 'Unknown' }).success).toBe(false);
+  });
+
   it('validates public job identifiers', () => {
     expect(jobIdentifierParamsSchema.parse({ jobId: 'frontend-engineer' })).toEqual({
       jobId: 'frontend-engineer',
