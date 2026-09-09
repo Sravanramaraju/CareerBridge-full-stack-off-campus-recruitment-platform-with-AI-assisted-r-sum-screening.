@@ -24,6 +24,16 @@ const environmentSchema = z.object({
   AUTH_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().min(1).max(60).default(15),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(1_000).default(20),
   PASSWORD_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(1_000).default(10),
+  SMTP_HOST: z.string().min(1).default('localhost'),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65_535).default(1025),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  SMTP_USER: z.string().default(''),
+  SMTP_PASS: z.string().default(''),
+  SMTP_FROM: z.string().min(3).default('CareerBridge <no-reply@careerbridge.local>'),
+  EMAIL_WORKER_INTERVAL_MS: z.coerce.number().int().min(1_000).max(300_000).default(10_000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 
