@@ -18,7 +18,11 @@ describe('authentication controller', () => {
       validated: { body: { email: 'user@example.com', password: 'password', rememberMe: false } },
       get: vi.fn().mockReturnValue('test-agent'),
     };
-    const response = { cookie: vi.fn(), json: vi.fn((body) => body) };
+    const response = {
+      cookie: vi.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn((body) => body),
+    };
     const next = vi.fn();
 
     await createLoginHandler({ authenticate })(request, response, next);
@@ -32,6 +36,7 @@ describe('authentication controller', () => {
     expect(response.json).toHaveBeenCalledWith({
       data: { user: { id: 'user-1', role: 'APPLICANT' }, expiresAt },
     });
+    expect(response.status).toHaveBeenCalledWith(200);
     expect(response.json.mock.calls[0][0]).not.toHaveProperty('data.token');
     expect(next).not.toHaveBeenCalled();
   });

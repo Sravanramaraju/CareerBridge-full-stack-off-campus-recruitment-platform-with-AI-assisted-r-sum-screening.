@@ -9,6 +9,21 @@ import { login } from './login.service.js';
 import { toSafeUser } from './safeUser.js';
 import { revokeSession } from './session.service.js';
 
+function sendAuthenticatedResponse(response, result, status = 200) {
+  response.cookie(
+    env.SESSION_COOKIE_NAME,
+    result.token,
+    sessionCookieOptions(result.expiresAt),
+  );
+  response.cookie(env.CSRF_COOKIE_NAME, result.csrfToken, csrfCookieOptions(result.expiresAt));
+  return response.status(status).json({
+    data: {
+      user: result.user,
+      expiresAt: result.expiresAt,
+    },
+  });
+}
+
 export function createLoginHandler({ authenticate = login } = {}) {
   return async (request, response, next) => {
     try {
@@ -17,22 +32,7 @@ export function createLoginHandler({ authenticate = login } = {}) {
         userAgent: request.get('user-agent'),
       });
 
-      response.cookie(
-        env.SESSION_COOKIE_NAME,
-        result.token,
-        sessionCookieOptions(result.expiresAt),
-      );
-      response.cookie(
-        env.CSRF_COOKIE_NAME,
-        result.csrfToken,
-        csrfCookieOptions(result.expiresAt),
-      );
-      return response.json({
-        data: {
-          user: result.user,
-          expiresAt: result.expiresAt,
-        },
-      });
+      return sendAuthenticatedResponse(response, result);
     } catch (error) {
       return next(error);
     }
