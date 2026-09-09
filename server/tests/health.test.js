@@ -69,4 +69,13 @@ describe('health API', () => {
 
     expect(response.body.data.loggedOut).toBe(true);
   });
+
+  it('validates applicant signup before opening a transaction', async () => {
+    const response = await request(createApp())
+      .post('/api/v1/auth/signup/applicant')
+      .send({ name: '', email: 'invalid', password: 'short', acceptedTerms: false })
+      .expect(422);
+
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
 });

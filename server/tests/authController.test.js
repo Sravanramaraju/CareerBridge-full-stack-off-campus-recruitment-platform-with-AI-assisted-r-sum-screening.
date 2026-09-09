@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createApplicantSignupHandler,
   createLoginHandler,
   createLogoutHandler,
   currentUserHandler,
@@ -82,5 +83,32 @@ describe('authentication controller', () => {
     expect(revoke).toHaveBeenCalledWith('raw-token');
     expect(response.clearCookie).toHaveBeenCalledTimes(2);
     expect(response.json).toHaveBeenCalledWith({ data: { loggedOut: true } });
+  });
+
+  it('returns a created response after applicant signup', async () => {
+    const register = vi.fn().mockResolvedValue({
+      user: { id: 'applicant-1', role: 'APPLICANT' },
+      token: 'session-token',
+      csrfToken: 'csrf-token',
+      expiresAt: new Date('2026-09-10T00:00:00.000Z'),
+    });
+    const request = {
+      validated: {
+        body: { name: 'Ananya Rao', email: 'ananya@example.com', password: 'password' },
+      },
+      get: vi.fn().mockReturnValue('test-agent'),
+    };
+    const response = {
+      cookie: vi.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn((body) => body),
+    };
+
+    await createApplicantSignupHandler({ register })(request, response, vi.fn());
+
+    expect(register).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'ananya@example.com', userAgent: 'test-agent' }),
+    );
+    expect(response.status).toHaveBeenCalledWith(201);
   });
 });
