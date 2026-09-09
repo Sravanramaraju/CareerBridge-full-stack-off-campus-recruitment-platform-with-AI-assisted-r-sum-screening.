@@ -223,3 +223,47 @@ export function deleteOwnedApplicantCertification(recordId, userId, database = p
     where: { id: recordId, applicantProfile: { is: { userId } } },
   });
 }
+
+export function findApplicantProfileIdByUserId(userId, database = prisma) {
+  return database.applicantProfile.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+}
+
+export function upsertSkillRecord({ name, normalizedName }, database = prisma) {
+  return database.skill.upsert({
+    where: { normalizedName },
+    create: { name, normalizedName },
+    update: {},
+    select: { id: true, name: true, normalizedName: true },
+  });
+}
+
+export function deleteApplicantSkills(applicantProfileId, database = prisma) {
+  return database.applicantSkill.deleteMany({ where: { applicantProfileId } });
+}
+
+export async function createApplicantSkills(applicantProfileId, skills, database = prisma) {
+  if (skills.length === 0) return { count: 0 };
+  return database.applicantSkill.createMany({
+    data: skills.map(({ skillId, proficiency, yearsExperience }) => ({
+      applicantProfileId,
+      skillId,
+      proficiency,
+      yearsExperience,
+    })),
+  });
+}
+
+export function findApplicantSkills(applicantProfileId, database = prisma) {
+  return database.applicantSkill.findMany({
+    where: { applicantProfileId },
+    orderBy: { skill: { name: 'asc' } },
+    select: {
+      proficiency: true,
+      yearsExperience: true,
+      skill: { select: { id: true, name: true, normalizedName: true } },
+    },
+  });
+}

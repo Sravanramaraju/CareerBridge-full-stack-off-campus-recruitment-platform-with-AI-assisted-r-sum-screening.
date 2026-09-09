@@ -4,11 +4,15 @@ import {
   createApplicantEducation,
   createApplicantExperience,
   createApplicantProject,
+  createApplicantSkills,
   deleteOwnedApplicantCertification,
   deleteOwnedApplicantEducation,
   deleteOwnedApplicantExperience,
   deleteOwnedApplicantProject,
+  deleteApplicantSkills,
   findApplicantProfileByUserId,
+  findApplicantProfileIdByUserId,
+  findApplicantSkills,
   findOwnedApplicantCertification,
   findOwnedApplicantEducation,
   findOwnedApplicantExperience,
@@ -19,6 +23,7 @@ import {
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
   updateOwnedApplicantProject,
+  upsertSkillRecord,
 } from '../src/modules/profiles/profile.repository.js';
 
 describe('applicant profile repository', () => {
@@ -217,5 +222,67 @@ describe('applicant profile repository', () => {
       data: { credentialId: 'AWS-123' },
     });
     expect(deleteMany).toHaveBeenCalledWith({ where: ownership });
+  });
+
+  it('loads the authenticated applicant profile identifier for skill replacement', async () => {
+    const findUnique = vi.fn().mockResolvedValue({ id: 'profile-1' });
+
+    await findApplicantProfileIdByUserId('applicant-1', {
+      applicantProfile: { findUnique },
+    });
+
+    expect(findUnique).toHaveBeenCalledWith({
+      where: { userId: 'applicant-1' },
+      select: { id: true },
+    });
+  });
+
+  it('upserts normalized shared skills without changing an existing display name', async () => {
+    const upsert = vi.fn().mockResolvedValue({ id: 'skill-1' });
+
+    await upsertSkillRecord(
+      { name: 'React', normalizedName: 'react' },
+      { skill: { upsert } },
+    );
+
+    expect(upsert).toHaveBeenCalledWith({
+      where: { normalizedName: 'react' },
+      create: { name: 'React', normalizedName: 'react' },
+      update: {},
+      select: { id: true, name: true, normalizedName: true },
+    });
+  });
+
+  it('replaces and reloads applicant skill links', async () => {
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const createMany = vi.fn().mockResolvedValue({ count: 1 });
+    const findMany = vi.fn().mockResolvedValue([]);
+    const database = { applicantSkill: { deleteMany, createMany, findMany } };
+
+    await deleteApplicantSkills('profile-1', database);
+    await createApplicantSkills(
+      'profile-1',
+      [{ skillId: 'skill-1', proficiency: 'ADVANCED', yearsExperience: 2.5 }],
+      database,
+    );
+    await findApplicantSkills('profile-1', database);
+
+    expect(deleteMany).toHaveBeenCalledWith({ where: { applicantProfileId: 'profile-1' } });
+    expect(createMany).toHaveBeenCalledWith({
+      data: [{
+        applicantProfileId: 'profile-1',
+        skillId: 'skill-1',
+        proficiency: 'ADVANCED',
+        yearsExperience: 2.5,
+      }],
+    });
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { applicantProfileId: 'profile-1' },
+      orderBy: { skill: { name: 'asc' } },
+    }));
+  });
+
+  it('clears applicant skills without issuing an empty createMany query', async () => {
+    await expect(createApplicantSkills('profile-1', [], {})).resolves.toEqual({ count: 0 });
   });
 });
