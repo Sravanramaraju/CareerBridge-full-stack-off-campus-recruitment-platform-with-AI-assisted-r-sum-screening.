@@ -12,6 +12,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { sessionAuth } from './middleware/sessionAuth.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { companyRouter } from './modules/companies/company.routes.js';
+import { recruiterCompanyRouter } from './modules/companies/recruiterCompany.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { jobRouter } from './modules/jobs/job.routes.js';
 
@@ -33,6 +34,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/auth`, authRouter);
   app.use(`${API_PREFIX}/companies`, companyRouter);
   app.use(`${API_PREFIX}/jobs`, jobRouter);
+  app.use(`${API_PREFIX}/recruiter/company`, recruiterCompanyRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
