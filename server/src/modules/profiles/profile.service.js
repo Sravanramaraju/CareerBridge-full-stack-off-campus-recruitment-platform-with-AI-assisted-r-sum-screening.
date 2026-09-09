@@ -3,15 +3,19 @@ import { prisma } from '../../lib/database.js';
 import {
   createApplicantEducation,
   createApplicantExperience,
+  createApplicantProject,
   deleteOwnedApplicantEducation,
   deleteOwnedApplicantExperience,
+  deleteOwnedApplicantProject,
   findApplicantProfileByUserId,
   findOwnedApplicantEducation,
   findOwnedApplicantExperience,
+  findOwnedApplicantProject,
   updateApplicantProfileRecord,
   updateApplicantUserName,
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
+  updateOwnedApplicantProject,
 } from './profile.repository.js';
 import { toApplicantProfile } from './profile.presenter.js';
 
@@ -160,5 +164,58 @@ export async function deleteExperience(
 ) {
   const deleted = await deleteRecord(recordId, userId);
   if (deleted.count !== 1) throw experienceNotFoundError();
+  return { deleted: true };
+}
+
+function projectNotFoundError() {
+  return notFoundError('The requested project record was not found.');
+}
+
+export function createProject(
+  userId,
+  input,
+  { createRecord = createApplicantProject } = {},
+) {
+  return createRecord(userId, input);
+}
+
+export async function updateProject(
+  userId,
+  recordId,
+  input,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findRecord = findOwnedApplicantProject,
+    updateRecord = updateOwnedApplicantProject,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const current = await findRecord(recordId, userId, database);
+    if (!current) throw projectNotFoundError();
+
+    const startedAt = input.startedAt === undefined ? current.startedAt : input.startedAt;
+    const completedAt = input.completedAt === undefined ? current.completedAt : input.completedAt;
+    if (startedAt && completedAt && completedAt < startedAt) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: 'The request contains invalid project dates.',
+        status: 422,
+        fields: { 'body.completedAt': 'Completion date must not be earlier than start date.' },
+      });
+    }
+
+    const updated = await updateRecord(recordId, userId, input, database);
+    if (updated.count !== 1) throw projectNotFoundError();
+    return findRecord(recordId, userId, database);
+  });
+}
+
+export async function deleteProject(
+  userId,
+  recordId,
+  { deleteRecord = deleteOwnedApplicantProject } = {},
+) {
+  const deleted = await deleteRecord(recordId, userId);
+  if (deleted.count !== 1) throw projectNotFoundError();
   return { deleted: true };
 }
