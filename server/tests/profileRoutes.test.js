@@ -54,3 +54,15 @@ describe('applicant project routes', () => {
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
 });
+
+describe('applicant certification routes', () => {
+  it.each([
+    ['post', '/api/v1/applicant/certifications'],
+    ['patch', '/api/v1/applicant/certifications/certification-1'],
+    ['delete', '/api/v1/applicant/certifications/certification-1'],
+  ])('requires authentication for %s %s', async (method, path) => {
+    const response = await request(createApp())[method](path).send({}).expect(401);
+
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+});
