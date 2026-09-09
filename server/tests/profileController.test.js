@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createGetApplicantProfileHandler } from '../src/modules/profiles/profile.controller.js';
+import {
+  createGetApplicantProfileHandler,
+  createUpdateApplicantProfileHandler,
+} from '../src/modules/profiles/profile.controller.js';
 
 describe('applicant profile controller', () => {
   it('returns the profile for the authenticated applicant identity', async () => {
@@ -26,5 +29,24 @@ describe('applicant profile controller', () => {
     })({ auth: { user: { id: 'applicant-1' } } }, { json: vi.fn() }, next);
 
     expect(next).toHaveBeenCalledWith(error);
+  });
+
+  it('updates the authenticated applicant with validated profile input', async () => {
+    const body = { headline: 'Frontend developer' };
+    const profile = { id: 'profile-1', ...body };
+    const updateProfile = vi.fn().mockResolvedValue(profile);
+    const response = { json: vi.fn((value) => value) };
+
+    await createUpdateApplicantProfileHandler({ updateProfile })(
+      {
+        auth: { user: { id: 'applicant-1' } },
+        validated: { body },
+      },
+      response,
+      vi.fn(),
+    );
+
+    expect(updateProfile).toHaveBeenCalledWith('applicant-1', body);
+    expect(response.json).toHaveBeenCalledWith({ data: profile });
   });
 });
