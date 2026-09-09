@@ -33,4 +33,13 @@ describe('health API', () => {
       database: { status: 'down' },
     });
   });
+
+  it('rejects unsafe requests from an untrusted origin', async () => {
+    const response = await request(createApp())
+      .post('/api/v1/missing')
+      .set('Origin', 'https://attacker.example')
+      .expect(403);
+
+    expect(response.body.error.code).toBe('INVALID_ORIGIN');
+  });
 });

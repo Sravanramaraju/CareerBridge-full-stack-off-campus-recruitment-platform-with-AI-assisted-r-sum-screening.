@@ -5,9 +5,11 @@ import express from 'express';
 import helmet from 'helmet';
 import { API_PREFIX, REQUEST_BODY_LIMIT } from './config/constants.js';
 import { env } from './config/env.js';
+import { csrfProtection } from './middleware/csrfProtection.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { requestLogger } from './middleware/requestLogger.js';
+import { sessionAuth } from './middleware/sessionAuth.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 
 export function createApp({ databaseCheck } = {}) {
@@ -19,6 +21,8 @@ export function createApp({ databaseCheck } = {}) {
   app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
   app.use(compression());
   app.use(cookieParser());
+  app.use(sessionAuth);
+  app.use(csrfProtection);
   app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
   app.use(express.urlencoded({ extended: false, limit: REQUEST_BODY_LIMIT }));
 
