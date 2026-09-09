@@ -104,8 +104,8 @@ export function findValidPasswordResetToken(tokenHash, now = new Date(), databas
 }
 
 export function markPasswordResetTokenUsed(tokenId, usedAt = new Date(), database = prisma) {
-  return database.passwordResetToken.update({
-    where: { id: tokenId },
+  return database.passwordResetToken.updateMany({
+    where: { id: tokenId, usedAt: null, expiresAt: { gt: usedAt } },
     data: { usedAt },
   });
 }

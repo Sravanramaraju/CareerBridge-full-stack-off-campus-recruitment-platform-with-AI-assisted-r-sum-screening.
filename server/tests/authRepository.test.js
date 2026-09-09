@@ -8,6 +8,7 @@ import {
   findValidPasswordResetToken,
   findUserForLogin,
   findUserIdByEmail,
+  markPasswordResetTokenUsed,
   recordSuccessfulLogin,
   updateUserPassword,
 } from '../src/modules/auth/auth.repository.js';
@@ -146,6 +147,20 @@ describe('authentication repository', () => {
         where: { tokenHash: 'hash', usedAt: null, expiresAt: { gt: now } },
       }),
     );
+  });
+
+  it('atomically consumes only an unused and unexpired reset token', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const usedAt = new Date('2026-09-09T00:00:00.000Z');
+
+    await markPasswordResetTokenUsed('reset-1', usedAt, {
+      passwordResetToken: { updateMany },
+    });
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { id: 'reset-1', usedAt: null, expiresAt: { gt: usedAt } },
+      data: { usedAt },
+    });
   });
 
   it('updates a user password using only the supplied hash', async () => {
