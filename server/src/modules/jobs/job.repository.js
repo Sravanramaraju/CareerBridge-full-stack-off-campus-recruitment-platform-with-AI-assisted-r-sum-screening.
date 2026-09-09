@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/database.js';
 import { buildPublicJobQuery } from './jobQuery.js';
 
-const publicJobSelection = {
+export const jobRecordSelection = {
   id: true,
   slug: true,
   companyId: true,
@@ -61,7 +61,7 @@ export async function listPublicJobs(
   const [jobs, total] = await Promise.all([
     database.job.findMany({
       where,
-      select: publicJobSelection,
+      select: jobRecordSelection,
       orderBy,
       skip: (filters.page - 1) * filters.pageSize,
       take: filters.pageSize,
@@ -81,6 +81,6 @@ export function findPublicJobByIdentifier(identifier, now = new Date(), database
       company: { is: { verificationStatus: 'VERIFIED' } },
       OR: [{ id: identifier }, { slug: identifier }],
     },
-    select: publicJobSelection,
+    select: jobRecordSelection,
   });
 }
