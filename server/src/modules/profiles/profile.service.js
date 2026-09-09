@@ -5,11 +5,15 @@ import {
   createApplicantEducation,
   createApplicantExperience,
   createApplicantProject,
+  createApplicantSkills,
+  deleteApplicantSkills,
   deleteOwnedApplicantCertification,
   deleteOwnedApplicantEducation,
   deleteOwnedApplicantExperience,
   deleteOwnedApplicantProject,
   findApplicantProfileByUserId,
+  findApplicantProfileIdByUserId,
+  findApplicantSkills,
   findOwnedApplicantCertification,
   findOwnedApplicantEducation,
   findOwnedApplicantExperience,
@@ -20,8 +24,10 @@ import {
   updateOwnedApplicantEducation,
   updateOwnedApplicantExperience,
   updateOwnedApplicantProject,
+  upsertSkillRecord,
 } from './profile.repository.js';
-import { toApplicantProfile } from './profile.presenter.js';
+import { toApplicantProfile, toApplicantSkillRecords } from './profile.presenter.js';
+import { normalizeSkillName } from './skillNormalization.js';
 
 export async function getApplicantProfile(
   userId,
@@ -275,4 +281,44 @@ export async function deleteCertification(
   const deleted = await deleteRecord(recordId, userId);
   if (deleted.count !== 1) throw certificationNotFoundError();
   return { deleted: true };
+}
+
+export async function replaceApplicantSkills(
+  userId,
+  skills,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findProfile = findApplicantProfileIdByUserId,
+    upsertSkill = upsertSkillRecord,
+    deleteSkills = deleteApplicantSkills,
+    createSkills = createApplicantSkills,
+    findSkills = findApplicantSkills,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const profile = await findProfile(userId, database);
+    if (!profile) throw notFoundError('The applicant profile was not found.');
+
+    const storedSkills = await Promise.all(
+      skills.map((skill) => upsertSkill({
+        name: skill.name,
+        normalizedName: normalizeSkillName(skill.name),
+      }, database)),
+    );
+
+    const links = storedSkills.map((skill, index) => ({
+      skillId: skill.id,
+      proficiency: skills[index].proficiency ?? null,
+      yearsExperience: skills[index].yearsExperience ?? null,
+    }));
+
+    await deleteSkills(profile.id, database);
+    await createSkills(profile.id, links, database);
+    const records = await findSkills(profile.id, database);
+
+    return {
+      skills: records.map(({ skill }) => skill.name),
+      skillRecords: toApplicantSkillRecords(records),
+    };
+  });
 }
