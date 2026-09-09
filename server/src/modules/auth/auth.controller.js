@@ -6,7 +6,7 @@ import {
   sessionCookieOptions,
 } from './auth.cookies.js';
 import { login } from './login.service.js';
-import { requestPasswordReset } from './passwordRecovery.service.js';
+import { requestPasswordReset, resetPassword } from './passwordRecovery.service.js';
 import { toSafeUser } from './safeUser.js';
 import { revokeSession } from './session.service.js';
 import { registerApplicant, registerRecruiter } from './signup.service.js';
@@ -91,6 +91,21 @@ export function createForgotPasswordHandler({ requestReset = requestPasswordRese
 }
 
 export const forgotPasswordHandler = createForgotPasswordHandler();
+
+export function createResetPasswordHandler({ reset = resetPassword } = {}) {
+  return async (request, response, next) => {
+    try {
+      const result = await reset(request.validated.body);
+      response.clearCookie(env.SESSION_COOKIE_NAME, clearedSessionCookieOptions());
+      response.clearCookie(env.CSRF_COOKIE_NAME, clearedCsrfCookieOptions());
+      return response.status(200).json({ data: result });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export const resetPasswordHandler = createResetPasswordHandler();
 
 export function currentUserHandler(request, response) {
   return response.json({

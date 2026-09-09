@@ -5,6 +5,7 @@ import {
   createLoginHandler,
   createLogoutHandler,
   createRecruiterSignupHandler,
+  createResetPasswordHandler,
   currentUserHandler,
 } from '../src/modules/auth/auth.controller.js';
 
@@ -159,5 +160,24 @@ describe('authentication controller', () => {
     expect(requestReset).toHaveBeenCalledWith('user@example.com');
     expect(response.status).toHaveBeenCalledWith(202);
     expect(response.json.mock.calls[0][0].data.message).not.toContain('user@example.com');
+  });
+
+  it('clears stale authentication cookies after resetting a password', async () => {
+    const reset = vi.fn().mockResolvedValue({ reset: true });
+    const request = {
+      validated: { body: { token: 'raw-reset-token', password: 'new-password' } },
+    };
+    const response = {
+      clearCookie: vi.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn((body) => body),
+    };
+
+    await createResetPasswordHandler({ reset })(request, response, vi.fn());
+
+    expect(reset).toHaveBeenCalledWith(request.validated.body);
+    expect(response.clearCookie).toHaveBeenCalledTimes(2);
+    expect(response.status).toHaveBeenCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith({ data: { reset: true } });
   });
 });

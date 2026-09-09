@@ -102,4 +102,16 @@ describe('health API', () => {
 
     expect(response.body.error.fields['body.email']).toEqual(expect.any(String));
   });
+
+  it('validates reset credentials before password recovery services run', async () => {
+    const response = await request(createApp())
+      .post('/api/v1/auth/reset-password')
+      .send({ token: 'short', password: 'short' })
+      .expect(422);
+
+    expect(response.body.error.fields).toMatchObject({
+      'body.token': expect.any(String),
+      'body.password': expect.any(String),
+    });
+  });
 });

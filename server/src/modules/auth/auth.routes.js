@@ -12,12 +12,14 @@ import {
   loginHandler,
   logoutHandler,
   recruiterSignupHandler,
+  resetPasswordHandler,
 } from './auth.controller.js';
 import {
   applicantSignupSchema,
   forgotPasswordSchema,
   loginSchema,
   recruiterSignupSchema,
+  resetPasswordSchema,
 } from './auth.schemas.js';
 
 export const authRouter = Router();
@@ -40,6 +42,12 @@ authRouter.post(
   passwordRecoveryRateLimit,
   validateRequest({ body: forgotPasswordSchema }),
   forgotPasswordHandler,
+);
+authRouter.post(
+  '/reset-password',
+  passwordRecoveryRateLimit,
+  validateRequest({ body: resetPasswordSchema }),
+  resetPasswordHandler,
 );
 authRouter.get('/me', requireAuth, currentUserHandler);
 authRouter.post('/logout', logoutHandler);
