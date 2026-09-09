@@ -130,6 +130,7 @@ model User {
   applicationStatusChanges ApplicationStatusHistory[] @relation("ApplicationStatusActor")
   recruiterNotes           RecruiterNote[]            @relation("RecruiterNoteAuthor")
   notifications            Notification[]
+  auditLogs                AuditLog[]                 @relation("AuditLogActor")
 
   @@index([role])
   @@index([status])
@@ -585,5 +586,23 @@ model EmailOutbox {
   sentAt        DateTime?
 
   @@index([status, nextAttemptAt])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  entityType  String
+  entityId    String
+  metadata    Json?
+  requestId   String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+  actor       User?    @relation("AuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([action])
   @@index([createdAt])
 }
