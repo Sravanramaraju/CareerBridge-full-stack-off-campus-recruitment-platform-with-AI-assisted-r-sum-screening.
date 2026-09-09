@@ -8,8 +8,11 @@ import {
   createJobScreeningQuestions,
   createJobSkills,
   createRecruiterJob,
+  deleteJobScreeningQuestions,
+  deleteJobSkills,
   findOwnedRecruiterJob,
   listRecruiterJobs,
+  updateOwnedRecruiterJob,
 } from './recruiterJob.repository.js';
 
 function membershipRequiredError() {
@@ -89,5 +92,68 @@ export async function createRecruiterJobDraft(
       createQuestions,
     });
     return findJob(job.id, membership.company.id, database);
+  });
+}
+
+export async function updateRecruiterJobDraft(
+  userId,
+  jobId,
+  input,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findMembership = findCompanyMembershipForUser,
+    findJob = findOwnedRecruiterJob,
+    updateJob = updateOwnedRecruiterJob,
+    upsertSkill = upsertSkillRecord,
+    deleteSkills = deleteJobSkills,
+    createSkills = createJobSkills,
+    deleteQuestions = deleteJobScreeningQuestions,
+    createQuestions = createJobScreeningQuestions,
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const membership = await findMembership(userId, database);
+    if (!membership) throw membershipRequiredError();
+    const current = await findJob(jobId, membership.company.id, database);
+    if (!current) throw notFoundError('The requested job was not found.');
+
+    const experienceMin = input.experienceMin ?? current.experienceMin;
+    const experienceMax = input.experienceMax ?? current.experienceMax;
+    const salaryMin = input.salaryMin === undefined ? current.salaryMin : input.salaryMin;
+    const salaryMax = input.salaryMax === undefined ? current.salaryMax : input.salaryMax;
+    if (experienceMax < experienceMin || (salaryMin !== null && salaryMax !== null
+      && Number(salaryMax) < Number(salaryMin))) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: 'The request contains invalid job ranges.',
+        status: 422,
+        fields: { 'body': 'Maximum values must not be lower than minimum values.' },
+      });
+    }
+
+    const { skills, screeningQuestions, ...jobFields } = input;
+    const moderationUpdate = current.status === 'PUBLISHED' ? { moderationStatus: 'PENDING' } : {};
+    const updated = await updateJob(jobId, membership.company.id, {
+      ...jobFields,
+      ...moderationUpdate,
+    }, database);
+    if (updated.count !== 1) throw notFoundError('The requested job was not found.');
+
+    if (skills !== undefined) {
+      await deleteSkills(jobId, database);
+      const storedSkills = await Promise.all(skills.map((skill) => upsertSkill({
+        name: skill.name,
+        normalizedName: normalizeSkillName(skill.name),
+      }, database)));
+      await createSkills(jobId, storedSkills.map((skill, index) => ({
+        skillId: skill.id,
+        requirement: skills[index].requirement,
+      })), database);
+    }
+    if (screeningQuestions !== undefined) {
+      await deleteQuestions(jobId, database);
+      await createQuestions(jobId, screeningQuestions, database);
+    }
+    return findJob(jobId, membership.company.id, database);
   });
 }

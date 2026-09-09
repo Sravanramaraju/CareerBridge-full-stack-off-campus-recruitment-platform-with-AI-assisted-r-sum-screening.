@@ -3,6 +3,7 @@ import {
   createRecruiterJobDraft,
   getRecruiterJob,
   getRecruiterJobs,
+  updateRecruiterJobDraft,
 } from '../src/modules/jobs/recruiterJob.service.js';
 
 const membership = { company: { id: 'company-1', verificationStatus: 'VERIFIED' } };
@@ -70,5 +71,79 @@ describe('recruiter job service', () => {
       runTransaction: (operation) => operation({}),
       findMembership: vi.fn().mockResolvedValue(null),
     })).rejects.toMatchObject({ code: 'COMPANY_MEMBERSHIP_REQUIRED', status: 403 });
+  });
+
+  it('updates owned draft fields and replaces supplied relations', async () => {
+    const database = { marker: 'transaction-client' };
+    const updateJob = vi.fn().mockResolvedValue({ count: 1 });
+    const deleteSkills = vi.fn().mockResolvedValue({ count: 1 });
+    const createSkills = vi.fn().mockResolvedValue({ count: 1 });
+    const deleteQuestions = vi.fn().mockResolvedValue({ count: 1 });
+    const createQuestions = vi.fn().mockResolvedValue({ count: 1 });
+    const findJob = vi.fn()
+      .mockResolvedValueOnce({
+        id: 'job-1', status: 'DRAFT', experienceMin: 0, experienceMax: 2,
+        salaryMin: null, salaryMax: null,
+      })
+      .mockResolvedValueOnce({ id: 'job-1', title: 'Updated role' });
+
+    const result = await updateRecruiterJobDraft('recruiter-1', 'job-1', {
+      title: 'Updated role',
+      skills: [{ name: 'React', requirement: 'REQUIRED' }],
+      screeningQuestions: [{ question: 'Can you start in October?', required: true }],
+    }, {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob,
+      updateJob,
+      upsertSkill: vi.fn().mockResolvedValue({ id: 'skill-react' }),
+      deleteSkills,
+      createSkills,
+      deleteQuestions,
+      createQuestions,
+    });
+
+    expect(updateJob).toHaveBeenCalledWith(
+      'job-1', 'company-1', { title: 'Updated role' }, database,
+    );
+    expect(deleteSkills).toHaveBeenCalledWith('job-1', database);
+    expect(createSkills).toHaveBeenCalledWith(
+      'job-1', [{ skillId: 'skill-react', requirement: 'REQUIRED' }], database,
+    );
+    expect(deleteQuestions).toHaveBeenCalledWith('job-1', database);
+    expect(result).toMatchObject({ title: 'Updated role' });
+  });
+
+  it('validates partial ranges against the stored draft', async () => {
+    await expect(updateRecruiterJobDraft('recruiter-1', 'job-1', {
+      experienceMax: 1,
+    }, {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob: vi.fn().mockResolvedValue({
+        status: 'DRAFT', experienceMin: 3, experienceMax: 5, salaryMin: null, salaryMax: null,
+      }),
+    })).rejects.toMatchObject({ code: 'VALIDATION_ERROR', status: 422 });
+  });
+
+  it('returns edited published jobs to moderation review', async () => {
+    const updateJob = vi.fn().mockResolvedValue({ count: 1 });
+    const findJob = vi.fn()
+      .mockResolvedValueOnce({
+        status: 'PUBLISHED', experienceMin: 0, experienceMax: 1,
+        salaryMin: null, salaryMax: null,
+      })
+      .mockResolvedValueOnce({ id: 'job-1' });
+
+    await updateRecruiterJobDraft('recruiter-1', 'job-1', { title: 'New public title' }, {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob,
+      updateJob,
+    });
+
+    expect(updateJob).toHaveBeenCalledWith(
+      'job-1', 'company-1', { title: 'New public title', moderationStatus: 'PENDING' }, {},
+    );
   });
 });
