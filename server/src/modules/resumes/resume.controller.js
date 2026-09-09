@@ -1,6 +1,7 @@
 import {
   deleteApplicantResume,
   getApplicantResumes,
+  getResumeContent,
   setPrimaryResume,
   uploadApplicantResume,
 } from './resume.service.js';
@@ -48,7 +49,29 @@ export function createDeleteResumeHandler({ deleteResume = deleteApplicantResume
   };
 }
 
+export function createGetResumeContentHandler({ readContent = getResumeContent } = {}) {
+  return async (request, response, next) => {
+    try {
+      const content = await readContent(
+        request.auth.user.id,
+        request.auth.user.role,
+        request.validated.params.resumeId,
+      );
+      response.set({
+        'Content-Type': content.mimeType,
+        'Content-Length': String(content.fileSize),
+        'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(content.fileName)}`,
+        'Cache-Control': 'private, no-store',
+      });
+      return response.send(content.buffer);
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
 export const listResumesHandler = createListResumesHandler();
 export const uploadResumeHandler = createUploadResumeHandler();
 export const setPrimaryResumeHandler = createSetPrimaryResumeHandler();
 export const deleteResumeHandler = createDeleteResumeHandler();
+export const getResumeContentHandler = createGetResumeContentHandler();

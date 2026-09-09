@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createDeleteResumeHandler,
+  createGetResumeContentHandler,
   createListResumesHandler,
   createSetPrimaryResumeHandler,
   createUploadResumeHandler,
@@ -39,5 +40,33 @@ describe('resume controller', () => {
     await createDeleteResumeHandler({ deleteResume })(request, { json: vi.fn() }, vi.fn());
     expect(setPrimary).toHaveBeenCalledWith('applicant-1', 'resume-1');
     expect(deleteResume).toHaveBeenCalledWith('applicant-1', 'resume-1');
+  });
+
+  it('streams authorized résumé bytes with private response headers', async () => {
+    const buffer = Buffer.from('%PDF');
+    const readContent = vi.fn().mockResolvedValue({
+      buffer,
+      fileName: 'Ananya Resume.pdf',
+      mimeType: 'application/pdf',
+      fileSize: 4,
+    });
+    const response = { set: vi.fn(), send: vi.fn() };
+
+    await createGetResumeContentHandler({ readContent })(
+      {
+        auth: { user: { id: 'recruiter-1', role: 'RECRUITER' } },
+        validated: { params: { resumeId: 'resume-1' } },
+      },
+      response,
+      vi.fn(),
+    );
+
+    expect(readContent).toHaveBeenCalledWith('recruiter-1', 'RECRUITER', 'resume-1');
+    expect(response.set).toHaveBeenCalledWith(expect.objectContaining({
+      'Content-Type': 'application/pdf',
+      'Cache-Control': 'private, no-store',
+      'Content-Disposition': "inline; filename*=UTF-8''Ananya%20Resume.pdf",
+    }));
+    expect(response.send).toHaveBeenCalledWith(buffer);
   });
 });
