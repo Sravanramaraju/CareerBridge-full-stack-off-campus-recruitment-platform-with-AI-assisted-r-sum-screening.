@@ -101,3 +101,19 @@ export function findApplicantProfileByUserId(userId, database = prisma) {
     select: applicantProfileSelection,
   });
 }
+
+export function updateApplicantUserName(userId, name, database = prisma) {
+  return database.user.update({
+    where: { id: userId },
+    data: { name },
+    select: { id: true },
+  });
+}
+
+export function updateApplicantProfileRecord(userId, updates, database = prisma) {
+  return database.applicantProfile.update({
+    where: { userId },
+    data: updates,
+    select: applicantProfileSelection,
+  });
+}

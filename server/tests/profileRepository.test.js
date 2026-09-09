@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { findApplicantProfileByUserId } from '../src/modules/profiles/profile.repository.js';
+import {
+  findApplicantProfileByUserId,
+  updateApplicantProfileRecord,
+  updateApplicantUserName,
+} from '../src/modules/profiles/profile.repository.js';
 
 describe('applicant profile repository', () => {
   it('loads the authenticated applicant profile with ordered evidence', async () => {
@@ -38,5 +42,32 @@ describe('applicant profile repository', () => {
     expect(resumes.select).not.toHaveProperty('storageKey');
     expect(resumes.select).not.toHaveProperty('extractedText');
     expect(resumes.select).not.toHaveProperty('parsedData');
+  });
+
+  it('updates canonical user identity separately from profile details', async () => {
+    const update = vi.fn().mockResolvedValue({ id: 'applicant-1' });
+
+    await updateApplicantUserName('applicant-1', 'Ananya Rao', { user: { update } });
+
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'applicant-1' },
+      data: { name: 'Ananya Rao' },
+      select: { id: true },
+    });
+  });
+
+  it('updates profile-owned fields and reloads safe profile evidence', async () => {
+    const update = vi.fn().mockResolvedValue({ id: 'profile-1' });
+    const updates = { headline: 'Frontend developer', preferredLocations: ['Bengaluru'] };
+
+    await updateApplicantProfileRecord('applicant-1', updates, {
+      applicantProfile: { update },
+    });
+
+    expect(update).toHaveBeenCalledWith({
+      where: { userId: 'applicant-1' },
+      data: updates,
+      select: expect.objectContaining({ user: expect.any(Object), resumes: expect.any(Object) }),
+    });
   });
 });
