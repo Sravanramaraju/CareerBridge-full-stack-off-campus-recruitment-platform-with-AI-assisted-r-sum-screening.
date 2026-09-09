@@ -388,6 +388,7 @@ model Job {
   screeningQuestions JobScreeningQuestion[]
   savedBy            SavedJob[]
   applications       Application[]
+  embedding          JobEmbedding?
 
   @@index([companyId])
   @@index([createdByUserId])
@@ -444,6 +445,7 @@ model Resume {
   deletedAt          DateTime?
   applicantProfile   ApplicantProfile  @relation(fields: [applicantProfileId], references: [id], onDelete: Restrict)
   applications       Application[]
+  embedding          ResumeEmbedding?
 
   @@index([applicantProfileId])
   @@index([applicantProfileId, isPrimary])
@@ -605,4 +607,28 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([action])
   @@index([createdAt])
+}
+
+model JobEmbedding {
+  jobId     String                @id
+  embedding Unsupported("vector")
+  modelName String
+  textHash  String
+  updatedAt DateTime              @updatedAt
+  job       Job                   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([textHash])
+  @@map("job_embeddings")
+}
+
+model ResumeEmbedding {
+  resumeId  String                @id
+  embedding Unsupported("vector")
+  modelName String
+  textHash  String
+  updatedAt DateTime              @updatedAt
+  resume    Resume                @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([textHash])
+  @@map("resume_embeddings")
 }
