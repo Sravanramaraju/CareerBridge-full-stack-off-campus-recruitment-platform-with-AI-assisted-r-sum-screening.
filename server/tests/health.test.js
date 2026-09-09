@@ -22,4 +22,15 @@ describe('health API', () => {
       requestId: expect.any(String),
     });
   });
+
+  it('reports a degraded API when PostgreSQL is unavailable', async () => {
+    const response = await request(createApp({ databaseCheck: async () => ({ status: 'down' }) }))
+      .get('/api/v1/health')
+      .expect(200);
+
+    expect(response.body.data).toMatchObject({
+      status: 'degraded',
+      database: { status: 'down' },
+    });
+  });
 });
