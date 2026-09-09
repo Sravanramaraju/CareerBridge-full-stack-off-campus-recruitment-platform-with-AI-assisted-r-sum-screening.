@@ -4,6 +4,17 @@ import { z } from 'zod';
 const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
+  DATABASE_URL: z
+    .url()
+    .refine((value) => value.startsWith('postgresql://') || value.startsWith('postgres://'), {
+      message: 'DATABASE_URL must use the PostgreSQL protocol',
+    }),
+  DATABASE_URL_TEST: z
+    .url()
+    .refine((value) => value.startsWith('postgresql://') || value.startsWith('postgres://'), {
+      message: 'DATABASE_URL_TEST must use the PostgreSQL protocol',
+    })
+    .optional(),
   CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
