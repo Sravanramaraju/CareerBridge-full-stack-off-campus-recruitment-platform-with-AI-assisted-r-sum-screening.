@@ -31,6 +31,8 @@ function dependencies(overrides = {}) {
     findResume: vi.fn().mockResolvedValue({ id: 'resume-1', parseStatus: 'READY' }),
     extractText: vi.fn().mockResolvedValue('React developer'),
     extractData: vi.fn().mockReturnValue({ skills: [{ name: 'React' }], reviewRequired: true }),
+    ensureEmbedding: vi.fn().mockResolvedValue({ available: true, updated: true }),
+    scheduleTask: vi.fn((operation) => operation()),
     ...overrides,
   };
 }
@@ -61,6 +63,12 @@ describe('resume service', () => {
       parsedData: { skills: [{ name: 'React' }], reviewRequired: true },
       parseError: null,
     });
+    expect(deps.scheduleTask).toHaveBeenCalledWith(expect.any(Function), {
+      resumeId: 'resume-1',
+    });
+    expect(deps.ensureEmbedding).toHaveBeenCalledWith({
+      id: 'resume-1', parseStatus: 'READY', extractedText: 'React developer',
+    });
   });
 
   it('removes orphaned bytes when metadata persistence fails', async () => {
@@ -82,6 +90,7 @@ describe('resume service', () => {
       parseError: 'Text extraction failed. Upload a different PDF or DOCX file.',
     });
     expect(deps.storage.delete).not.toHaveBeenCalled();
+    expect(deps.scheduleTask).not.toHaveBeenCalled();
   });
 
   it('sets one owned résumé as primary inside a transaction', async () => {

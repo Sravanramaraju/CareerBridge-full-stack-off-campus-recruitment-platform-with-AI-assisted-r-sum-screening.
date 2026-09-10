@@ -1,6 +1,8 @@
 import { notFoundError } from '../../lib/appError.js';
 import { prisma } from '../../lib/database.js';
 import { localStorageService } from './localStorage.service.js';
+import { ensureResumeEmbedding } from '../matching/semanticEmbedding.service.js';
+import { scheduleSemanticTask } from '../matching/semanticTaskScheduler.js';
 import {
   clearOwnedPrimaryResumes,
   createApplicantResume,
@@ -33,6 +35,8 @@ export async function uploadApplicantResume(
     findResume = findOwnedResumeMetadata,
     extractText = extractResumeText,
     extractData = extractStructuredResumeData,
+    ensureEmbedding = ensureResumeEmbedding,
+    scheduleTask = scheduleSemanticTask,
   } = {},
 ) {
   const validated = await validateFile(file);
@@ -62,6 +66,10 @@ export async function uploadApplicantResume(
       parsedData,
       parseError: null,
     });
+    void scheduleTask(
+      () => ensureEmbedding({ id: resume.id, parseStatus: 'READY', extractedText }),
+      { resumeId: resume.id },
+    );
   } catch {
     await updateResume(resume.id, userId, {
       parseStatus: 'FAILED',
