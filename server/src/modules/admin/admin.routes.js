@@ -5,16 +5,21 @@ import {
   getAdminDashboardHandler,
   listAdminCompaniesHandler,
   listAdminJobsHandler,
+  listAdminUsersHandler,
   moderateCompanyHandler,
   moderateJobHandler,
+  moderateUserHandler,
 } from './admin.controller.js';
 import {
   adminCompanyListQuerySchema,
   adminCompanyParamsSchema,
   adminJobListQuerySchema,
   adminJobParamsSchema,
+  adminUserListQuerySchema,
+  adminUserParamsSchema,
   companyVerificationSchema,
   jobModerationSchema,
+  userStatusSchema,
 } from './admin.schemas.js';
 
 export const adminRouter = Router();
@@ -40,4 +45,14 @@ adminRouter.patch(
   '/jobs/:jobId/moderation',
   validateRequest({ params: adminJobParamsSchema, body: jobModerationSchema }),
   moderateJobHandler,
+);
+adminRouter.get(
+  '/users',
+  validateRequest({ query: adminUserListQuerySchema }),
+  listAdminUsersHandler,
+);
+adminRouter.patch(
+  '/users/:userId/status',
+  validateRequest({ params: adminUserParamsSchema, body: userStatusSchema }),
+  moderateUserHandler,
 );

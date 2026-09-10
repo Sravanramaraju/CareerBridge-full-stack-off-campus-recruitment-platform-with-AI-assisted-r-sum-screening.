@@ -24,6 +24,8 @@ describe('admin routes', () => {
     ['patch', '/api/v1/admin/companies/company-1/verification'],
     ['get', '/api/v1/admin/jobs'],
     ['patch', '/api/v1/admin/jobs/job-1/moderation'],
+    ['get', '/api/v1/admin/users'],
+    ['patch', '/api/v1/admin/users/user-1/status'],
   ])('requires authentication for %s %s', async (method, path) => {
     const response = await request(createApp())[method](path).expect(401);
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
@@ -62,6 +64,21 @@ describe('admin routes', () => {
     const response = await request(createAuthorizedApp('ADMIN'))
       .patch('/api/v1/admin/jobs/job-1/moderation')
       .send({ action: 'DEACTIVATE' })
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('body.reason');
+  });
+
+  it('validates user moderation filters', async () => {
+    const response = await request(createAuthorizedApp('ADMIN'))
+      .get('/api/v1/admin/users?role=SUPER_ADMIN')
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('query.role');
+  });
+
+  it('requires a reason when suspending a user', async () => {
+    const response = await request(createAuthorizedApp('ADMIN'))
+      .patch('/api/v1/admin/users/user-1/status')
+      .send({ status: 'SUSPENDED' })
       .expect(422);
     expect(response.body.error.fields).toHaveProperty('body.reason');
   });
