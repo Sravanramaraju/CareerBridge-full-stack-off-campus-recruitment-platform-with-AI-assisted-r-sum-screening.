@@ -12,7 +12,7 @@ const applicationSummarySelection = {
   updatedAt: true,
 };
 
-const applicantApplicationSelection = {
+export const applicantApplicationSelection = {
   ...applicationSummarySelection,
   job: { select: jobRecordSelection },
   resume: {
