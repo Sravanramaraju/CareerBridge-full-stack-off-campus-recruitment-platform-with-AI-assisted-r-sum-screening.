@@ -1,7 +1,11 @@
 import { AppError, notFoundError } from '../../lib/appError.js';
 import { findCompanyMembershipForUser } from '../companies/company.repository.js';
 import { findOwnedRecruiterJob } from '../jobs/recruiterJob.repository.js';
-import { listRecruiterJobApplicationCandidates } from './recruiterApplication.repository.js';
+import {
+  findRecruiterApplicationDetail,
+  listRecruiterJobApplicationCandidates,
+} from './recruiterApplication.repository.js';
+import { toRecruiterApplicationDetail } from './recruiterApplicationDetail.presenter.js';
 import { toRecruiterCandidate } from './recruiterApplication.presenter.js';
 
 function membershipRequiredError() {
@@ -45,4 +49,20 @@ export async function getRecruiterJobApplications(
       totalPages: Math.ceil(filtered.length / filters.pageSize),
     },
   };
+}
+
+export async function getRecruiterApplication(
+  recruiterId,
+  applicationId,
+  {
+    findMembership = findCompanyMembershipForUser,
+    findApplication = findRecruiterApplicationDetail,
+    now = () => new Date(),
+  } = {},
+) {
+  const membership = await findMembership(recruiterId);
+  if (!membership) throw membershipRequiredError();
+  const application = await findApplication(applicationId, membership.company.id);
+  if (!application) throw notFoundError('The requested application was not found.');
+  return toRecruiterApplicationDetail(application, now());
 }

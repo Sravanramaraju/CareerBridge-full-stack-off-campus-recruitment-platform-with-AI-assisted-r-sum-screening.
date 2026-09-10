@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getRecruiterJobApplications } from '../src/modules/applications/recruiterApplication.service.js';
+import {
+  getRecruiterApplication,
+  getRecruiterJobApplications,
+} from '../src/modules/applications/recruiterApplication.service.js';
 
 const membership = { company: { id: 'company-1' } };
 const now = new Date('2026-09-10T00:00:00.000Z');
@@ -69,5 +72,39 @@ describe('recruiter application service', () => {
     }, {
       findMembership: vi.fn().mockResolvedValue(null),
     })).rejects.toMatchObject({ code: 'COMPANY_MEMBERSHIP_REQUIRED', status: 403 });
+  });
+
+  it('returns complete application detail only through recruiter company ownership', async () => {
+    const raw = candidate('detail', new Date('2025-09-10'));
+    raw.coverNote = null;
+    raw.job = { id: 'job-1', title: 'Engineer', company: { id: 'company-1' } };
+    raw.resume = {
+      id: 'resume-1', originalFileName: 'resume.pdf', mimeType: 'application/pdf',
+      fileSize: 1_024, parseStatus: 'READY', createdAt: now,
+    };
+    raw.applicant.applicantProfile = {
+      ...raw.applicant.applicantProfile,
+      summary: 'Candidate summary',
+      preferredLocations: [], preferredJobTypes: [], preferredWorkModes: [],
+      applicantEducations: [], projects: [], certifications: [],
+    };
+    raw.screeningAnswers = [];
+    raw.statusHistory = [];
+    raw.recruiterNotes = [];
+    const findApplication = vi.fn().mockResolvedValue(raw);
+
+    await expect(getRecruiterApplication('recruiter-1', 'application-1', {
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findApplication,
+      now: () => now,
+    })).resolves.toMatchObject({ applicationId: 'detail', summary: 'Candidate summary' });
+    expect(findApplication).toHaveBeenCalledWith('application-1', 'company-1');
+  });
+
+  it('uses a generic not-found result for another company application', async () => {
+    await expect(getRecruiterApplication('recruiter-1', 'foreign-application', {
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findApplication: vi.fn().mockResolvedValue(null),
+    })).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
   });
 });
