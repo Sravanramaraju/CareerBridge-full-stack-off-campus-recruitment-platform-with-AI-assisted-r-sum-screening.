@@ -58,4 +58,17 @@ describe('email templates', () => {
     expect(rendered.html).toContain('&lt;script&gt;Scheduled for Friday&lt;/script&gt;');
     expect(rendered.html).toContain('/applicant/applications/application-1');
   });
+
+  it('renders safe company verification results for recruiters', () => {
+    const rendered = renderEmailTemplate('company-verification-changed', {
+      name: 'Recruiter',
+      companyName: 'Northstar <Labs>',
+      status: 'Needs changes',
+      reason: '<script>Add registration details</script>',
+    });
+    expect(rendered.text).toContain('is now Needs changes');
+    expect(rendered.html).not.toContain('<script>');
+    expect(rendered.html).toContain('Northstar &lt;Labs&gt;');
+    expect(rendered.html).toContain('/recruiter/company');
+  });
 });

@@ -57,11 +57,25 @@ function applicationStatusChangedTemplate({ name, jobTitle, status, applicationI
   };
 }
 
+function companyVerificationChangedTemplate({ name, companyName, status, reason }) {
+  const companyUrl = `${env.CLIENT_ORIGIN}/recruiter/company`;
+  const safeName = escapeHtml(name || 'there');
+  const safeCompanyName = escapeHtml(companyName);
+  const safeStatus = escapeHtml(status);
+  const safeReason = reason ? `<p>${escapeHtml(reason)}</p>` : '';
+  const safeCompanyUrl = escapeHtml(companyUrl);
+  return {
+    text: `Hello ${name || 'there'},\n\nThe verification status for ${companyName} is now ${status}.${reason ? `\n${reason}` : ''}\nReview company details: ${companyUrl}`,
+    html: `<p>Hello ${safeName},</p><p>The verification status for <strong>${safeCompanyName}</strong> is now <strong>${safeStatus}</strong>.</p>${safeReason}<p><a href="${safeCompanyUrl}">Review company details</a></p>`,
+  };
+}
+
 const templates = {
   'password-reset': passwordResetTemplate,
   'application-submitted': applicationSubmittedTemplate,
   'application-received': applicationReceivedTemplate,
   'application-status-changed': applicationStatusChangedTemplate,
+  'company-verification-changed': companyVerificationChangedTemplate,
 };
 
 export function renderEmailTemplate(template, payload) {
