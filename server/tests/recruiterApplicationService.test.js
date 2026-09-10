@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   getRecruiterApplication,
   getRecruiterJobApplications,
+  updateRecruiterApplicationStatus,
 } from '../src/modules/applications/recruiterApplication.service.js';
 
 const membership = { company: { id: 'company-1' } };
+const database = { marker: 'transaction-client' };
 const now = new Date('2026-09-10T00:00:00.000Z');
 
 function candidate(id, startDate) {
@@ -106,5 +108,107 @@ describe('recruiter application service', () => {
       findMembership: vi.fn().mockResolvedValue(membership),
       findApplication: vi.fn().mockResolvedValue(null),
     })).rejects.toMatchObject({ code: 'NOT_FOUND', status: 404 });
+  });
+
+  it('updates status, appends history, and notifies the applicant atomically', async () => {
+    const current = candidate('detail', null);
+    current.status = 'UNDER_REVIEW';
+    current.job = { id: 'job-1', title: 'Engineer', company: { id: 'company-1' } };
+    current.resume = {
+      id: 'resume-1', originalFileName: 'resume.pdf', mimeType: 'application/pdf',
+      fileSize: 1_024, parseStatus: 'READY', createdAt: now,
+    };
+    current.applicant.applicantProfile = {
+      ...current.applicant.applicantProfile,
+      summary: null, preferredLocations: [], preferredJobTypes: [], preferredWorkModes: [],
+      applicantEducations: [], projects: [], certifications: [],
+    };
+    current.screeningAnswers = [];
+    current.statusHistory = [];
+    current.recruiterNotes = [];
+    const changed = { ...current, status: 'SHORTLISTED' };
+    const findApplication = vi.fn().mockResolvedValueOnce(current).mockResolvedValueOnce(changed);
+    const updateStatus = vi.fn().mockResolvedValue({ count: 1 });
+    const createHistory = vi.fn().mockResolvedValue({ id: 'history-1' });
+    const createNotifications = vi.fn().mockResolvedValue({ count: 1 });
+    const queueMessage = vi.fn().mockResolvedValue({ id: 'email-1' });
+
+    await updateRecruiterApplicationStatus('recruiter-1', 'detail', {
+      status: 'SHORTLISTED', reason: 'Portfolio meets the role requirements.',
+    }, {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findApplication,
+      updateStatus,
+      createHistory,
+      findApplicantAccount: vi.fn().mockResolvedValue({
+        id: 'applicant-detail', name: 'Candidate', email: 'candidate@example.com',
+        preference: { applicationUpdates: true },
+      }),
+      createNotifications,
+      queueMessage,
+      now: () => now,
+    });
+
+    expect(updateStatus).toHaveBeenCalledWith(
+      'detail', 'company-1', 'UNDER_REVIEW', 'SHORTLISTED', database,
+    );
+    expect(createHistory).toHaveBeenCalledWith(
+      'detail', 'UNDER_REVIEW', 'SHORTLISTED', 'recruiter-1',
+      'Portfolio meets the role requirements.', database,
+    );
+    expect(createNotifications).toHaveBeenCalledWith([
+      expect.objectContaining({
+        userId: 'applicant-detail', type: 'APPLICATION_STATUS_CHANGED', entityId: 'detail',
+      }),
+    ], database);
+    expect(queueMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ template: 'application-status-changed' }),
+      database,
+    );
+  });
+
+  it('does not create duplicate history for repeated status requests', async () => {
+    const current = candidate('detail', null);
+    current.status = 'INTERVIEW';
+    current.job = { title: 'Engineer' };
+    current.resume = {
+      id: 'resume-1', originalFileName: 'resume.pdf', mimeType: 'application/pdf',
+      fileSize: 1, parseStatus: 'READY', createdAt: now,
+    };
+    current.applicant.applicantProfile = {
+      ...current.applicant.applicantProfile,
+      summary: null, preferredLocations: [], preferredJobTypes: [], preferredWorkModes: [],
+      applicantEducations: [], projects: [], certifications: [],
+    };
+    current.screeningAnswers = [];
+    current.statusHistory = [];
+    current.recruiterNotes = [];
+    const updateStatus = vi.fn();
+    await updateRecruiterApplicationStatus('recruiter-1', 'detail', { status: 'INTERVIEW' }, {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findApplication: vi.fn().mockResolvedValue(current),
+      updateStatus,
+      now: () => now,
+    });
+    expect(updateStatus).not.toHaveBeenCalled();
+  });
+
+  it('detects concurrent status changes before writing history', async () => {
+    const current = candidate('detail', null);
+    current.status = 'APPLIED';
+    current.job = { title: 'Engineer' };
+    const createHistory = vi.fn();
+    await expect(updateRecruiterApplicationStatus('recruiter-1', 'detail', {
+      status: 'UNDER_REVIEW',
+    }, {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findApplication: vi.fn().mockResolvedValue(current),
+      updateStatus: vi.fn().mockResolvedValue({ count: 0 }),
+      createHistory,
+    })).rejects.toMatchObject({ code: 'APPLICATION_STATUS_CONFLICT', status: 409 });
+    expect(createHistory).not.toHaveBeenCalled();
   });
 });
