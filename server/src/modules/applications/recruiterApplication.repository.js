@@ -208,22 +208,3 @@ export function updateRecruiterOwnedApplicationStatus(
     data: { status: newStatus },
   });
 }
-
-export function createApplicationStatusHistoryEvent(
-  applicationId,
-  previousStatus,
-  newStatus,
-  changedByUserId,
-  reason,
-  database = prisma,
-) {
-  return database.applicationStatusHistory.create({
-    data: {
-      applicationId,
-      previousStatus,
-      newStatus,
-      changedByUserId,
-      reason: reason || null,
-    },
-  });
-}

@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  createApplicationStatusHistoryEvent,
   findRecruiterApplicationDetail,
   listRecruiterJobApplicationCandidates,
   updateRecruiterOwnedApplicationStatus,
@@ -106,24 +105,4 @@ describe('recruiter application repository', () => {
     });
   });
 
-  it('persists every meaningful status change as history', async () => {
-    const create = vi.fn().mockResolvedValue({ id: 'history-1' });
-    await createApplicationStatusHistoryEvent(
-      'application-1',
-      'UNDER_REVIEW',
-      'SHORTLISTED',
-      'recruiter-1',
-      'Portfolio reviewed.',
-      { applicationStatusHistory: { create } },
-    );
-    expect(create).toHaveBeenCalledWith({
-      data: {
-        applicationId: 'application-1',
-        previousStatus: 'UNDER_REVIEW',
-        newStatus: 'SHORTLISTED',
-        changedByUserId: 'recruiter-1',
-        reason: 'Portfolio reviewed.',
-      },
-    });
-  });
 });

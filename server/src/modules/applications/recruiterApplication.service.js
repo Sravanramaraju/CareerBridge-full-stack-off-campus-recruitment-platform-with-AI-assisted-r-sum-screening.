@@ -5,9 +5,9 @@ import { queueEmail } from '../email/emailOutbox.service.js';
 import { findOwnedRecruiterJob } from '../jobs/recruiterJob.repository.js';
 import { createNotificationRecords } from '../notifications/notification.repository.js';
 import { findApplicantNotificationAccount } from './applicationAudience.repository.js';
+import { createApplicationStatusHistoryEvent } from './application.repository.js';
 import { assertApplicationStatusTransition } from './applicationTransitions.js';
 import {
-  createApplicationStatusHistoryEvent,
   findRecruiterApplicationDetail,
   listRecruiterJobApplicationCandidates,
   updateRecruiterOwnedApplicationStatus,

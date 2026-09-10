@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createApplicationStatusHistoryEvent,
   createApplicantApplication,
   findApplicantApplicationByJob,
   findOwnedApplicantApplication,
@@ -75,5 +76,26 @@ describe('application repository', () => {
       applicantId: 'applicant-1',
     });
     expect(findFirst.mock.calls[0][0].select).not.toHaveProperty('recruiterNotes');
+  });
+
+  it('persists every meaningful status change as shared history', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'history-1' });
+    await createApplicationStatusHistoryEvent(
+      'application-1',
+      'UNDER_REVIEW',
+      'SHORTLISTED',
+      'recruiter-1',
+      'Portfolio reviewed.',
+      { applicationStatusHistory: { create } },
+    );
+    expect(create).toHaveBeenCalledWith({
+      data: {
+        applicationId: 'application-1',
+        previousStatus: 'UNDER_REVIEW',
+        newStatus: 'SHORTLISTED',
+        changedByUserId: 'recruiter-1',
+        reason: 'Portfolio reviewed.',
+      },
+    });
   });
 });

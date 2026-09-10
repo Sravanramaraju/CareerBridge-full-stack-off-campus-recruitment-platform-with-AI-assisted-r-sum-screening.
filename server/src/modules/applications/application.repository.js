@@ -101,3 +101,22 @@ export function findOwnedApplicantApplication(applicationId, applicantId, databa
     select: applicantApplicationSelection,
   });
 }
+
+export function createApplicationStatusHistoryEvent(
+  applicationId,
+  previousStatus,
+  newStatus,
+  changedByUserId,
+  reason,
+  database = prisma,
+) {
+  return database.applicationStatusHistory.create({
+    data: {
+      applicationId,
+      previousStatus,
+      newStatus,
+      changedByUserId,
+      reason: reason || null,
+    },
+  });
+}
