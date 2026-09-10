@@ -38,4 +38,25 @@ describe('applicant application routes', () => {
       .expect(422);
     expect(response.body.error.fields).toHaveProperty('params.applicationId');
   });
+
+  it('requires authentication before withdrawing an application', async () => {
+    const response = await request(createApp())
+      .post('/api/v1/applicant/applications/application-1/withdraw')
+      .expect(401);
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+
+  it('rejects recruiter attempts to withdraw applicant applications', async () => {
+    const response = await request(createAuthorizedApp('RECRUITER'))
+      .post('/api/v1/applicant/applications/application-1/withdraw')
+      .expect(403);
+    expect(response.body.error.code).toBe('FORBIDDEN');
+  });
+
+  it('validates withdrawal application identifiers before service access', async () => {
+    const response = await request(createAuthorizedApp('APPLICANT'))
+      .post(`/api/v1/applicant/applications/${'a'.repeat(129)}/withdraw`)
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('params.applicationId');
+  });
 });

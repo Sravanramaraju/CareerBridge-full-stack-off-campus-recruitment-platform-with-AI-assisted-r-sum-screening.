@@ -4,6 +4,7 @@ import { validateRequest } from '../../middleware/validateRequest.js';
 import {
   getApplicantApplicationHandler,
   listApplicantApplicationsHandler,
+  withdrawApplicantApplicationHandler,
 } from './application.controller.js';
 import { applicationParamsSchema } from './application.schemas.js';
 
@@ -11,6 +12,11 @@ export const applicantApplicationRouter = Router();
 
 applicantApplicationRouter.use(requireAuth, requireRole('APPLICANT'));
 applicantApplicationRouter.get('/', listApplicantApplicationsHandler);
+applicantApplicationRouter.post(
+  '/:applicationId/withdraw',
+  validateRequest({ params: applicationParamsSchema }),
+  withdrawApplicantApplicationHandler,
+);
 applicantApplicationRouter.get(
   '/:applicationId',
   validateRequest({ params: applicationParamsSchema }),
