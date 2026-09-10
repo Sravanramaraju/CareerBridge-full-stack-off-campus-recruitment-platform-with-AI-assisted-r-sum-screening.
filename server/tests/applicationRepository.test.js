@@ -5,6 +5,7 @@ import {
   findApplicantApplicationByJob,
   findOwnedApplicantApplication,
   listOwnedApplicantApplications,
+  updateApplicantOwnedApplicationStatus,
 } from '../src/modules/applications/application.repository.js';
 
 describe('application repository', () => {
@@ -96,6 +97,25 @@ describe('application repository', () => {
         changedByUserId: 'recruiter-1',
         reason: 'Portfolio reviewed.',
       },
+    });
+  });
+
+  it('guards applicant status writes by ownership and current state', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    await updateApplicantOwnedApplicationStatus(
+      'application-1',
+      'applicant-1',
+      'UNDER_REVIEW',
+      'WITHDRAWN',
+      { application: { updateMany } },
+    );
+    expect(updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'application-1',
+        applicantId: 'applicant-1',
+        status: 'UNDER_REVIEW',
+      },
+      data: { status: 'WITHDRAWN' },
     });
   });
 });

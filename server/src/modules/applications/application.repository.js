@@ -120,3 +120,16 @@ export function createApplicationStatusHistoryEvent(
     },
   });
 }
+
+export function updateApplicantOwnedApplicationStatus(
+  applicationId,
+  applicantId,
+  currentStatus,
+  newStatus,
+  database = prisma,
+) {
+  return database.application.updateMany({
+    where: { id: applicationId, applicantId, status: currentStatus },
+    data: { status: newStatus },
+  });
+}
