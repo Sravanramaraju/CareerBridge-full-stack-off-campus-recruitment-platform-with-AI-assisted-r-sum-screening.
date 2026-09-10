@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/database.js';
 import { jobRecordSelection } from './job.repository.js';
 
-const recruiterJobSelection = {
+export const recruiterJobSelection = {
   ...jobRecordSelection,
   moderationStatus: true,
   closedAt: true,

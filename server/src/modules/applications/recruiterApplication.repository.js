@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/database.js';
 
-const candidateSelection = {
+export const candidateSelection = {
   id: true,
   jobId: true,
   resumeId: true,
