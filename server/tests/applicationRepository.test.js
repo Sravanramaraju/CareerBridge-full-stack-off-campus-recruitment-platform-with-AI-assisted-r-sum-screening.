@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   createApplicantApplication,
   findApplicantApplicationByJob,
+  findOwnedApplicantApplication,
+  listOwnedApplicantApplications,
 } from '../src/modules/applications/application.repository.js';
 
 describe('application repository', () => {
@@ -49,5 +51,29 @@ describe('application repository', () => {
         },
       },
     }));
+  });
+
+  it('lists applicant-owned applications without selecting private recruiter notes', async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    await listOwnedApplicantApplications('applicant-1', { application: { findMany } });
+    const query = findMany.mock.calls[0][0];
+    expect(query.where).toEqual({ applicantId: 'applicant-1' });
+    expect(query.orderBy).toEqual([{ updatedAt: 'desc' }, { id: 'desc' }]);
+    expect(query.select).toHaveProperty('job');
+    expect(query.select).toHaveProperty('resume');
+    expect(query.select).toHaveProperty('statusHistory');
+    expect(query.select).not.toHaveProperty('recruiterNotes');
+  });
+
+  it('scopes application detail reads to the authenticated applicant', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    await findOwnedApplicantApplication('application-1', 'applicant-1', {
+      application: { findFirst },
+    });
+    expect(findFirst.mock.calls[0][0].where).toEqual({
+      id: 'application-1',
+      applicantId: 'applicant-1',
+    });
+    expect(findFirst.mock.calls[0][0].select).not.toHaveProperty('recruiterNotes');
   });
 });
