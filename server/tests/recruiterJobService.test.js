@@ -5,6 +5,7 @@ import {
   getRecruiterJob,
   getRecruiterJobs,
   publishRecruiterJob,
+  reopenRecruiterJob,
   updateRecruiterJobDraft,
 } from '../src/modules/jobs/recruiterJob.service.js';
 
@@ -232,6 +233,50 @@ describe('recruiter job service', () => {
       runTransaction: (operation) => operation({}),
       findMembership: vi.fn().mockResolvedValue(membership),
       findJob: vi.fn().mockResolvedValue({ id: 'job-1', status: 'DRAFT' }),
+    })).rejects.toMatchObject({ code: 'INVALID_JOB_STATE', status: 409 });
+  });
+
+  it('reopens a ready closed job for a verified company', async () => {
+    const database = { marker: 'transaction-client' };
+    const reopenedAt = new Date('2026-09-10T10:00:00.000Z');
+    const closedJob = { id: 'job-1', status: 'CLOSED' };
+    const findJob = vi.fn()
+      .mockResolvedValueOnce(closedJob)
+      .mockResolvedValueOnce({ id: 'job-1', status: 'PUBLISHED', closedAt: null });
+    const transitionJob = vi.fn().mockResolvedValue({ count: 1 });
+    const assertReady = vi.fn();
+
+    await reopenRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob,
+      transitionJob,
+      assertReady,
+      now: () => reopenedAt,
+    });
+
+    expect(assertReady).toHaveBeenCalledWith(closedJob, reopenedAt);
+    expect(transitionJob).toHaveBeenCalledWith('job-1', 'company-1', ['CLOSED'], {
+      status: 'PUBLISHED',
+      publishedAt: reopenedAt,
+      closedAt: null,
+    }, database);
+  });
+
+  it('requires verification before reopening a closed job', async () => {
+    await expect(reopenRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue({
+        company: { id: 'company-1', verificationStatus: 'REJECTED' },
+      }),
+    })).rejects.toMatchObject({ code: 'COMPANY_NOT_VERIFIED', status: 403 });
+  });
+
+  it('does not reopen draft or archived jobs', async () => {
+    await expect(reopenRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob: vi.fn().mockResolvedValue({ id: 'job-1', status: 'ARCHIVED' }),
     })).rejects.toMatchObject({ code: 'INVALID_JOB_STATE', status: 409 });
   });
 });
