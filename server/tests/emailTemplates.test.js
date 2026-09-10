@@ -44,4 +44,18 @@ describe('email templates', () => {
     expect(rendered.html).toContain('&lt;script&gt;Ananya&lt;/script&gt;');
     expect(rendered.html).toContain('/recruiter/candidates/application-1');
   });
+
+  it('renders safe application status updates for applicants', () => {
+    const rendered = renderEmailTemplate('application-status-changed', {
+      name: 'Ananya',
+      jobTitle: 'Graduate Engineer',
+      status: 'Interview',
+      reason: '<script>Scheduled for Friday</script>',
+      applicationId: 'application-1',
+    });
+    expect(rendered.text).toContain('is now Interview');
+    expect(rendered.html).not.toContain('<script>');
+    expect(rendered.html).toContain('&lt;script&gt;Scheduled for Friday&lt;/script&gt;');
+    expect(rendered.html).toContain('/applicant/applications/application-1');
+  });
 });

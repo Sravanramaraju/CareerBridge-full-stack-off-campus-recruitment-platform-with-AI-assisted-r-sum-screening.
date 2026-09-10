@@ -44,10 +44,24 @@ function applicationReceivedTemplate({ name, applicantName, jobTitle, applicatio
   };
 }
 
+function applicationStatusChangedTemplate({ name, jobTitle, status, applicationId, reason }) {
+  const applicationUrl = `${env.CLIENT_ORIGIN}/applicant/applications/${encodeURIComponent(applicationId)}`;
+  const safeName = escapeHtml(name || 'there');
+  const safeJobTitle = escapeHtml(jobTitle);
+  const safeStatus = escapeHtml(status);
+  const safeReason = reason ? `<p>${escapeHtml(reason)}</p>` : '';
+  const safeApplicationUrl = escapeHtml(applicationUrl);
+  return {
+    text: `Hello ${name || 'there'},\n\nYour application for ${jobTitle} is now ${status}.${reason ? `\n${reason}` : ''}\nView details: ${applicationUrl}`,
+    html: `<p>Hello ${safeName},</p><p>Your application for <strong>${safeJobTitle}</strong> is now <strong>${safeStatus}</strong>.</p>${safeReason}<p><a href="${safeApplicationUrl}">View application</a></p>`,
+  };
+}
+
 const templates = {
   'password-reset': passwordResetTemplate,
   'application-submitted': applicationSubmittedTemplate,
   'application-received': applicationReceivedTemplate,
+  'application-status-changed': applicationStatusChangedTemplate,
 };
 
 export function renderEmailTemplate(template, payload) {
