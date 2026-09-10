@@ -4,6 +4,7 @@ import {
 } from './adminCompany.service.js';
 import { getAdminDashboard } from './adminDashboard.service.js';
 import { getAdminJobs, moderateJob } from './adminJob.service.js';
+import { getAdminUsers, moderateUserStatus } from './adminUser.service.js';
 
 function auditContext(request) {
   return { requestId: request.id, ipAddress: request.ip };
@@ -73,8 +74,36 @@ export function createModerateJobHandler({ moderateJobRecord = moderateJob } = {
   };
 }
 
+export function createListAdminUsersHandler({ listUsers = getAdminUsers } = {}) {
+  return async (request, response, next) => {
+    try {
+      return response.json({ data: await listUsers(request.validated.query) });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export function createModerateUserHandler({ moderateUser = moderateUserStatus } = {}) {
+  return async (request, response, next) => {
+    try {
+      const user = await moderateUser(
+        request.auth.user.id,
+        request.validated.params.userId,
+        request.validated.body,
+        auditContext(request),
+      );
+      return response.json({ data: user });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
 export const getAdminDashboardHandler = createGetAdminDashboardHandler();
 export const listAdminCompaniesHandler = createListAdminCompaniesHandler();
 export const moderateCompanyHandler = createModerateCompanyHandler();
 export const listAdminJobsHandler = createListAdminJobsHandler();
 export const moderateJobHandler = createModerateJobHandler();
+export const listAdminUsersHandler = createListAdminUsersHandler();
+export const moderateUserHandler = createModerateUserHandler();

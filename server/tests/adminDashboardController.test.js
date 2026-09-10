@@ -3,8 +3,10 @@ import {
   createGetAdminDashboardHandler,
   createListAdminCompaniesHandler,
   createListAdminJobsHandler,
+  createListAdminUsersHandler,
   createModerateCompanyHandler,
   createModerateJobHandler,
+  createModerateUserHandler,
 } from '../src/modules/admin/admin.controller.js';
 
 describe('admin dashboard controller', () => {
@@ -84,6 +86,34 @@ describe('admin dashboard controller', () => {
     );
     expect(moderateJobRecord).toHaveBeenCalledWith(
       'admin-1', 'job-1', { action: 'FLAG', reason: 'Requires review.' },
+      { requestId: 'request-1', ipAddress: '127.0.0.1' },
+    );
+  });
+
+  it('lists users using validated moderation filters', async () => {
+    const query = { status: 'SUSPENDED', page: 1, pageSize: 20 };
+    const listUsers = vi.fn().mockResolvedValue({ items: [] });
+    await createListAdminUsersHandler({ listUsers })(
+      { validated: { query } }, { json: vi.fn() }, vi.fn(),
+    );
+    expect(listUsers).toHaveBeenCalledWith(query);
+  });
+
+  it('passes admin identity and request context into user moderation', async () => {
+    const moderateUser = vi.fn().mockResolvedValue({ id: 'user-1' });
+    await createModerateUserHandler({ moderateUser })(
+      {
+        id: 'request-1', ip: '127.0.0.1', auth: { user: { id: 'admin-1' } },
+        validated: {
+          params: { userId: 'user-1' },
+          body: { status: 'SUSPENDED', reason: 'Policy violation.' },
+        },
+      },
+      { json: vi.fn() },
+      vi.fn(),
+    );
+    expect(moderateUser).toHaveBeenCalledWith(
+      'admin-1', 'user-1', { status: 'SUSPENDED', reason: 'Policy violation.' },
       { requestId: 'request-1', ipAddress: '127.0.0.1' },
     );
   });
