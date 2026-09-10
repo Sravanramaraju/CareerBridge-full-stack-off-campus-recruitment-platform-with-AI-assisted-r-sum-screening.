@@ -37,6 +37,12 @@ const environmentSchema = z.object({
   SMTP_FROM: z.string().min(3).default('CareerBridge <no-reply@careerbridge.local>'),
   EMAIL_WORKER_INTERVAL_MS: z.coerce.number().int().min(1_000).max(300_000).default(10_000),
   OUTBOX_ENCRYPTION_KEY: z.string().regex(/^[a-fA-F0-9]{64}$/),
+  EMBEDDINGS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
+  EMBEDDING_MODEL: z.string().min(3).default('Xenova/all-MiniLM-L6-v2'),
+  MODEL_CACHE_DIR: z.string().min(1).default('./.cache/models'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 }).superRefine((values, context) => {
   if (values.NODE_ENV === 'production' && values.OUTBOX_ENCRYPTION_KEY === DEVELOPMENT_OUTBOX_KEY) {
