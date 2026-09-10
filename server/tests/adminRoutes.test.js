@@ -22,6 +22,8 @@ describe('admin routes', () => {
     ['get', '/api/v1/admin/dashboard'],
     ['get', '/api/v1/admin/companies'],
     ['patch', '/api/v1/admin/companies/company-1/verification'],
+    ['get', '/api/v1/admin/jobs'],
+    ['patch', '/api/v1/admin/jobs/job-1/moderation'],
   ])('requires authentication for %s %s', async (method, path) => {
     const response = await request(createApp())[method](path).expect(401);
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
@@ -45,6 +47,21 @@ describe('admin routes', () => {
     const response = await request(createAuthorizedApp('ADMIN'))
       .patch('/api/v1/admin/companies/company-1/verification')
       .send({ status: 'REJECTED' })
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('body.reason');
+  });
+
+  it('validates job moderation filters', async () => {
+    const response = await request(createAuthorizedApp('ADMIN'))
+      .get('/api/v1/admin/jobs?moderationStatus=UNKNOWN')
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('query.moderationStatus');
+  });
+
+  it('requires a reason when deactivating a job', async () => {
+    const response = await request(createAuthorizedApp('ADMIN'))
+      .patch('/api/v1/admin/jobs/job-1/moderation')
+      .send({ action: 'DEACTIVATE' })
       .expect(422);
     expect(response.body.error.fields).toHaveProperty('body.reason');
   });

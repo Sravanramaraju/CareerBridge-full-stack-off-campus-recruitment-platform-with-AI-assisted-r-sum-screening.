@@ -4,12 +4,17 @@ import { validateRequest } from '../../middleware/validateRequest.js';
 import {
   getAdminDashboardHandler,
   listAdminCompaniesHandler,
+  listAdminJobsHandler,
   moderateCompanyHandler,
+  moderateJobHandler,
 } from './admin.controller.js';
 import {
   adminCompanyListQuerySchema,
   adminCompanyParamsSchema,
+  adminJobListQuerySchema,
+  adminJobParamsSchema,
   companyVerificationSchema,
+  jobModerationSchema,
 } from './admin.schemas.js';
 
 export const adminRouter = Router();
@@ -25,4 +30,14 @@ adminRouter.patch(
   '/companies/:companyId/verification',
   validateRequest({ params: adminCompanyParamsSchema, body: companyVerificationSchema }),
   moderateCompanyHandler,
+);
+adminRouter.get(
+  '/jobs',
+  validateRequest({ query: adminJobListQuerySchema }),
+  listAdminJobsHandler,
+);
+adminRouter.patch(
+  '/jobs/:jobId/moderation',
+  validateRequest({ params: adminJobParamsSchema, body: jobModerationSchema }),
+  moderateJobHandler,
 );
