@@ -9,7 +9,7 @@ export default defineConfig({
     },
     environment: 'node',
     include: ['tests/**/*.test.js'],
-    pool: 'threads',
+    pool: 'forks',
     maxWorkers: 1,
     fileParallelism: false,
   },
