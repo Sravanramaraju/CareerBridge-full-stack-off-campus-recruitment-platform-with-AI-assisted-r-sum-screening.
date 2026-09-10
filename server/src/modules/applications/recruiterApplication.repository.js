@@ -99,3 +99,95 @@ export function listRecruiterJobApplicationCandidates(jobId, filters, database =
     select: candidateSelection,
   });
 }
+
+const recruiterApplicationDetailSelection = {
+  id: true,
+  jobId: true,
+  resumeId: true,
+  coverNote: true,
+  status: true,
+  appliedAt: true,
+  updatedAt: true,
+  job: {
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      company: { select: { id: true, name: true, slug: true } },
+    },
+  },
+  applicant: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      applicantProfile: {
+        select: {
+          id: true,
+          headline: true,
+          phone: true,
+          location: true,
+          summary: true,
+          preferredLocations: true,
+          preferredJobTypes: true,
+          preferredWorkModes: true,
+          applicantEducations: { orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }] },
+          experiences: { orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }] },
+          projects: { orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }] },
+          certifications: { orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }] },
+          skills: {
+            orderBy: { skill: { name: 'asc' } },
+            select: {
+              proficiency: true,
+              yearsExperience: true,
+              skill: { select: { id: true, name: true, normalizedName: true } },
+            },
+          },
+        },
+      },
+    },
+  },
+  resume: {
+    select: {
+      id: true,
+      originalFileName: true,
+      mimeType: true,
+      fileSize: true,
+      parseStatus: true,
+      createdAt: true,
+    },
+  },
+  screeningAnswers: {
+    select: { id: true, questionId: true, questionSnapshot: true, answer: true },
+    orderBy: { createdAt: 'asc' },
+  },
+  statusHistory: {
+    select: {
+      id: true,
+      previousStatus: true,
+      newStatus: true,
+      reason: true,
+      createdAt: true,
+      changedBy: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+  },
+  match: candidateSelection.match,
+  recruiterNotes: {
+    select: {
+      id: true,
+      body: true,
+      createdAt: true,
+      updatedAt: true,
+      author: { select: { id: true, name: true } },
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+  },
+};
+
+export function findRecruiterApplicationDetail(applicationId, companyId, database = prisma) {
+  return database.application.findFirst({
+    where: { id: applicationId, job: { is: { companyId } } },
+    select: recruiterApplicationDetailSelection,
+  });
+}
