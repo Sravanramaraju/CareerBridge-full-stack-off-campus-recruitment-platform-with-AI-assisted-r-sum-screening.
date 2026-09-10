@@ -1,7 +1,36 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createSubmitApplicationHandler } from '../src/modules/applications/application.controller.js';
+import {
+  createGetApplicantApplicationHandler,
+  createListApplicantApplicationsHandler,
+  createSubmitApplicationHandler,
+} from '../src/modules/applications/application.controller.js';
 
 describe('application controller', () => {
+  it('lists applications using the authenticated applicant identity', async () => {
+    const listApplications = vi.fn().mockResolvedValue([{ id: 'application-1' }]);
+    const response = { json: vi.fn((value) => value) };
+    await createListApplicantApplicationsHandler({ listApplications })(
+      { auth: { user: { id: 'applicant-1' } } },
+      response,
+      vi.fn(),
+    );
+    expect(listApplications).toHaveBeenCalledWith('applicant-1');
+    expect(response.json).toHaveBeenCalledWith({ data: [{ id: 'application-1' }] });
+  });
+
+  it('loads a validated applicant-owned application detail', async () => {
+    const getApplication = vi.fn().mockResolvedValue({ id: 'application-1' });
+    await createGetApplicantApplicationHandler({ getApplication })(
+      {
+        auth: { user: { id: 'applicant-1' } },
+        validated: { params: { applicationId: 'application-1' } },
+      },
+      { json: vi.fn() },
+      vi.fn(),
+    );
+    expect(getApplication).toHaveBeenCalledWith('applicant-1', 'application-1');
+  });
+
   it('submits validated application data for the authenticated applicant', async () => {
     const body = { resumeId: 'resume-1', screeningAnswers: [] };
     const application = { id: 'application-1', status: 'APPLIED' };
