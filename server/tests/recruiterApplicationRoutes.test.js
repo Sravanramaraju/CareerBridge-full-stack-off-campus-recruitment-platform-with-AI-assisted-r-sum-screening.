@@ -8,6 +8,7 @@ import { recruiterJobRouter } from '../src/modules/jobs/recruiterJob.routes.js';
 
 function createAuthorizedApp(role) {
   const app = express();
+  app.use(express.json());
   app.use((incoming, _response, next) => {
     incoming.auth = { user: { id: 'user-1', role } };
     next();
@@ -24,6 +25,14 @@ describe('recruiter application routes', () => {
     '/api/v1/recruiter/applications/application-1',
   ])('requires authentication for %s', async (path) => {
     const response = await request(createApp()).get(path).expect(401);
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+
+  it('requires authentication for recruiter status updates', async () => {
+    const response = await request(createApp())
+      .patch('/api/v1/recruiter/applications/application-1/status')
+      .send({ status: 'INTERVIEW' })
+      .expect(401);
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
 
@@ -49,5 +58,13 @@ describe('recruiter application routes', () => {
       .get(`/api/v1/recruiter/applications/${'a'.repeat(129)}`)
       .expect(422);
     expect(response.body.error.fields).toHaveProperty('params.applicationId');
+  });
+
+  it('validates status transition payloads before service access', async () => {
+    const response = await request(createAuthorizedApp('RECRUITER'))
+      .patch('/api/v1/recruiter/applications/application-1/status')
+      .send({ status: 'UNKNOWN' })
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('body.status');
   });
 });
