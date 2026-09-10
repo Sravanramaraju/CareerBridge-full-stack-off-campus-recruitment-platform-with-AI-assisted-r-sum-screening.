@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   createGetAdminDashboardHandler,
   createListAdminCompaniesHandler,
+  createListAdminJobsHandler,
   createModerateCompanyHandler,
+  createModerateJobHandler,
 } from '../src/modules/admin/admin.controller.js';
 
 describe('admin dashboard controller', () => {
@@ -56,5 +58,33 @@ describe('admin dashboard controller', () => {
       { requestId: 'request-1', ipAddress: '127.0.0.1' },
     );
     expect(response.json).toHaveBeenCalledWith({ data: company });
+  });
+
+  it('lists jobs using validated moderation filters', async () => {
+    const query = { moderationStatus: 'FLAGGED', page: 1, pageSize: 20 };
+    const listJobs = vi.fn().mockResolvedValue({ items: [] });
+    await createListAdminJobsHandler({ listJobs })(
+      { validated: { query } }, { json: vi.fn() }, vi.fn(),
+    );
+    expect(listJobs).toHaveBeenCalledWith(query);
+  });
+
+  it('passes admin identity and request context into job moderation', async () => {
+    const moderateJobRecord = vi.fn().mockResolvedValue({ id: 'job-1' });
+    await createModerateJobHandler({ moderateJobRecord })(
+      {
+        id: 'request-1', ip: '127.0.0.1', auth: { user: { id: 'admin-1' } },
+        validated: {
+          params: { jobId: 'job-1' },
+          body: { action: 'FLAG', reason: 'Requires review.' },
+        },
+      },
+      { json: vi.fn() },
+      vi.fn(),
+    );
+    expect(moderateJobRecord).toHaveBeenCalledWith(
+      'admin-1', 'job-1', { action: 'FLAG', reason: 'Requires review.' },
+      { requestId: 'request-1', ipAddress: '127.0.0.1' },
+    );
   });
 });

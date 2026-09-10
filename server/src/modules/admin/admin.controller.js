@@ -3,6 +3,7 @@ import {
   moderateCompanyVerification,
 } from './adminCompany.service.js';
 import { getAdminDashboard } from './adminDashboard.service.js';
+import { getAdminJobs, moderateJob } from './adminJob.service.js';
 
 function auditContext(request) {
   return { requestId: request.id, ipAddress: request.ip };
@@ -46,6 +47,34 @@ export function createModerateCompanyHandler({
   };
 }
 
+export function createListAdminJobsHandler({ listJobs = getAdminJobs } = {}) {
+  return async (request, response, next) => {
+    try {
+      return response.json({ data: await listJobs(request.validated.query) });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+export function createModerateJobHandler({ moderateJobRecord = moderateJob } = {}) {
+  return async (request, response, next) => {
+    try {
+      const job = await moderateJobRecord(
+        request.auth.user.id,
+        request.validated.params.jobId,
+        request.validated.body,
+        auditContext(request),
+      );
+      return response.json({ data: job });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
 export const getAdminDashboardHandler = createGetAdminDashboardHandler();
 export const listAdminCompaniesHandler = createListAdminCompaniesHandler();
 export const moderateCompanyHandler = createModerateCompanyHandler();
+export const listAdminJobsHandler = createListAdminJobsHandler();
+export const moderateJobHandler = createModerateJobHandler();
