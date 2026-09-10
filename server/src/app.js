@@ -15,6 +15,7 @@ import { companyRouter } from './modules/companies/company.routes.js';
 import { recruiterCompanyRouter } from './modules/companies/recruiterCompany.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { jobRouter } from './modules/jobs/job.routes.js';
+import { recruiterJobRouter } from './modules/jobs/recruiterJob.routes.js';
 import { applicantCertificationRouter } from './modules/profiles/certification.routes.js';
 import { applicantEducationRouter } from './modules/profiles/education.routes.js';
 import { applicantExperienceRouter } from './modules/profiles/experience.routes.js';
@@ -44,6 +45,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/companies`, companyRouter);
   app.use(`${API_PREFIX}/jobs`, jobRouter);
   app.use(`${API_PREFIX}/recruiter/company`, recruiterCompanyRouter);
+  app.use(`${API_PREFIX}/recruiter/jobs`, recruiterJobRouter);
   app.use(`${API_PREFIX}/applicant/profile`, applicantProfileRouter);
   app.use(`${API_PREFIX}/applicant/education`, applicantEducationRouter);
   app.use(`${API_PREFIX}/applicant/experience`, applicantExperienceRouter);
