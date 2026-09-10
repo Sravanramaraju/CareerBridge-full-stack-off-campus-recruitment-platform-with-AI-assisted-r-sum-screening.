@@ -21,4 +21,27 @@ describe('email templates', () => {
     expect(rendered.html).not.toContain('<script>');
     expect(rendered.html).toContain('&lt;script&gt;');
   });
+
+  it('renders applicant submission confirmations with a tracking link', () => {
+    const rendered = renderEmailTemplate('application-submitted', {
+      name: 'Ananya',
+      jobTitle: 'Graduate Engineer',
+      companyName: 'Northstar Labs',
+      applicationId: 'application-1',
+    });
+    expect(rendered.text).toContain('Graduate Engineer at Northstar Labs');
+    expect(rendered.html).toContain('/applicant/applications/application-1');
+  });
+
+  it('renders recruiter application alerts without trusting applicant HTML', () => {
+    const rendered = renderEmailTemplate('application-received', {
+      name: 'Recruiter',
+      applicantName: '<script>Ananya</script>',
+      jobTitle: 'Graduate Engineer',
+      applicationId: 'application-1',
+    });
+    expect(rendered.html).not.toContain('<script>');
+    expect(rendered.html).toContain('&lt;script&gt;Ananya&lt;/script&gt;');
+    expect(rendered.html).toContain('/recruiter/candidates/application-1');
+  });
 });
