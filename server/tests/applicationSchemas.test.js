@@ -3,6 +3,8 @@ import {
   applicationCreateSchema,
   applicationParamsSchema,
   applicationStatusUpdateSchema,
+  recruiterNoteCreateSchema,
+  recruiterNoteParamsSchema,
   recruiterApplicationListQuerySchema,
 } from '../src/modules/applications/application.schemas.js';
 
@@ -74,5 +76,13 @@ describe('application schemas', () => {
     })).toEqual({ status: 'INTERVIEW', reason: 'Technical interview scheduled.' });
     expect(applicationStatusUpdateSchema.safeParse({ status: 'APPLIED' }).success).toBe(false);
     expect(applicationStatusUpdateSchema.safeParse({ status: 'UNKNOWN' }).success).toBe(false);
+  });
+
+  it('validates and trims private recruiter notes', () => {
+    expect(recruiterNoteCreateSchema.parse({ body: '  Strong portfolio evidence.  ' }))
+      .toEqual({ body: 'Strong portfolio evidence.' });
+    expect(recruiterNoteCreateSchema.safeParse({ body: ' ' }).success).toBe(false);
+    expect(recruiterNoteCreateSchema.safeParse({ body: 'x'.repeat(2_001) }).success).toBe(false);
+    expect(recruiterNoteParamsSchema.parse({ noteId: 'note-1' })).toEqual({ noteId: 'note-1' });
   });
 });

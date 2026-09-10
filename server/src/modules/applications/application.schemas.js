@@ -52,3 +52,11 @@ export const applicationStatusUpdateSchema = z.object({
   status: applicationStatus.exclude(['APPLIED']),
   reason: z.string().trim().min(2).max(500).nullable().optional(),
 }).strict();
+
+export const recruiterNoteCreateSchema = z.object({
+  body: z.string().trim().min(2).max(2_000),
+}).strict();
+
+export const recruiterNoteParamsSchema = z.object({
+  noteId: resourceId,
+}).strict();
