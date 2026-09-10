@@ -19,6 +19,7 @@ import { recruiterCompanyRouter } from './modules/companies/recruiterCompany.rou
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { jobRouter } from './modules/jobs/job.routes.js';
 import { recruiterJobRouter } from './modules/jobs/recruiterJob.routes.js';
+import { notificationRouter } from './modules/notifications/notification.routes.js';
 import { applicantCertificationRouter } from './modules/profiles/certification.routes.js';
 import { applicantEducationRouter } from './modules/profiles/education.routes.js';
 import { applicantExperienceRouter } from './modules/profiles/experience.routes.js';
@@ -63,6 +64,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/applicant/saved-jobs`, applicantSavedJobRouter);
   app.use(`${API_PREFIX}/resumes`, resumeContentRouter);
   app.use(`${API_PREFIX}/settings`, settingsRouter);
+  app.use(`${API_PREFIX}/notifications`, notificationRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
