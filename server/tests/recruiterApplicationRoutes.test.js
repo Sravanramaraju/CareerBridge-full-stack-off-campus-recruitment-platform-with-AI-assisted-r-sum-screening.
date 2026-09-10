@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { errorHandler } from '../src/middleware/errorHandler.js';
 import { recruiterApplicationRouter } from '../src/modules/applications/recruiterApplication.routes.js';
+import { recruiterNoteRouter } from '../src/modules/applications/recruiterNote.routes.js';
 import { recruiterJobRouter } from '../src/modules/jobs/recruiterJob.routes.js';
 
 function createAuthorizedApp(role) {
@@ -15,6 +16,7 @@ function createAuthorizedApp(role) {
   });
   app.use('/api/v1/recruiter/jobs', recruiterJobRouter);
   app.use('/api/v1/recruiter/applications', recruiterApplicationRouter);
+  app.use('/api/v1/recruiter/notes', recruiterNoteRouter);
   app.use(errorHandler);
   return app;
 }
@@ -33,6 +35,15 @@ describe('recruiter application routes', () => {
       .patch('/api/v1/recruiter/applications/application-1/status')
       .send({ status: 'INTERVIEW' })
       .expect(401);
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
+  });
+
+  it.each([
+    ['get', '/api/v1/recruiter/applications/application-1/notes'],
+    ['post', '/api/v1/recruiter/applications/application-1/notes'],
+    ['delete', '/api/v1/recruiter/notes/note-1'],
+  ])('requires authentication for private note %s operations', async (method, path) => {
+    const response = await request(createApp())[method](path).expect(401);
     expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
 
@@ -66,5 +77,20 @@ describe('recruiter application routes', () => {
       .send({ status: 'UNKNOWN' })
       .expect(422);
     expect(response.body.error.fields).toHaveProperty('body.status');
+  });
+
+  it('validates private note bodies before service access', async () => {
+    const response = await request(createAuthorizedApp('RECRUITER'))
+      .post('/api/v1/recruiter/applications/application-1/notes')
+      .send({ body: ' ' })
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('body.body');
+  });
+
+  it('validates private note identifiers before deletion', async () => {
+    const response = await request(createAuthorizedApp('RECRUITER'))
+      .delete(`/api/v1/recruiter/notes/${'n'.repeat(129)}`)
+      .expect(422);
+    expect(response.body.error.fields).toHaveProperty('params.noteId');
   });
 });

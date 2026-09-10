@@ -12,6 +12,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { sessionAuth } from './middleware/sessionAuth.js';
 import { applicantApplicationRouter } from './modules/applications/applicantApplication.routes.js';
 import { recruiterApplicationRouter } from './modules/applications/recruiterApplication.routes.js';
+import { recruiterNoteRouter } from './modules/applications/recruiterNote.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { companyRouter } from './modules/companies/company.routes.js';
 import { recruiterCompanyRouter } from './modules/companies/recruiterCompany.routes.js';
@@ -50,6 +51,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/recruiter/company`, recruiterCompanyRouter);
   app.use(`${API_PREFIX}/recruiter/jobs`, recruiterJobRouter);
   app.use(`${API_PREFIX}/recruiter/applications`, recruiterApplicationRouter);
+  app.use(`${API_PREFIX}/recruiter/notes`, recruiterNoteRouter);
   app.use(`${API_PREFIX}/applicant/profile`, applicantProfileRouter);
   app.use(`${API_PREFIX}/applicant/applications`, applicantApplicationRouter);
   app.use(`${API_PREFIX}/applicant/education`, applicantEducationRouter);

@@ -8,7 +8,12 @@ import {
 import {
   applicationParamsSchema,
   applicationStatusUpdateSchema,
+  recruiterNoteCreateSchema,
 } from './application.schemas.js';
+import {
+  addRecruiterNoteHandler,
+  listRecruiterNotesHandler,
+} from './recruiterNote.controller.js';
 
 export const recruiterApplicationRouter = Router();
 
@@ -25,4 +30,14 @@ recruiterApplicationRouter.patch(
     body: applicationStatusUpdateSchema,
   }),
   updateRecruiterApplicationStatusHandler,
+);
+recruiterApplicationRouter.get(
+  '/:applicationId/notes',
+  validateRequest({ params: applicationParamsSchema }),
+  listRecruiterNotesHandler,
+);
+recruiterApplicationRouter.post(
+  '/:applicationId/notes',
+  validateRequest({ params: applicationParamsSchema, body: recruiterNoteCreateSchema }),
+  addRecruiterNoteHandler,
 );
