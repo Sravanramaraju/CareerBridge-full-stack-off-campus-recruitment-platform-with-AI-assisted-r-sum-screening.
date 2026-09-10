@@ -191,3 +191,39 @@ export function findRecruiterApplicationDetail(applicationId, companyId, databas
     select: recruiterApplicationDetailSelection,
   });
 }
+
+export function updateRecruiterOwnedApplicationStatus(
+  applicationId,
+  companyId,
+  currentStatus,
+  newStatus,
+  database = prisma,
+) {
+  return database.application.updateMany({
+    where: {
+      id: applicationId,
+      status: currentStatus,
+      job: { is: { companyId } },
+    },
+    data: { status: newStatus },
+  });
+}
+
+export function createApplicationStatusHistoryEvent(
+  applicationId,
+  previousStatus,
+  newStatus,
+  changedByUserId,
+  reason,
+  database = prisma,
+) {
+  return database.applicationStatusHistory.create({
+    data: {
+      applicationId,
+      previousStatus,
+      newStatus,
+      changedByUserId,
+      reason: reason || null,
+    },
+  });
+}

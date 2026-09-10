@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createApplicationStatusHistoryEvent,
   findRecruiterApplicationDetail,
   listRecruiterJobApplicationCandidates,
+  updateRecruiterOwnedApplicationStatus,
 } from '../src/modules/applications/recruiterApplication.repository.js';
 
 describe('recruiter application repository', () => {
@@ -83,5 +85,45 @@ describe('recruiter application repository', () => {
     expect(query.select).toHaveProperty('recruiterNotes');
     expect(JSON.stringify(query.select)).not.toContain('passwordHash');
     expect(JSON.stringify(query.select)).not.toContain('sessions');
+  });
+
+  it('guards status writes by company ownership and current state', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    await updateRecruiterOwnedApplicationStatus(
+      'application-1',
+      'company-1',
+      'UNDER_REVIEW',
+      'SHORTLISTED',
+      { application: { updateMany } },
+    );
+    expect(updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'application-1',
+        status: 'UNDER_REVIEW',
+        job: { is: { companyId: 'company-1' } },
+      },
+      data: { status: 'SHORTLISTED' },
+    });
+  });
+
+  it('persists every meaningful status change as history', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'history-1' });
+    await createApplicationStatusHistoryEvent(
+      'application-1',
+      'UNDER_REVIEW',
+      'SHORTLISTED',
+      'recruiter-1',
+      'Portfolio reviewed.',
+      { applicationStatusHistory: { create } },
+    );
+    expect(create).toHaveBeenCalledWith({
+      data: {
+        applicationId: 'application-1',
+        previousStatus: 'UNDER_REVIEW',
+        newStatus: 'SHORTLISTED',
+        changedByUserId: 'recruiter-1',
+        reason: 'Portfolio reviewed.',
+      },
+    });
   });
 });
