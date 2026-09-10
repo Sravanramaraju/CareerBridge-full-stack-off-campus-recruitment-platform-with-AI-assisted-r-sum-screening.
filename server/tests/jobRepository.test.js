@@ -35,6 +35,11 @@ describe('public job repository', () => {
       }),
     );
     expect(count).toHaveBeenCalledWith({ where: findMany.mock.calls[0][0].where });
+    expect(findMany.mock.calls[0][0].select.skills.select.skill.select).toEqual({
+      id: true,
+      name: true,
+      normalizedName: true,
+    });
   });
 
   it('passes company ownership scope into the public query builder', async () => {

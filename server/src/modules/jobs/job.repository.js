@@ -41,7 +41,7 @@ export const jobRecordSelection = {
   skills: {
     select: {
       requirement: true,
-      skill: { select: { id: true, name: true, slug: true } },
+      skill: { select: { id: true, name: true, normalizedName: true } },
     },
     orderBy: { skill: { name: 'asc' } },
   },
