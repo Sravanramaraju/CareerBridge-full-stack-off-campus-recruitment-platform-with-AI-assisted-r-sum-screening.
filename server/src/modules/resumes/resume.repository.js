@@ -72,6 +72,13 @@ export function findNewestOwnedResume(userId, database = prisma) {
   });
 }
 
+export function findPreferredOwnedResume(userId, database = prisma) {
+  return database.resume.findFirst({
+    where: { applicantProfile: { is: { userId } }, deletedAt: null },
+    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
+  });
+}
+
 export function findAccessibleResume(resumeId, userId, role, database = prisma) {
   const access = role === 'APPLICANT'
     ? { applicantProfile: { is: { userId } }, deletedAt: null }

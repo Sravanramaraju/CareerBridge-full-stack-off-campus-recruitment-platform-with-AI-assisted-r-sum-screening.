@@ -6,6 +6,7 @@ import {
   findNewestOwnedResume,
   findOwnedResume,
   findOwnedResumeMetadata,
+  findPreferredOwnedResume,
   listApplicantResumes,
   updateOwnedResume,
 } from '../src/modules/resumes/resume.repository.js';
@@ -85,6 +86,16 @@ describe('resume repository', () => {
     expect(findFirst).toHaveBeenCalledWith({
       where: { applicantProfile: { is: { userId: 'applicant-1' } }, deletedAt: null },
       orderBy: { createdAt: 'desc' },
+    });
+  });
+
+  it('prefers the primary résumé for applicant matching', async () => {
+    const findFirst = vi.fn().mockResolvedValue(null);
+    await findPreferredOwnedResume('applicant-1', { resume: { findFirst } });
+
+    expect(findFirst).toHaveBeenCalledWith({
+      where: { applicantProfile: { is: { userId: 'applicant-1' } }, deletedAt: null },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
     });
   });
 
