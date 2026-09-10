@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../../middleware/authorization.js';
 import { validateRequest } from '../../middleware/validateRequest.js';
+import { listRecruiterApplicationsHandler } from '../applications/recruiterApplication.controller.js';
+import { recruiterApplicationListQuerySchema } from '../applications/application.schemas.js';
 import {
   archiveRecruiterJobHandler,
   closeRecruiterJobHandler,
@@ -26,6 +28,14 @@ recruiterJobRouter.post(
   '/',
   validateRequest({ body: recruiterJobCreateSchema }),
   createRecruiterJobHandler,
+);
+recruiterJobRouter.get(
+  '/:jobId/applications',
+  validateRequest({
+    params: jobIdentifierParamsSchema,
+    query: recruiterApplicationListQuerySchema,
+  }),
+  listRecruiterApplicationsHandler,
 );
 recruiterJobRouter.get('/:jobId', validateJobId, getRecruiterJobHandler);
 recruiterJobRouter.patch(
