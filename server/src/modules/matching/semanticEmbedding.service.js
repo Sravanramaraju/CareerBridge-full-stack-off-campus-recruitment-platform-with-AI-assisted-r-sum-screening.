@@ -88,3 +88,23 @@ export async function getSemanticSimilarityScore(
     return null;
   }
 }
+
+export async function getStoredSemanticSimilarityScore(
+  jobId,
+  resumeId,
+  {
+    database = prisma,
+    findSimilarity = getJobResumeCosineSimilarity,
+    semanticLogger = logger,
+  } = {},
+) {
+  try {
+    const similarity = await findSimilarity(jobId, resumeId, database);
+    if (!Number.isFinite(similarity)) return null;
+    return Math.round(Math.max(0, Math.min(1, similarity)) * 100);
+  } catch (error) {
+    semanticLogger.warn({ err: error, jobId, resumeId },
+      'Stored semantic similarity unavailable; structured matching remains active');
+    return null;
+  }
+}

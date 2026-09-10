@@ -3,6 +3,7 @@ import {
   ensureJobEmbedding,
   ensureResumeEmbedding,
   getSemanticSimilarityScore,
+  getStoredSemanticSimilarityScore,
 } from '../src/modules/matching/semanticEmbedding.service.js';
 
 const database = { marker: 'database' };
@@ -71,6 +72,34 @@ describe('semantic embedding service', () => {
         semanticLogger: { warn },
       },
     )).resolves.toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.objectContaining({
+      jobId: 'job-1', resumeId: 'resume-1', err: expect.any(Error),
+    }), expect.stringContaining('structured matching'));
+  });
+
+  it('reads an existing semantic score without generating embeddings', async () => {
+    const findSimilarity = vi.fn().mockResolvedValue(0.874);
+    await expect(getStoredSemanticSimilarityScore('job-1', 'resume-1', {
+      database,
+      findSimilarity,
+    })).resolves.toBe(87);
+    expect(findSimilarity).toHaveBeenCalledWith('job-1', 'resume-1', database);
+  });
+
+  it('returns no stored score when either embedding is unavailable', async () => {
+    await expect(getStoredSemanticSimilarityScore('job-1', 'resume-1', {
+      database,
+      findSimilarity: vi.fn().mockResolvedValue(null),
+    })).resolves.toBeNull();
+  });
+
+  it('contains stored similarity query failures', async () => {
+    const warn = vi.fn();
+    await expect(getStoredSemanticSimilarityScore('job-1', 'resume-1', {
+      database,
+      findSimilarity: vi.fn().mockRejectedValue(new Error('pgvector unavailable')),
+      semanticLogger: { warn },
+    })).resolves.toBeNull();
     expect(warn).toHaveBeenCalledWith(expect.objectContaining({
       jobId: 'job-1', resumeId: 'resume-1', err: expect.any(Error),
     }), expect.stringContaining('structured matching'));
