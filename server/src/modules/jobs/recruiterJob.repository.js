@@ -38,6 +38,19 @@ export function updateOwnedRecruiterJob(jobId, companyId, data, database = prism
   });
 }
 
+export function transitionOwnedRecruiterJob(
+  jobId,
+  companyId,
+  expectedStatuses,
+  data,
+  database = prisma,
+) {
+  return database.job.updateMany({
+    where: { id: jobId, companyId, status: { in: expectedStatuses } },
+    data,
+  });
+}
+
 export function deleteJobSkills(jobId, database = prisma) {
   return database.jobSkill.deleteMany({ where: { jobId } });
 }

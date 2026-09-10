@@ -7,6 +7,7 @@ import {
   deleteJobSkills,
   findOwnedRecruiterJob,
   listRecruiterJobs,
+  transitionOwnedRecruiterJob,
   updateOwnedRecruiterJob,
 } from '../src/modules/jobs/recruiterJob.repository.js';
 
@@ -47,6 +48,28 @@ describe('recruiter job repository', () => {
     expect(updateMany).toHaveBeenCalledWith({
       where: { id: 'job-1', companyId: 'company-1' },
       data: { title: 'Updated' },
+    });
+  });
+
+  it('guards lifecycle writes with ownership and expected source states', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const database = { job: { updateMany } };
+
+    await transitionOwnedRecruiterJob(
+      'job-1',
+      'company-1',
+      ['DRAFT', 'CLOSED'],
+      { status: 'PUBLISHED' },
+      database,
+    );
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'job-1',
+        companyId: 'company-1',
+        status: { in: ['DRAFT', 'CLOSED'] },
+      },
+      data: { status: 'PUBLISHED' },
     });
   });
 
