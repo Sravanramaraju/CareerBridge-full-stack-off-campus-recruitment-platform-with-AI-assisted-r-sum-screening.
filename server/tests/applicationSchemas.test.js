@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   applicationCreateSchema,
   applicationParamsSchema,
+  applicationStatusUpdateSchema,
+  recruiterApplicationListQuerySchema,
 } from '../src/modules/applications/application.schemas.js';
 
 describe('application schemas', () => {
@@ -49,5 +51,28 @@ describe('application schemas', () => {
     expect(applicationParamsSchema.parse({ applicationId: 'application-1' }))
       .toEqual({ applicationId: 'application-1' });
     expect(applicationParamsSchema.safeParse({ applicationId: '' }).success).toBe(false);
+  });
+
+  it('coerces bounded recruiter pipeline filters', () => {
+    expect(recruiterApplicationListQuerySchema.parse({
+      status: 'SHORTLISTED',
+      minMatch: '80',
+      minExperienceMonths: '12',
+      page: '2',
+    })).toMatchObject({
+      status: 'SHORTLISTED',
+      minMatch: 80,
+      minExperienceMonths: 12,
+      page: 2,
+      pageSize: 20,
+    });
+  });
+
+  it('validates recruiter status update payloads', () => {
+    expect(applicationStatusUpdateSchema.parse({
+      status: 'INTERVIEW', reason: 'Technical interview scheduled.',
+    })).toEqual({ status: 'INTERVIEW', reason: 'Technical interview scheduled.' });
+    expect(applicationStatusUpdateSchema.safeParse({ status: 'APPLIED' }).success).toBe(false);
+    expect(applicationStatusUpdateSchema.safeParse({ status: 'UNKNOWN' }).success).toBe(false);
   });
 });

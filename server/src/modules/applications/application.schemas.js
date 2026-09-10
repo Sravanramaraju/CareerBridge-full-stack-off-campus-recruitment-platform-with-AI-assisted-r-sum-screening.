@@ -27,3 +27,28 @@ export const applicationCreateSchema = z.object({
 export const applicationParamsSchema = z.object({
   applicationId: resourceId,
 }).strict();
+
+const applicationStatus = z.enum([
+  'APPLIED',
+  'UNDER_REVIEW',
+  'SHORTLISTED',
+  'INTERVIEW',
+  'OFFERED',
+  'REJECTED',
+  'WITHDRAWN',
+]);
+
+export const recruiterApplicationListQuerySchema = z.object({
+  q: z.string().trim().max(100).optional(),
+  status: applicationStatus.optional(),
+  minMatch: z.coerce.number().int().min(0).max(100).default(0),
+  minExperienceMonths: z.coerce.number().int().min(0).max(960).optional(),
+  location: z.string().trim().max(160).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(20),
+}).strict();
+
+export const applicationStatusUpdateSchema = z.object({
+  status: applicationStatus.exclude(['APPLIED']),
+  reason: z.string().trim().min(2).max(500).nullable().optional(),
+}).strict();
