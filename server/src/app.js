@@ -22,6 +22,7 @@ import { recruiterDashboardRouter } from './modules/dashboard/recruiterDashboard
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { jobRouter } from './modules/jobs/job.routes.js';
 import { recruiterJobRouter } from './modules/jobs/recruiterJob.routes.js';
+import { recommendationRouter } from './modules/matching/recommendation.routes.js';
 import { notificationRouter } from './modules/notifications/notification.routes.js';
 import { applicantCertificationRouter } from './modules/profiles/certification.routes.js';
 import { applicantEducationRouter } from './modules/profiles/education.routes.js';
@@ -60,6 +61,7 @@ export function createApp({ databaseCheck } = {}) {
   app.use(`${API_PREFIX}/recruiter/notes`, recruiterNoteRouter);
   app.use(`${API_PREFIX}/applicant/profile`, applicantProfileRouter);
   app.use(`${API_PREFIX}/applicant/dashboard`, applicantDashboardRouter);
+  app.use(`${API_PREFIX}/applicant/recommendations`, recommendationRouter);
   app.use(`${API_PREFIX}/applicant/applications`, applicantApplicationRouter);
   app.use(`${API_PREFIX}/applicant/education`, applicantEducationRouter);
   app.use(`${API_PREFIX}/applicant/experience`, applicantExperienceRouter);
