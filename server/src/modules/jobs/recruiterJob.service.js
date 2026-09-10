@@ -277,3 +277,38 @@ export async function reopenRecruiterJob(
     return findJob(jobId, membership.company.id, database);
   });
 }
+
+export async function archiveRecruiterJob(
+  userId,
+  jobId,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findMembership = findCompanyMembershipForUser,
+    findJob = findOwnedRecruiterJob,
+    transitionJob = transitionOwnedRecruiterJob,
+    now = () => new Date(),
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const membership = await findMembership(userId, database);
+    if (!membership) throw membershipRequiredError();
+    const job = await findJob(jobId, membership.company.id, database);
+    if (!job) throw notFoundError('The requested job was not found.');
+    if (job.status === 'ARCHIVED') return job;
+
+    const archivedAt = now();
+    const updated = await transitionJob(
+      jobId,
+      membership.company.id,
+      ['DRAFT', 'PUBLISHED', 'CLOSED'],
+      { status: 'ARCHIVED', closedAt: archivedAt },
+      database,
+    );
+    if (updated.count !== 1) {
+      const current = await findJob(jobId, membership.company.id, database);
+      if (current?.status === 'ARCHIVED') return current;
+      throw invalidJobStateError('The job changed while it was being archived. Refresh and retry.');
+    }
+    return findJob(jobId, membership.company.id, database);
+  });
+}

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  archiveRecruiterJob,
   closeRecruiterJob,
   createRecruiterJobDraft,
   getRecruiterJob,
@@ -278,5 +279,57 @@ describe('recruiter job service', () => {
       findMembership: vi.fn().mockResolvedValue(membership),
       findJob: vi.fn().mockResolvedValue({ id: 'job-1', status: 'ARCHIVED' }),
     })).rejects.toMatchObject({ code: 'INVALID_JOB_STATE', status: 409 });
+  });
+
+  it('archives active jobs without deleting their history', async () => {
+    const database = { marker: 'transaction-client' };
+    const archivedAt = new Date('2026-09-10T11:00:00.000Z');
+    const findJob = vi.fn()
+      .mockResolvedValueOnce({ id: 'job-1', status: 'PUBLISHED' })
+      .mockResolvedValueOnce({ id: 'job-1', status: 'ARCHIVED', closedAt: archivedAt });
+    const transitionJob = vi.fn().mockResolvedValue({ count: 1 });
+
+    const result = await archiveRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob,
+      transitionJob,
+      now: () => archivedAt,
+    });
+
+    expect(transitionJob).toHaveBeenCalledWith(
+      'job-1',
+      'company-1',
+      ['DRAFT', 'PUBLISHED', 'CLOSED'],
+      { status: 'ARCHIVED', closedAt: archivedAt },
+      database,
+    );
+    expect(result).toMatchObject({ status: 'ARCHIVED' });
+  });
+
+  it('treats repeated archive requests as idempotent', async () => {
+    const transitionJob = vi.fn();
+    const archived = { id: 'job-1', status: 'ARCHIVED' };
+
+    await expect(archiveRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob: vi.fn().mockResolvedValue(archived),
+      transitionJob,
+    })).resolves.toEqual(archived);
+    expect(transitionJob).not.toHaveBeenCalled();
+  });
+
+  it('accepts a concurrent archive that already reached the target state', async () => {
+    const findJob = vi.fn()
+      .mockResolvedValueOnce({ id: 'job-1', status: 'DRAFT' })
+      .mockResolvedValueOnce({ id: 'job-1', status: 'ARCHIVED' });
+
+    await expect(archiveRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob,
+      transitionJob: vi.fn().mockResolvedValue({ count: 0 }),
+    })).resolves.toMatchObject({ status: 'ARCHIVED' });
   });
 });
