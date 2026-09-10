@@ -208,3 +208,35 @@ export async function publishRecruiterJob(
     return findJob(jobId, membership.company.id, database);
   });
 }
+
+export async function closeRecruiterJob(
+  userId,
+  jobId,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findMembership = findCompanyMembershipForUser,
+    findJob = findOwnedRecruiterJob,
+    transitionJob = transitionOwnedRecruiterJob,
+    now = () => new Date(),
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const membership = await findMembership(userId, database);
+    if (!membership) throw membershipRequiredError();
+    const job = await findJob(jobId, membership.company.id, database);
+    if (!job) throw notFoundError('The requested job was not found.');
+    if (job.status !== 'PUBLISHED') {
+      throw invalidJobStateError('Only published jobs can be closed.');
+    }
+
+    const closedAt = now();
+    const updated = await transitionJob(jobId, membership.company.id, ['PUBLISHED'], {
+      status: 'CLOSED',
+      closedAt,
+    }, database);
+    if (updated.count !== 1) {
+      throw invalidJobStateError('The job changed while it was being closed. Refresh and retry.');
+    }
+    return findJob(jobId, membership.company.id, database);
+  });
+}

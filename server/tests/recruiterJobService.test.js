@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  closeRecruiterJob,
   createRecruiterJobDraft,
   getRecruiterJob,
   getRecruiterJobs,
@@ -200,6 +201,37 @@ describe('recruiter job service', () => {
       findJob: vi.fn().mockResolvedValue({ id: 'job-1', status: 'DRAFT' }),
       assertReady: vi.fn(),
       transitionJob: vi.fn().mockResolvedValue({ count: 0 }),
+    })).rejects.toMatchObject({ code: 'INVALID_JOB_STATE', status: 409 });
+  });
+
+  it('closes an owned published job and records the closure time', async () => {
+    const database = { marker: 'transaction-client' };
+    const closedAt = new Date('2026-09-10T09:00:00.000Z');
+    const findJob = vi.fn()
+      .mockResolvedValueOnce({ id: 'job-1', status: 'PUBLISHED' })
+      .mockResolvedValueOnce({ id: 'job-1', status: 'CLOSED', closedAt });
+    const transitionJob = vi.fn().mockResolvedValue({ count: 1 });
+
+    const result = await closeRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob,
+      transitionJob,
+      now: () => closedAt,
+    });
+
+    expect(transitionJob).toHaveBeenCalledWith('job-1', 'company-1', ['PUBLISHED'], {
+      status: 'CLOSED',
+      closedAt,
+    }, database);
+    expect(result).toMatchObject({ status: 'CLOSED', closedAt });
+  });
+
+  it('does not close draft or already closed jobs', async () => {
+    await expect(closeRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob: vi.fn().mockResolvedValue({ id: 'job-1', status: 'DRAFT' }),
     })).rejects.toMatchObject({ code: 'INVALID_JOB_STATE', status: 409 });
   });
 });
