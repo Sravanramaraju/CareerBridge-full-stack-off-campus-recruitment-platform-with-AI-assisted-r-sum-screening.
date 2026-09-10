@@ -4,6 +4,7 @@ import { queueEmail } from '../email/emailOutbox.service.js';
 import { findPublicJobByIdentifier } from '../jobs/job.repository.js';
 import { createApplicationMatch } from '../matching/applicationMatch.repository.js';
 import { calculateHybridMatch } from '../matching/hybridMatch.service.js';
+import { getStoredSemanticSimilarityScore } from '../matching/semanticEmbedding.service.js';
 import { createNotificationRecords } from '../notifications/notification.repository.js';
 import { findApplicantProfileByUserId } from '../profiles/profile.repository.js';
 import { findOwnedResume } from '../resumes/resume.repository.js';
@@ -123,6 +124,7 @@ export async function submitJobApplication(
     findProfile = findApplicantProfileByUserId,
     createApplication = createApplicantApplication,
     calculateMatch = calculateHybridMatch,
+    getSemanticScore = getStoredSemanticSimilarityScore,
     createMatch = createApplicationMatch,
     findApplicantAccount = findApplicantNotificationAccount,
     listRecruiterAccounts = listCompanyRecruiterNotificationAccounts,
@@ -150,7 +152,8 @@ export async function submitJobApplication(
       ...input,
       screeningAnswers,
     }, database);
-    const match = calculateMatch(job, profile, { now: submittedAt });
+    const semanticScore = await getSemanticScore(job.id, resume.id, { database });
+    const match = calculateMatch(job, profile, { semanticScore, now: submittedAt });
     await createMatch(application.id, match, database);
     await createApplicationNotifications(application, job, profile, database, {
       findApplicantAccount,

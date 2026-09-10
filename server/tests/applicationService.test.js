@@ -25,6 +25,7 @@ function successfulDependencies(overrides = {}) {
     findDuplicate: vi.fn().mockResolvedValue(null),
     findProfile: vi.fn().mockResolvedValue(profile),
     createApplication: vi.fn().mockResolvedValue(application),
+    getSemanticScore: vi.fn().mockResolvedValue(74),
     calculateMatch: vi.fn().mockReturnValue({ overallScore: 80 }),
     createMatch: vi.fn().mockResolvedValue({ id: 'match-1' }),
     findApplicantAccount: vi.fn().mockResolvedValue({
@@ -67,6 +68,13 @@ describe('application service', () => {
         answer: 'Yes',
       }],
     }, database);
+    expect(dependencies.getSemanticScore).toHaveBeenCalledWith(
+      'job-1', 'resume-1', { database },
+    );
+    expect(dependencies.calculateMatch).toHaveBeenCalledWith(job, profile, {
+      semanticScore: 74,
+      now: submittedAt,
+    });
     expect(dependencies.createMatch).toHaveBeenCalledWith(
       'application-1', { overallScore: 80 }, database,
     );
@@ -131,5 +139,20 @@ describe('application service', () => {
     }, dependencies);
     expect(dependencies.createNotifications).toHaveBeenCalledOnce();
     expect(dependencies.queueMessage).not.toHaveBeenCalled();
+  });
+
+  it('stores a structured-only snapshot when semantic vectors are unavailable', async () => {
+    const dependencies = successfulDependencies({
+      getSemanticScore: vi.fn().mockResolvedValue(null),
+    });
+    await submitJobApplication('applicant-1', 'job-1', {
+      resumeId: 'resume-1',
+      screeningAnswers: [{ questionId: 'question-1', answer: 'Yes' }],
+    }, dependencies);
+    expect(dependencies.calculateMatch).toHaveBeenCalledWith(job, profile, {
+      semanticScore: null,
+      now: submittedAt,
+    });
+    expect(dependencies.createMatch).toHaveBeenCalledOnce();
   });
 });
