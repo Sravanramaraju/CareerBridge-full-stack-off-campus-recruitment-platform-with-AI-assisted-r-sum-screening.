@@ -3,6 +3,7 @@ import {
   createRecruiterJobDraft,
   getRecruiterJob,
   getRecruiterJobs,
+  publishRecruiterJob,
   updateRecruiterJobDraft,
 } from '../src/modules/jobs/recruiterJob.service.js';
 
@@ -145,5 +146,60 @@ describe('recruiter job service', () => {
     expect(updateJob).toHaveBeenCalledWith(
       'job-1', 'company-1', { title: 'New public title', moderationStatus: 'PENDING' }, {},
     );
+  });
+
+  it('publishes a complete draft for a verified recruiter company', async () => {
+    const database = { marker: 'transaction-client' };
+    const publishedAt = new Date('2026-09-10T08:00:00.000Z');
+    const draft = { id: 'job-1', status: 'DRAFT' };
+    const published = { ...draft, status: 'PUBLISHED', publishedAt };
+    const findJob = vi.fn().mockResolvedValueOnce(draft).mockResolvedValueOnce(published);
+    const transitionJob = vi.fn().mockResolvedValue({ count: 1 });
+    const assertReady = vi.fn();
+
+    const result = await publishRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation(database),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob,
+      transitionJob,
+      assertReady,
+      now: () => publishedAt,
+    });
+
+    expect(assertReady).toHaveBeenCalledWith(draft, publishedAt);
+    expect(transitionJob).toHaveBeenCalledWith('job-1', 'company-1', ['DRAFT'], {
+      status: 'PUBLISHED',
+      moderationStatus: 'PENDING',
+      publishedAt,
+      closedAt: null,
+    }, database);
+    expect(result).toEqual(published);
+  });
+
+  it('prevents unverified companies from publishing jobs', async () => {
+    await expect(publishRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue({
+        company: { id: 'company-1', verificationStatus: 'PENDING' },
+      }),
+    })).rejects.toMatchObject({ code: 'COMPANY_NOT_VERIFIED', status: 403 });
+  });
+
+  it('prevents publishing from a non-draft lifecycle state', async () => {
+    await expect(publishRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob: vi.fn().mockResolvedValue({ id: 'job-1', status: 'CLOSED' }),
+    })).rejects.toMatchObject({ code: 'INVALID_JOB_STATE', status: 409 });
+  });
+
+  it('detects concurrent publication attempts without overwriting state', async () => {
+    await expect(publishRecruiterJob('recruiter-1', 'job-1', {
+      runTransaction: (operation) => operation({}),
+      findMembership: vi.fn().mockResolvedValue(membership),
+      findJob: vi.fn().mockResolvedValue({ id: 'job-1', status: 'DRAFT' }),
+      assertReady: vi.fn(),
+      transitionJob: vi.fn().mockResolvedValue({ count: 0 }),
+    })).rejects.toMatchObject({ code: 'INVALID_JOB_STATE', status: 409 });
   });
 });

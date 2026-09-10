@@ -3,6 +3,7 @@ import { prisma } from '../../lib/database.js';
 import { findCompanyMembershipForUser } from '../companies/company.repository.js';
 import { normalizeSkillName } from '../profiles/skillNormalization.js';
 import { upsertSkillRecord } from '../skills/skill.repository.js';
+import { assertJobReadyForPublication } from './jobPublication.service.js';
 import { createJobSlug } from './jobSlug.service.js';
 import {
   createJobScreeningQuestions,
@@ -12,6 +13,7 @@ import {
   deleteJobSkills,
   findOwnedRecruiterJob,
   listRecruiterJobs,
+  transitionOwnedRecruiterJob,
   updateOwnedRecruiterJob,
 } from './recruiterJob.repository.js';
 
@@ -19,6 +21,18 @@ function membershipRequiredError() {
   return new AppError({
     code: 'COMPANY_MEMBERSHIP_REQUIRED',
     message: 'You do not have access to a recruiter company.',
+    status: 403,
+  });
+}
+
+function invalidJobStateError(message) {
+  return new AppError({ code: 'INVALID_JOB_STATE', message, status: 409 });
+}
+
+function unverifiedCompanyError() {
+  return new AppError({
+    code: 'COMPANY_NOT_VERIFIED',
+    message: 'Your company must be verified before publishing jobs.',
     status: 403,
   });
 }
@@ -153,6 +167,43 @@ export async function updateRecruiterJobDraft(
     if (screeningQuestions !== undefined) {
       await deleteQuestions(jobId, database);
       await createQuestions(jobId, screeningQuestions, database);
+    }
+    return findJob(jobId, membership.company.id, database);
+  });
+}
+
+export async function publishRecruiterJob(
+  userId,
+  jobId,
+  {
+    runTransaction = (operation) => prisma.$transaction(operation),
+    findMembership = findCompanyMembershipForUser,
+    findJob = findOwnedRecruiterJob,
+    transitionJob = transitionOwnedRecruiterJob,
+    assertReady = assertJobReadyForPublication,
+    now = () => new Date(),
+  } = {},
+) {
+  return runTransaction(async (database) => {
+    const membership = await findMembership(userId, database);
+    if (!membership) throw membershipRequiredError();
+    if (membership.company.verificationStatus !== 'VERIFIED') throw unverifiedCompanyError();
+
+    const job = await findJob(jobId, membership.company.id, database);
+    if (!job) throw notFoundError('The requested job was not found.');
+    if (job.status !== 'DRAFT') {
+      throw invalidJobStateError('Only draft jobs can be published.');
+    }
+    const publishedAt = now();
+    assertReady(job, publishedAt);
+    const updated = await transitionJob(jobId, membership.company.id, ['DRAFT'], {
+      status: 'PUBLISHED',
+      moderationStatus: 'PENDING',
+      publishedAt,
+      closedAt: null,
+    }, database);
+    if (updated.count !== 1) {
+      throw invalidJobStateError('The job changed while it was being published. Refresh and retry.');
     }
     return findJob(jobId, membership.company.id, database);
   });
