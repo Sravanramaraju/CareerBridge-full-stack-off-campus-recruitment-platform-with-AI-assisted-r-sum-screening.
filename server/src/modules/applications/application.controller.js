@@ -1,6 +1,7 @@
 import {
   getApplicantApplication,
   getApplicantApplications,
+  withdrawApplicantApplication,
 } from './applicantApplication.service.js';
 import { submitJobApplication } from './application.service.js';
 
@@ -47,6 +48,23 @@ export function createSubmitApplicationHandler({ submitApplication = submitJobAp
   };
 }
 
+export function createWithdrawApplicantApplicationHandler({
+  withdrawApplication = withdrawApplicantApplication,
+} = {}) {
+  return async (request, response, next) => {
+    try {
+      const application = await withdrawApplication(
+        request.auth.user.id,
+        request.validated.params.applicationId,
+      );
+      return response.json({ data: application });
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
 export const submitApplicationHandler = createSubmitApplicationHandler();
 export const listApplicantApplicationsHandler = createListApplicantApplicationsHandler();
 export const getApplicantApplicationHandler = createGetApplicantApplicationHandler();
+export const withdrawApplicantApplicationHandler = createWithdrawApplicantApplicationHandler();

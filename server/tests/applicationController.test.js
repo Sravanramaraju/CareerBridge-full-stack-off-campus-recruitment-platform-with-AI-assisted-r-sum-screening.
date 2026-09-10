@@ -3,6 +3,7 @@ import {
   createGetApplicantApplicationHandler,
   createListApplicantApplicationsHandler,
   createSubmitApplicationHandler,
+  createWithdrawApplicantApplicationHandler,
 } from '../src/modules/applications/application.controller.js';
 
 describe('application controller', () => {
@@ -63,6 +64,40 @@ describe('application controller', () => {
         validated: { params: { jobId: 'job-1' }, body: {} },
       },
       { status: vi.fn() },
+      next,
+    );
+    expect(next).toHaveBeenCalledWith(error);
+  });
+
+  it('withdraws a validated application using the authenticated applicant identity', async () => {
+    const application = { id: 'application-1', statusCode: 'WITHDRAWN' };
+    const withdrawApplication = vi.fn().mockResolvedValue(application);
+    const response = { json: vi.fn((value) => value) };
+
+    await createWithdrawApplicantApplicationHandler({ withdrawApplication })(
+      {
+        auth: { user: { id: 'applicant-1' } },
+        validated: { params: { applicationId: 'application-1' } },
+      },
+      response,
+      vi.fn(),
+    );
+
+    expect(withdrawApplication).toHaveBeenCalledWith('applicant-1', 'application-1');
+    expect(response.json).toHaveBeenCalledWith({ data: application });
+  });
+
+  it('forwards withdrawal failures to centralized error handling', async () => {
+    const error = new Error('status conflict');
+    const next = vi.fn();
+    await createWithdrawApplicantApplicationHandler({
+      withdrawApplication: vi.fn().mockRejectedValue(error),
+    })(
+      {
+        auth: { user: { id: 'applicant-1' } },
+        validated: { params: { applicationId: 'application-1' } },
+      },
+      { json: vi.fn() },
       next,
     );
     expect(next).toHaveBeenCalledWith(error);
