@@ -1,6 +1,8 @@
 import { AppError, notFoundError } from '../../lib/appError.js';
 import { prisma } from '../../lib/database.js';
 import { findCompanyMembershipForUser } from '../companies/company.repository.js';
+import { ensureJobEmbedding } from '../matching/semanticEmbedding.service.js';
+import { scheduleSemanticTask } from '../matching/semanticTaskScheduler.js';
 import { normalizeSkillName } from '../profiles/skillNormalization.js';
 import { upsertSkillRecord } from '../skills/skill.repository.js';
 import { assertJobReadyForPublication } from './jobPublication.service.js';
@@ -123,6 +125,8 @@ export async function updateRecruiterJobDraft(
     createSkills = createJobSkills,
     deleteQuestions = deleteJobScreeningQuestions,
     createQuestions = createJobScreeningQuestions,
+    ensureEmbedding = ensureJobEmbedding,
+    scheduleTask = scheduleSemanticTask,
   } = {},
 ) {
   return runTransaction(async (database) => {
@@ -168,7 +172,11 @@ export async function updateRecruiterJobDraft(
       await deleteQuestions(jobId, database);
       await createQuestions(jobId, screeningQuestions, database);
     }
-    return findJob(jobId, membership.company.id, database);
+    const job = await findJob(jobId, membership.company.id, database);
+    if (current.status === 'PUBLISHED') {
+      void scheduleTask(() => ensureEmbedding(job), { jobId });
+    }
+    return job;
   });
 }
 
@@ -181,6 +189,8 @@ export async function publishRecruiterJob(
     findJob = findOwnedRecruiterJob,
     transitionJob = transitionOwnedRecruiterJob,
     assertReady = assertJobReadyForPublication,
+    ensureEmbedding = ensureJobEmbedding,
+    scheduleTask = scheduleSemanticTask,
     now = () => new Date(),
   } = {},
 ) {
@@ -205,7 +215,9 @@ export async function publishRecruiterJob(
     if (updated.count !== 1) {
       throw invalidJobStateError('The job changed while it was being published. Refresh and retry.');
     }
-    return findJob(jobId, membership.company.id, database);
+    const published = await findJob(jobId, membership.company.id, database);
+    void scheduleTask(() => ensureEmbedding(published), { jobId });
+    return published;
   });
 }
 
@@ -250,6 +262,8 @@ export async function reopenRecruiterJob(
     findJob = findOwnedRecruiterJob,
     transitionJob = transitionOwnedRecruiterJob,
     assertReady = assertJobReadyForPublication,
+    ensureEmbedding = ensureJobEmbedding,
+    scheduleTask = scheduleSemanticTask,
     now = () => new Date(),
   } = {},
 ) {
@@ -274,7 +288,9 @@ export async function reopenRecruiterJob(
     if (updated.count !== 1) {
       throw invalidJobStateError('The job changed while it was being reopened. Refresh and retry.');
     }
-    return findJob(jobId, membership.company.id, database);
+    const reopened = await findJob(jobId, membership.company.id, database);
+    void scheduleTask(() => ensureEmbedding(reopened), { jobId });
+    return reopened;
   });
 }
 

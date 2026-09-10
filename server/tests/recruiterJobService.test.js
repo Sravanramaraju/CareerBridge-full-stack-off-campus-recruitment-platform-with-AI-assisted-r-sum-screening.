@@ -139,16 +139,20 @@ describe('recruiter job service', () => {
       })
       .mockResolvedValueOnce({ id: 'job-1' });
 
+    const ensureEmbedding = vi.fn().mockResolvedValue({ updated: true });
     await updateRecruiterJobDraft('recruiter-1', 'job-1', { title: 'New public title' }, {
       runTransaction: (operation) => operation({}),
       findMembership: vi.fn().mockResolvedValue(membership),
       findJob,
       updateJob,
+      ensureEmbedding,
+      scheduleTask: (operation) => operation(),
     });
 
     expect(updateJob).toHaveBeenCalledWith(
       'job-1', 'company-1', { title: 'New public title', moderationStatus: 'PENDING' }, {},
     );
+    expect(ensureEmbedding).toHaveBeenCalledWith({ id: 'job-1' });
   });
 
   it('publishes a complete draft for a verified recruiter company', async () => {
@@ -159,6 +163,7 @@ describe('recruiter job service', () => {
     const findJob = vi.fn().mockResolvedValueOnce(draft).mockResolvedValueOnce(published);
     const transitionJob = vi.fn().mockResolvedValue({ count: 1 });
     const assertReady = vi.fn();
+    const ensureEmbedding = vi.fn().mockResolvedValue({ updated: true });
 
     const result = await publishRecruiterJob('recruiter-1', 'job-1', {
       runTransaction: (operation) => operation(database),
@@ -166,6 +171,8 @@ describe('recruiter job service', () => {
       findJob,
       transitionJob,
       assertReady,
+      ensureEmbedding,
+      scheduleTask: (operation) => operation(),
       now: () => publishedAt,
     });
 
@@ -177,6 +184,7 @@ describe('recruiter job service', () => {
       closedAt: null,
     }, database);
     expect(result).toEqual(published);
+    expect(ensureEmbedding).toHaveBeenCalledWith(published);
   });
 
   it('prevents unverified companies from publishing jobs', async () => {
@@ -246,6 +254,7 @@ describe('recruiter job service', () => {
       .mockResolvedValueOnce({ id: 'job-1', status: 'PUBLISHED', closedAt: null });
     const transitionJob = vi.fn().mockResolvedValue({ count: 1 });
     const assertReady = vi.fn();
+    const ensureEmbedding = vi.fn().mockResolvedValue({ updated: true });
 
     await reopenRecruiterJob('recruiter-1', 'job-1', {
       runTransaction: (operation) => operation(database),
@@ -253,6 +262,8 @@ describe('recruiter job service', () => {
       findJob,
       transitionJob,
       assertReady,
+      ensureEmbedding,
+      scheduleTask: (operation) => operation(),
       now: () => reopenedAt,
     });
 
@@ -262,6 +273,9 @@ describe('recruiter job service', () => {
       publishedAt: reopenedAt,
       closedAt: null,
     }, database);
+    expect(ensureEmbedding).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'job-1', status: 'PUBLISHED',
+    }));
   });
 
   it('requires verification before reopening a closed job', async () => {
