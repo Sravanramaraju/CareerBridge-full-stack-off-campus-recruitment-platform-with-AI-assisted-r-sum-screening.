@@ -11,6 +11,7 @@ import { notFoundHandler } from './middleware/notFound.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { sessionAuth } from './middleware/sessionAuth.js';
 import { applicantApplicationRouter } from './modules/applications/applicantApplication.routes.js';
+import { adminRouter } from './modules/admin/admin.routes.js';
 import { recruiterApplicationRouter } from './modules/applications/recruiterApplication.routes.js';
 import { recruiterNoteRouter } from './modules/applications/recruiterNote.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
@@ -47,6 +48,7 @@ export function createApp({ databaseCheck } = {}) {
 
   app.use(`${API_PREFIX}/health`, createHealthRouter({ databaseCheck }));
   app.use(`${API_PREFIX}/auth`, authRouter);
+  app.use(`${API_PREFIX}/admin`, adminRouter);
   app.use(`${API_PREFIX}/companies`, companyRouter);
   app.use(`${API_PREFIX}/jobs`, jobRouter);
   app.use(`${API_PREFIX}/recruiter/company`, recruiterCompanyRouter);
