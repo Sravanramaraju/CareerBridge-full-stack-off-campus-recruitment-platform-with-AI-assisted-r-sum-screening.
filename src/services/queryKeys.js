@@ -10,6 +10,8 @@ export const queryKeys = Object.freeze({
   savedJobs: () => ['applicant', 'saved-jobs'],
   applicantProfile: () => ['applicant', 'profile'],
   applicantResumes: () => ['applicant', 'resumes'],
+  applicantDashboard: () => ['applicant', 'dashboard'],
+  recruiterDashboard: () => ['recruiter', 'dashboard'],
   recruiterJobs: (recruiterId = 'demo-recruiter') => ['recruiter-jobs', recruiterId],
   jobApplicants: (jobId) => ['job-applicants', jobId],
   notifications: (role) => ['notifications', role],
