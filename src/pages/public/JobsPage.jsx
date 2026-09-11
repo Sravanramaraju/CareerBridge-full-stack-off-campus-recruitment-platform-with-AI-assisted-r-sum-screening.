@@ -98,7 +98,7 @@ export function JobsPage() {
       <header className="max-w-3xl">
         <p className="text-sm font-bold text-[var(--cb-primary)]">Explore opportunities</p>
         <h1 className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.035em] sm:text-4xl">Find work where you can grow</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--cb-text-secondary)]">Search skills-first openings from transparent demo employers across India.</p>
+        <p className="mt-3 text-sm leading-6 text-[var(--cb-text-secondary)]">Search skills-first openings from transparent employers across India.</p>
       </header>
       <div className="mt-7"><JobSearchBar compact initialValues={filters} /></div>
 

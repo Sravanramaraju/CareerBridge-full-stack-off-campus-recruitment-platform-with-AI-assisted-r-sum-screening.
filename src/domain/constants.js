@@ -1,4 +1,4 @@
-export const EMPLOYMENT_TYPES = ['Full-time', 'Internship', 'Contract'];
+export const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Internship', 'Contract'];
 export const WORK_MODES = ['On-site', 'Hybrid', 'Remote'];
 export const EXPERIENCE_LEVELS = ['Fresher', '0–1 years', '1–2 years', '2–3 years'];
 export const SALARY_BANDS = ['Up to ₹5 LPA', '₹5–8 LPA', '₹8+ LPA'];
@@ -9,6 +9,17 @@ export const DATE_POSTED_OPTIONS = [
   { label: 'Past 30 days', value: '30' },
 ];
 export const COMPANY_TYPES = ['Startup', 'MNC', 'Product', 'Consulting'];
+export const JOB_INDUSTRIES = [
+  'Software', 'Developer tools', 'Financial services', 'Healthcare', 'Education',
+  'E-commerce', 'Consulting', 'Manufacturing',
+];
+export const POPULAR_JOB_SKILLS = [
+  'JavaScript', 'React', 'Node.js', 'Python', 'Java', 'SQL', 'PostgreSQL',
+  'Data Analysis', 'AWS', 'Git',
+];
+export const JOB_LOCATIONS = [
+  'Bengaluru', 'Hyderabad', 'Pune', 'Chennai', 'Mumbai', 'Delhi NCR', 'Remote',
+];
 
 export const APPLICATION_STATUSES = {
   APPLIED: 'Applied',
