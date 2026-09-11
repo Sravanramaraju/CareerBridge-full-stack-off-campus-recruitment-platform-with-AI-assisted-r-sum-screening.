@@ -76,7 +76,7 @@ function Field({ label, name, values, setValues, ...props }) {
 }
 
 export function ProfileRecordModal({ editor, onClose, onSave, pending }) {
-  const [values, setValues] = useState(() => initialValues(editor.type, editor.record));
+  const [values, setValues] = useState(() => initialValues(editor.type, editor.record || editor.initialValues));
   const type = editor.type;
   const label = TYPE_LABELS[type];
 

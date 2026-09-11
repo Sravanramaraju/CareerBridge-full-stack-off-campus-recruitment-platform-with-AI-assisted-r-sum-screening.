@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileSearch, FileText, MapPin, Pencil, Plus, Trash2, Upload } from 'lucide-react';
 import { Avatar } from '@/src/components/ui/Avatar';
 import { ProfileRecordModal } from '@/src/components/profile/ProfileRecordModal';
+import { ResumeReviewModal } from '@/src/components/profile/ResumeReviewModal';
 import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState, ProgressBar, Skeleton } from '@/src/components/ui/Feedback';
@@ -30,6 +31,7 @@ export function ProfilePage() {
   const [basicOpen, setBasicOpen] = useState(false);
   const [skillInput, setSkillInput] = useState('');
   const [recordEditor, setRecordEditor] = useState(null);
+  const [reviewResume, setReviewResume] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [basicForm, setBasicForm] = useState({ name: '', headline: '', location: '', summary: '', locations: '', jobTypes: '', workModes: '' });
   const fileInputRef = useRef(null);
@@ -149,6 +151,11 @@ export function ProfilePage() {
     event.target.value = '';
   }
 
+  function createRecordFromResume(type, initialValues) {
+    setReviewResume(null);
+    setRecordEditor({ type, initialValues });
+  }
+
   return (
     <div>
       <header><p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--cb-primary)]">Professional profile</p><h1 className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.035em]">Make your evidence easy to understand</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--cb-text-secondary)]">Keep your skills, projects, preferences, and resume current so recommendations have useful context.</p></header>
@@ -187,7 +194,7 @@ export function ProfilePage() {
 
           <ProfileSection title="Résumés" description="Upload PDF or DOCX files. CareerBridge extracts job-relevant profile evidence after upload.">
             {resumesQuery.isLoading && <Skeleton className="h-20" />}
-            {resumes.map((resume) => <div key={resume.id} className="mb-3 flex flex-col gap-4 rounded-xl bg-[var(--cb-bg-subtle)] p-4 last:mb-0 sm:flex-row sm:items-center"><span className="grid size-11 place-items-center rounded-xl bg-[var(--cb-primary-soft)] text-[var(--cb-primary)]"><FileText /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{resume.originalFileName}</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">{resume.isPrimary ? 'Primary résumé' : 'Résumé'} · {resume.parseStatus.toLocaleLowerCase()} · {Math.ceil(resume.fileSize / 1024)} KB</p></div><div className="flex gap-2">{!resume.isPrimary && <Button variant="secondary" size="sm" disabled={resumeMutation.isPending} onClick={() => resumeMutation.mutate({ action: 'primary', resumeId: resume.id })}>Set primary</Button>}<Button variant="dangerSoft" size="iconSm" disabled={resumeMutation.isPending} onClick={() => resumeMutation.mutate({ action: 'delete', resumeId: resume.id })} aria-label={`Delete ${resume.originalFileName}`}><Trash2 /></Button></div></div>)}
+            {resumes.map((resume) => <div key={resume.id} className="mb-3 flex flex-col gap-4 rounded-xl bg-[var(--cb-bg-subtle)] p-4 last:mb-0 sm:flex-row sm:items-center"><span className="grid size-11 place-items-center rounded-xl bg-[var(--cb-primary-soft)] text-[var(--cb-primary)]"><FileText /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{resume.originalFileName}</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">{resume.isPrimary ? 'Primary résumé' : 'Résumé'} · {resume.parseStatus.toLocaleLowerCase()} · {Math.ceil(resume.fileSize / 1024)} KB</p>{resume.parseStatus === 'FAILED' && resume.parseError && <p className="mt-1 text-xs text-[var(--cb-danger)]">{resume.parseError}</p>}</div><div className="flex flex-wrap gap-2">{resume.parseStatus === 'READY' && <Button variant="soft" size="sm" onClick={() => setReviewResume(resume)}>Review extraction</Button>}{!resume.isPrimary && <Button variant="secondary" size="sm" disabled={resumeMutation.isPending} onClick={() => resumeMutation.mutate({ action: 'primary', resumeId: resume.id })}>Set primary</Button>}<Button variant="dangerSoft" size="iconSm" disabled={resumeMutation.isPending} onClick={() => resumeMutation.mutate({ action: 'delete', resumeId: resume.id })} aria-label={`Delete ${resume.originalFileName}`}><Trash2 /></Button></div></div>)}
             {resumesQuery.isSuccess && resumes.length === 0 && <div className="rounded-xl border border-dashed p-5 text-center"><p className="text-sm font-semibold">No résumé uploaded</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">Add one before applying to an opportunity.</p></div>}
             <input ref={fileInputRef} type="file" accept=".pdf,.docx" className="sr-only" onChange={handleResume} />
             <Button variant="soft" className="mt-4" onClick={() => fileInputRef.current?.click()} disabled={resumeMutation.isPending}><Upload />{resumeMutation.isPending ? 'Uploading…' : 'Upload résumé'}</Button>
@@ -206,6 +213,7 @@ export function ProfilePage() {
 
       <Modal open={basicOpen} onOpenChange={setBasicOpen}><ModalContent title="Edit profile and preferences" description="Keep this concise and aligned with the roles you want."><form onSubmit={saveBasic} className="grid max-h-[70vh] gap-4 overflow-y-auto pr-1"><label htmlFor="profile-name" className="grid gap-1.5 text-sm font-semibold">Full name<Input id="profile-name" required value={basicForm.name} onChange={(event) => setBasicForm({ ...basicForm, name: event.target.value })} /></label><label htmlFor="profile-headline" className="grid gap-1.5 text-sm font-semibold">Professional headline<TextArea id="profile-headline" className="min-h-20" maxLength={160} value={basicForm.headline} onChange={(event) => setBasicForm({ ...basicForm, headline: event.target.value })} /></label><label htmlFor="profile-location" className="grid gap-1.5 text-sm font-semibold">Location<Input id="profile-location" value={basicForm.location} onChange={(event) => setBasicForm({ ...basicForm, location: event.target.value })} /></label><label htmlFor="profile-summary" className="grid gap-1.5 text-sm font-semibold">Professional summary<TextArea id="profile-summary" maxLength={1500} value={basicForm.summary} onChange={(event) => setBasicForm({ ...basicForm, summary: event.target.value })} /></label>{[['locations', 'Preferred locations'], ['jobTypes', 'Job types'], ['workModes', 'Work modes']].map(([key, label]) => <label key={key} htmlFor={`profile-${key}`} className="grid gap-1.5 text-sm font-semibold">{label}<Input id={`profile-${key}`} value={basicForm[key]} onChange={(event) => setBasicForm({ ...basicForm, [key]: event.target.value })} placeholder="Comma-separated" /></label>)}<div className="flex justify-end"><Button type="submit" disabled={profileMutation.isPending}>{profileMutation.isPending ? 'Saving…' : 'Save changes'}</Button></div></form></ModalContent></Modal>
       {recordEditor && <ProfileRecordModal key={`${recordEditor.type}-${recordEditor.record?.id || 'new'}`} editor={recordEditor} pending={recordMutation.isPending} onClose={() => setRecordEditor(null)} onSave={(values) => recordMutation.mutate({ ...recordEditor, values })} />}
+      {reviewResume && <ResumeReviewModal resume={reviewResume} existingSkills={skills} pending={skillsMutation.isPending} onClose={() => setReviewResume(null)} onApplySkills={(records) => skillsMutation.mutate(records, { onSuccess: () => setReviewResume(null) })} onCreateRecord={createRecordFromResume} />}
       <Modal open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}><ModalContent title={`Delete ${deleteTarget?.label || 'profile record'}?`} description="This removes the record from your CareerBridge profile and may affect future match guidance."><div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancel</Button><Button variant="danger" disabled={deleteRecordMutation.isPending} onClick={() => deleteRecordMutation.mutate(deleteTarget)}>{deleteRecordMutation.isPending ? 'Deleting…' : 'Delete'}</Button></div></ModalContent></Modal>
     </div>
   );

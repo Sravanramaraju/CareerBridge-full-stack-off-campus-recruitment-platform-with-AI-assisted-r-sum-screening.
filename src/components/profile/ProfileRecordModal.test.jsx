@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { ProfileRecordModal } from '@/src/components/profile/ProfileRecordModal';
 import { buildProfileRecordPayload } from '@/src/components/profile/ProfileRecordModal';
 
 describe('buildProfileRecordPayload', () => {
@@ -16,5 +18,17 @@ describe('buildProfileRecordPayload', () => {
     })).toMatchObject({
       name: 'Portal', projectUrl: null, technologies: ['React', 'Node.js', 'React'],
     });
+  });
+
+  it('opens a new record with editable résumé evidence', () => {
+    const onSave = vi.fn();
+    render(<ProfileRecordModal editor={{ type: 'projects', initialValues: { description: 'Detected project evidence' } }} onClose={vi.fn()} onSave={onSave} />);
+
+    expect(screen.getByLabelText('Description')).toHaveValue('Detected project evidence');
+    fireEvent.change(screen.getByLabelText('Project name'), { target: { value: 'CareerBridge' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save project' }));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'CareerBridge', description: 'Detected project evidence',
+    }));
   });
 });
