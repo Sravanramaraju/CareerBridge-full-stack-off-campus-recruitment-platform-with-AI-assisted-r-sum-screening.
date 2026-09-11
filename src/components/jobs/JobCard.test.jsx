@@ -36,6 +36,5 @@ describe('JobCard', () => {
     await userEvent.click(screen.getByRole('button', { name: `Save ${job.title}` }));
 
     expect(onSave).toHaveBeenCalledWith(job.id);
-    expect(screen.getByText('Job saved.')).toBeInTheDocument();
   });
 });

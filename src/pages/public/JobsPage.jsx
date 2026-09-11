@@ -12,7 +12,7 @@ import { Drawer, DrawerContent, DrawerTrigger } from '@/src/components/ui/Drawer
 import { Button } from '@/src/components/ui/Button';
 import { jobsService } from '@/src/services/jobsService';
 import { queryKeys } from '@/src/services/queryKeys';
-import { useAppStore } from '@/src/store/useAppStore';
+import { useSavedJobs } from '@/src/features/jobs/useSavedJobs';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 import { readJobFacets, writeJobFacets } from '@/src/lib/jobFilterParams';
 
@@ -36,8 +36,7 @@ export function JobsPage() {
   const [facetFilters, setFacetFilters] = useState(() => readJobFacets(searchParams));
   const [sort, setSort] = useState('recommended');
   const [page, setPage] = useState(1);
-  const savedJobIds = useAppStore((state) => state.savedJobIds);
-  const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
+  const { savedJobIds, toggleSavedJob } = useSavedJobs();
 
   const filters = useMemo(() => ({
     keyword: searchParams.get('q') || '',
@@ -143,7 +142,7 @@ export function JobsPage() {
           {jobsQuery.isSuccess && visibleJobs.length === 0 && <EmptyState title="No roles match these filters" description="Try a broader keyword, location, or remove one of your filters." actionLabel="Clear filters" onAction={clearFilters} />}
           {jobsQuery.isSuccess && visibleJobs.length > 0 && (
             <div className="grid gap-4 xl:grid-cols-2">
-              {visibleJobs.map((job) => <JobCard key={job.id} job={job} detailState={{ from: `${location.pathname}${location.search}` }} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
+              {visibleJobs.map((job) => <JobCard key={job.id} job={job} detailState={{ from: `${location.pathname}${location.search}` }} isSaved={savedJobIds.has(job.id)} onSave={toggleSavedJob} />)}
             </div>
           )}
           {jobsQuery.isSuccess && pageCount > 1 && <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} />}

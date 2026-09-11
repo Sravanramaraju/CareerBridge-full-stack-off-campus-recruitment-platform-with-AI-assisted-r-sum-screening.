@@ -9,7 +9,7 @@ import { Tabs } from '@/src/components/ui/Tabs';
 import { companiesService } from '@/src/services/companiesService';
 import { jobsService } from '@/src/services/jobsService';
 import { queryKeys } from '@/src/services/queryKeys';
-import { useAppStore } from '@/src/store/useAppStore';
+import { useSavedJobs } from '@/src/features/jobs/useSavedJobs';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const values = [
@@ -21,8 +21,7 @@ const values = [
 export function CompanyDetailPage() {
   const { companyId } = useParams();
   const [activeTab, setActiveTab] = useState('overview');
-  const savedJobIds = useAppStore((state) => state.savedJobIds);
-  const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
+  const { savedJobIds, toggleSavedJob } = useSavedJobs();
   const companyQuery = useQuery({ queryKey: queryKeys.company(companyId), queryFn: ({ signal }) => companiesService.getCompanyById(companyId, { signal }) });
   const jobFilters = { page: 1, pageSize: 50, sort: 'newest' };
   const jobsQuery = useQuery({
@@ -91,7 +90,7 @@ export function CompanyDetailPage() {
           <h2 id="company-jobs-title" className="font-heading text-xl font-bold">Open opportunities</h2>
           {jobsQuery.isLoading && <div className="mt-4 grid gap-4"><Skeleton className="h-64" /><Skeleton className="h-64" /></div>}
           {jobsQuery.isSuccess && companyJobs.length === 0 && <EmptyState className="mt-4" title="No open roles right now" description="Follow the company and check back when new opportunities are published." />}
-          {jobsQuery.isSuccess && companyJobs.length > 0 && <div className="mt-4 grid gap-4 lg:grid-cols-2">{companyJobs.map((job) => <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}</div>}
+          {jobsQuery.isSuccess && companyJobs.length > 0 && <div className="mt-4 grid gap-4 lg:grid-cols-2">{companyJobs.map((job) => <JobCard key={job.id} job={job} isSaved={savedJobIds.has(job.id)} onSave={toggleSavedJob} />)}</div>}
         </section>
       )}
 

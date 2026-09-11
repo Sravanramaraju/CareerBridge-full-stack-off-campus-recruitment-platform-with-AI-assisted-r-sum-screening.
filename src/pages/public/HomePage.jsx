@@ -8,7 +8,7 @@ import { JobCard } from '@/src/components/jobs/JobCard';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { buttonVariants } from '@/src/components/ui/Button';
 import { careerResources, companies, jobs } from '@/src/data/mockData';
-import { useAppStore } from '@/src/store/useAppStore';
+import { useSavedJobs } from '@/src/features/jobs/useSavedJobs';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const browseChips = [
@@ -44,8 +44,7 @@ const candidateFlow = [
 export function HomePage() {
   useDocumentTitle();
   const featuredJobs = jobs.filter((job) => job.featured).slice(0, 6);
-  const savedJobIds = useAppStore((state) => state.savedJobIds);
-  const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
+  const { savedJobIds, toggleSavedJob } = useSavedJobs();
 
   return (
     <>
@@ -106,7 +105,7 @@ export function HomePage() {
             <JobCard
               key={job.id}
               job={job}
-              isSaved={savedJobIds.includes(job.id)}
+              isSaved={savedJobIds.has(job.id)}
               onSave={toggleSavedJob}
             />
           ))}

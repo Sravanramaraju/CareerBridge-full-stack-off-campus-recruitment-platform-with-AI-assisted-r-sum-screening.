@@ -43,6 +43,7 @@ export function SavedJobsPage() {
       queryClient.setQueryData(queryKeys.savedJobs(), context?.previous);
       showToast(error instanceof Error ? error.message : 'Unable to update saved jobs.', { tone: 'error' });
     },
+    onSuccess: () => showToast('Removed from saved jobs.'),
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.savedJobs() }),
   });
   const savedJobs = useMemo(() => {
