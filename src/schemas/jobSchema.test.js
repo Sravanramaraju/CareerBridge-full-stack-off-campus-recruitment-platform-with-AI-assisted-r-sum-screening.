@@ -27,4 +27,10 @@ describe('jobSchema', () => {
     expect(result.success).toBe(false);
     expect(result.error.issues[0].path).toEqual(['screeningQuestions']);
   });
+
+  it('rejects an empty required-question marker', () => {
+    const result = jobSchema.safeParse({ ...validJob, screeningQuestions: '*' });
+    expect(result.success).toBe(false);
+    expect(result.error.issues[0].path).toEqual(['screeningQuestions']);
+  });
 });

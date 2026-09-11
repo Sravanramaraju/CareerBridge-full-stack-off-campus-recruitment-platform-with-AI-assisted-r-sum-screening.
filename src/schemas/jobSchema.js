@@ -23,7 +23,8 @@ export const jobSchema = z.object({
   screeningQuestions: z.string(),
 }).refine((values) => values.experienceMax >= values.experienceMin, { message: 'Maximum must be greater than minimum.', path: ['experienceMax'] })
   .refine((values) => values.hideSalary || values.salaryMax >= values.salaryMin, { message: 'Maximum must be greater than minimum.', path: ['salaryMax'] })
-  .refine((values) => values.screeningQuestions.split('\n').filter((question) => question.trim()).length <= 5, { message: 'Add no more than five screening questions.', path: ['screeningQuestions'] });
+  .refine((values) => values.screeningQuestions.split('\n').filter((question) => question.trim()).length <= 5, { message: 'Add no more than five screening questions.', path: ['screeningQuestions'] })
+  .refine((values) => values.screeningQuestions.split('\n').filter((question) => question.trim()).every((question) => question.trim().replace(/^\*\s*/, '').length >= 2), { message: 'Each screening question must contain at least two characters.', path: ['screeningQuestions'] });
 
 export const jobStepFields = [
   ['title', 'department', 'category', 'employmentType', 'workMode', 'location', 'openings'],

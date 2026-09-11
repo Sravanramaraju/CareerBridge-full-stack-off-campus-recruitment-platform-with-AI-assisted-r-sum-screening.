@@ -19,6 +19,12 @@ const steps = [['Role basics', 'Describe the opportunity'], ['Requirements', 'Se
 
 function splitSkills(value = '') { return value.split(',').map((skill) => skill.trim()).filter(Boolean); }
 function splitLines(value = '') { return value.split('\n').map((item) => item.trim()).filter(Boolean); }
+function parseScreeningQuestions(value = '') {
+  return splitLines(value).map((line) => {
+    const required = line.startsWith('*');
+    return { question: line.replace(/^\*\s*/, ''), required };
+  });
+}
 
 const workModeValues = { 'On-site': 'ON_SITE', Hybrid: 'HYBRID', Remote: 'REMOTE' };
 const employmentTypeValues = { 'Full-time': 'FULL_TIME', 'Part-time': 'PART_TIME', Internship: 'INTERNSHIP', Contract: 'CONTRACT' };
@@ -49,7 +55,7 @@ export function toFormJob(job) {
     description: job.description || '', responsibilities: (job.responsibilities || []).join('\n'),
     deadline: job.deadline ? new Date(job.deadline).toISOString().slice(0, 10) : '',
     contactVisible: job.contactVisible ?? true,
-    screeningQuestions: (job.screeningQuestions || []).map((item) => item.question).join('\n'),
+    screeningQuestions: (job.screeningQuestions || []).map((item) => `${item.required ? '* ' : ''}${item.question}`).join('\n'),
   };
 }
 
@@ -73,7 +79,7 @@ export function toApiJob(values) {
       ...splitSkills(values.requiredSkills).map((name) => ({ name, requirement: 'REQUIRED' })),
       ...splitSkills(values.preferredSkills).map((name) => ({ name, requirement: 'PREFERRED' })),
     ],
-    screeningQuestions: splitLines(values.screeningQuestions).map((question) => ({ question, required: false })),
+    screeningQuestions: parseScreeningQuestions(values.screeningQuestions),
   };
 }
 
@@ -180,7 +186,7 @@ export function JobFormPage() {
             <section className="surface-card p-6 sm:p-8"><h2 className="font-heading text-xl font-bold">Application and review</h2><p className="mt-1 text-xs text-[var(--cb-text-muted)]">Set a realistic deadline and review the candidate-facing summary.</p><div className="mt-6 grid gap-5">
               <FormField label="Application deadline" error={errors.deadline?.message} required>{(field) => <Input {...field} type="date" {...register('deadline')} />}</FormField>
               <label className="flex items-start gap-3 rounded-xl border p-4"><input type="checkbox" className="mt-0.5 size-4 accent-[var(--cb-primary)]" {...register('contactVisible')} /><span><strong className="block text-sm">Show recruiter contact to applicants</strong><span className="mt-1 block text-xs text-[var(--cb-text-muted)]">Display the demo recruiter identity on the published role.</span></span></label>
-              <FormField label="Screening questions" helper="Optional. Add one question per line, up to five." error={errors.screeningQuestions?.message}>{(field) => <TextArea {...field} className="min-h-28" placeholder="Are you available to work in the listed location?" {...register('screeningQuestions')} />}</FormField>
+              <FormField label="Screening questions" helper="Optional. Add one question per line, up to five. Prefix a required question with *." error={errors.screeningQuestions?.message}>{(field) => <TextArea {...field} className="min-h-28" placeholder="* Are you available to work in the listed location?" {...register('screeningQuestions')} />}</FormField>
             </div></section>
             <aside className="surface-card overflow-hidden xl:sticky xl:top-24"><div className="flex items-center gap-2 border-b bg-[var(--cb-bg-subtle)] px-5 py-3 text-xs font-bold"><Eye className="size-4 text-[var(--cb-primary)]" />Candidate preview</div><div className="p-5"><div className="flex flex-wrap gap-2"><Badge variant="primary">{values.workMode || 'Work mode'}</Badge><Badge>{values.employmentType || 'Employment type'}</Badge></div><h3 className="mt-4 font-heading text-xl font-extrabold">{values.title || 'Your job title'}</h3><p className="mt-1 text-sm font-semibold text-[var(--cb-text-secondary)]">Northstar Labs</p><p className="mt-4 text-xs text-[var(--cb-text-muted)]">{values.location || 'Location'} · {values.experienceMin || 0}–{values.experienceMax || 1} years</p><p className="mt-4 line-clamp-4 text-sm leading-6 text-[var(--cb-text-secondary)]">{values.description || 'Your role description will appear here as you complete the form.'}</p><div className="mt-4 flex flex-wrap gap-2">{splitSkills(values.requiredSkills).slice(0, 4).map((skill) => <Badge key={skill} variant="primary">{skill}</Badge>)}</div><p className="mt-5 border-t border-[var(--cb-divider)] pt-4 text-xs text-[var(--cb-text-muted)]">Preview only · review the published detail after submission.</p></div></aside>
           </div>

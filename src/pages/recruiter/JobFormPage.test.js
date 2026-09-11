@@ -10,7 +10,7 @@ describe('recruiter job form transformations', () => {
       currency: 'INR', hideSalary: false, description: 'A clear role description',
       responsibilities: 'Build features\nReview changes', qualification: 'Degree',
       contactVisible: true, deadline: '2026-10-01', requiredSkills: 'React, JavaScript',
-      preferredSkills: 'Testing', screeningQuestions: 'Can you work hybrid?',
+      preferredSkills: 'Testing', screeningQuestions: '* Can you work hybrid?\nShare your availability.',
     });
 
     expect(payload).toMatchObject({
@@ -29,7 +29,10 @@ describe('recruiter job form transformations', () => {
     const form = toFormJob({
       title: 'Engineer', employmentType: 'FULL_TIME', workMode: 'REMOTE',
       salaryMin: 500000, salaryMax: 800000, skills: [], responsibilities: [],
-      screeningQuestions: [],
+      screeningQuestions: [
+        { question: 'Can you work hybrid?', required: true },
+        { question: 'Share your availability.', required: false },
+      ],
     });
     expect(form).toMatchObject({
       employmentType: 'Full-time', workMode: 'Remote', salaryMin: 5, salaryMax: 8,
