@@ -1,17 +1,27 @@
-import { mockMutation, mockResponse } from '@/src/services/mockTransport';
-import { useAppStore } from '@/src/store/useAppStore';
+import { apiClient } from '@/src/services/apiClient';
 
 export const applicationsService = Object.freeze({
-  getApplicantApplications() {
-    return mockResponse(useAppStore.getState().applications);
+  getApplicantApplications(options) {
+    return apiClient.get('/applicant/applications', options);
   },
-  applyToJob({ jobId, coverNote = '' }) {
-    return mockMutation(() => useAppStore.getState().submitApplication(jobId, coverNote));
+  getApplicantApplication(applicationId, options) {
+    return apiClient.get(
+      `/applicant/applications/${encodeURIComponent(applicationId)}`,
+      options,
+    );
   },
-  updateApplicationStatus(applicationId, status) {
-    return mockMutation(() => {
-      useAppStore.getState().updateApplicationStatus(applicationId, status);
-      return useAppStore.getState().applications.find((item) => item.id === applicationId) || null;
-    });
+  applyToJob({ jobId, resumeId, coverNote = '', screeningAnswers = [] }, options) {
+    return apiClient.post(`/jobs/${encodeURIComponent(jobId)}/applications`, {
+      resumeId,
+      coverNote: coverNote || null,
+      screeningAnswers,
+    }, options);
+  },
+  withdrawApplication(applicationId, options) {
+    return apiClient.post(
+      `/applicant/applications/${encodeURIComponent(applicationId)}/withdraw`,
+      undefined,
+      options,
+    );
   },
 });
