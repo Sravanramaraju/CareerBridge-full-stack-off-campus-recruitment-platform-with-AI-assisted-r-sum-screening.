@@ -1,20 +1,28 @@
 import { Bell, Menu } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { RecruiterSidebar } from '@/src/components/navigation/RecruiterSidebar';
 import { ThemeToggle } from '@/src/components/navigation/ThemeToggle';
 import { Button } from '@/src/components/ui/Button';
 import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from '@/src/components/ui/Drawer';
-import { recruiterNotifications } from '@/src/data/mockData';
+import { notificationsService } from '@/src/services/notificationsService';
+import { queryKeys } from '@/src/services/queryKeys';
 
 const titles = {
   '/recruiter/dashboard': 'Overview', '/recruiter/jobs': 'Jobs', '/recruiter/company': 'Company profile',
   '/recruiter/notifications': 'Notifications', '/recruiter/settings': 'Settings',
 };
 
+const notificationSummaryFilters = { page: 1, pageSize: 1 };
+
 export function RecruiterLayout() {
   const location = useLocation();
   const title = titles[location.pathname] || (location.pathname.includes('/applicants') ? 'Candidate pipeline' : location.pathname.includes('/candidates/') ? 'Candidate profile' : location.pathname.includes('/jobs/new') ? 'Post a job' : location.pathname.includes('/edit') ? 'Edit job' : 'Recruiter workspace');
-  const unread = recruiterNotifications.filter((item) => !item.read).length;
+  const notificationsQuery = useQuery({
+    queryKey: queryKeys.notifications(notificationSummaryFilters),
+    queryFn: ({ signal }) => notificationsService.getNotifications(notificationSummaryFilters, { signal }),
+  });
+  const unread = notificationsQuery.data?.unreadCount || 0;
 
   return (
     <div className="min-h-screen bg-[var(--cb-bg)] lg:grid lg:grid-cols-[244px_minmax(0,1fr)]">
