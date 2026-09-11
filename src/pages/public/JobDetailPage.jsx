@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, BadgeCheck, Bookmark, BriefcaseBusiness, CalendarDays, Check,
   IndianRupee, MapPin, Send, Sparkles,
@@ -15,8 +15,11 @@ import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { TextArea } from '@/src/components/ui/Input';
 import { Modal, ModalContent, ModalTrigger } from '@/src/components/ui/Modal';
 import { companiesService } from '@/src/services/companiesService';
+import { applicationsService } from '@/src/services/applicationsService';
 import { jobsService } from '@/src/services/jobsService';
 import { queryKeys } from '@/src/services/queryKeys';
+import { resumesService } from '@/src/services/resumesService';
+import { useSavedJobs } from '@/src/features/jobs/useSavedJobs';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
@@ -52,12 +55,12 @@ export function JobDetailPage() {
   const [coverNote, setCoverNote] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState('');
+  const [screeningAnswers, setScreeningAnswers] = useState({});
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const session = useAppStore((state) => state.session);
-  const savedJobIds = useAppStore((state) => state.savedJobIds);
-  const applications = useAppStore((state) => state.applications);
-  const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
-  const submitApplication = useAppStore((state) => state.submitApplication);
+  const { savedJobIds, toggleSavedJob } = useSavedJobs();
   const jobQuery = useQuery({ queryKey: queryKeys.job(jobId), queryFn: ({ signal }) => jobsService.getJobById(jobId, { signal }) });
   const companyId = jobQuery.data?.company?.id;
   const companyQuery = useQuery({
@@ -66,6 +69,16 @@ export function JobDetailPage() {
     enabled: Boolean(companyId),
   });
   const isApplicant = session?.role === 'applicant';
+  const applicationsQuery = useQuery({
+    queryKey: queryKeys.applicantApplications(),
+    queryFn: ({ signal }) => applicationsService.getApplicantApplications({ signal }),
+    enabled: isApplicant,
+  });
+  const resumesQuery = useQuery({
+    queryKey: queryKeys.applicantResumes(),
+    queryFn: ({ signal }) => resumesService.getResumes({ signal }),
+    enabled: isApplicant,
+  });
   const matchQuery = useQuery({
     queryKey: queryKeys.jobMatch(jobId),
     queryFn: ({ signal }) => jobsService.getJobMatch(jobId, { signal }),
@@ -74,20 +87,15 @@ export function JobDetailPage() {
   useDocumentTitle(jobQuery.data?.title || 'Job details');
   const backToJobs = typeof location.state?.from === 'string' && location.state.from.startsWith('/jobs') ? location.state.from : '/jobs';
 
-  if (jobQuery.isLoading) return <JobDetailLoading />;
-  if (jobQuery.isError || !jobQuery.data) {
-    return (
-      <div className="page-container py-16">
-        <EmptyState title="This role is not available" description="The job may have closed or the link may be incorrect." />
-        <Link to={backToJobs} className="mx-auto mt-5 flex w-fit items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
-      </div>
-    );
-  }
-
   const job = jobQuery.data;
-  const company = companyQuery.data || job.company;
-  const isSaved = savedJobIds.includes(job.id);
-  const application = applications.find((item) => item.jobId === job.id);
+  const company = companyQuery.data || job?.company;
+  const isSaved = savedJobIds.has(jobId);
+  const application = applicationsQuery.data?.find((item) => item.jobId === jobId);
+  const resumes = resumesQuery.data || [];
+  const activeResumeId = selectedResumeId
+    || resumes.find((resume) => resume.isPrimary)?.id
+    || resumes[0]?.id
+    || '';
   const match = matchQuery.data?.match;
   const matchBreakdown = match ? {
     requiredSkills: match.requiredSkillScore,
@@ -100,20 +108,42 @@ export function JobDetailPage() {
     missingSkills: match.requiredSkillsMissing,
   } : null;
 
+  const applyMutation = useMutation({
+    mutationFn: () => applicationsService.applyToJob({
+      jobId,
+      resumeId: activeResumeId,
+      coverNote,
+      screeningAnswers: (job?.screeningQuestions || []).map((question) => ({
+        questionId: question.id,
+        answer: screeningAnswers[question.id]?.trim() || '',
+      })).filter(({ answer }) => answer),
+    }),
+    onSuccess: (createdApplication) => {
+      queryClient.setQueryData(queryKeys.applicantApplication(createdApplication.id), createdApplication);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.applicantApplications() });
+      void queryClient.invalidateQueries({ queryKey: ['applicant', 'dashboard'] });
+      setModalOpen(false);
+      showToast('Application submitted. You can now track it from your dashboard.');
+    },
+    onError: (error) => showToast(
+      error instanceof Error ? error.message : 'Unable to submit this application.',
+      { tone: 'error' },
+    ),
+  });
+
   function handleApply(event) {
     event.preventDefault();
-    const createdApplication = submitApplication(job.id, coverNote.trim());
-    if (!createdApplication) {
-      showToast('You already applied to this role.', { tone: 'error' });
-      return;
-    }
-    setModalOpen(false);
-    showToast('Application submitted. You can now track it from your dashboard.');
+    applyMutation.mutate();
   }
 
-  function handleSave() {
-    toggleSavedJob(job.id);
-    showToast(isSaved ? 'Removed from saved jobs.' : 'Job saved.');
+  if (jobQuery.isLoading) return <JobDetailLoading />;
+  if (jobQuery.isError || !job) {
+    return (
+      <div className="page-container py-16">
+        <EmptyState title="This role is not available" description="The job may have closed or the link may be incorrect." />
+        <Link to={backToJobs} className="mx-auto mt-5 flex w-fit items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to jobs</Link>
+      </div>
+    );
   }
 
   return (
@@ -182,23 +212,23 @@ export function JobDetailPage() {
                 <form onSubmit={handleApply}>
                   <fieldset>
                     <legend className="text-sm font-semibold">Resume</legend>
-                    <label aria-label={`Use ${profile.resumeName}`} className="mt-2 flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--cb-primary)] bg-[var(--cb-primary-soft)] p-4">
-                      <input type="radio" name="resume" defaultChecked className="mt-0.5 accent-[var(--cb-primary)]" />
-                      <span><strong className="block text-sm">{profile.resumeName}</strong><span className="mt-1 block text-xs text-[var(--cb-text-muted)]">Default resume from your CareerBridge profile</span></span>
-                    </label>
+                    {resumesQuery.isLoading && <Skeleton className="mt-2 h-20" />}
+                    {resumesQuery.isSuccess && resumes.length === 0 && <div className="mt-2 rounded-xl border border-[var(--cb-warning)] bg-[var(--cb-warning-soft)] p-4 text-xs leading-5"><p>Upload a résumé before applying.</p><Link to="/applicant/profile" className="mt-2 inline-block font-bold text-[var(--cb-primary)]">Manage résumé</Link></div>}
+                    <div className="mt-2 grid gap-2">{resumes.map((resume) => <label key={resume.id} aria-label={`Use ${resume.originalFileName}`} className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-checked:border-[var(--cb-primary)] has-checked:bg-[var(--cb-primary-soft)]"><input type="radio" name="resume" value={resume.id} checked={activeResumeId === resume.id} onChange={() => setSelectedResumeId(resume.id)} className="mt-0.5 accent-[var(--cb-primary)]" /><span><strong className="block text-sm">{resume.originalFileName}</strong><span className="mt-1 block text-xs text-[var(--cb-text-muted)]">{resume.isPrimary ? 'Primary résumé' : 'Uploaded résumé'} · {resume.parseStatus.toLocaleLowerCase()}</span></span></label>)}</div>
                   </fieldset>
+                  {(job.screeningQuestions || []).length > 0 && <fieldset className="mt-5 grid gap-4"><legend className="text-sm font-semibold">Screening questions</legend>{job.screeningQuestions.map((question) => <label key={question.id} className="text-sm font-semibold">{question.question}{question.required && <span className="text-[var(--cb-danger)]"> *</span>}<TextArea className="mt-2" required={question.required} maxLength={1000} value={screeningAnswers[question.id] || ''} onChange={(event) => setScreeningAnswers((current) => ({ ...current, [question.id]: event.target.value }))} /></label>)}</fieldset>}
                   <label htmlFor="cover-note" className="mt-5 block text-sm font-semibold">Short note <span className="font-normal text-[var(--cb-text-muted)]">(optional)</span></label>
                   <TextArea id="cover-note" className="mt-2" value={coverNote} maxLength={500} onChange={(event) => setCoverNote(event.target.value)} placeholder="Share why this opportunity is relevant to you…" />
                   <p className="mt-1 text-right text-xs text-[var(--cb-text-muted)]">{coverNote.length}/500</p>
                   <label className="mt-4 flex cursor-pointer items-start gap-3 text-xs leading-5 text-[var(--cb-text-secondary)]"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1 accent-[var(--cb-primary)]" />I confirm this profile and resume are accurate and may be shared with {company.name} for this application.</label>
-                  <div className="mt-5 flex justify-end"><Button type="submit" disabled={!consent}><Send />Submit application</Button></div>
+                  <div className="mt-5 flex justify-end"><Button type="submit" disabled={!consent || !activeResumeId || applyMutation.isPending}><Send />{applyMutation.isPending ? 'Submitting…' : 'Submit application'}</Button></div>
                 </form>
               </ModalContent>
             </Modal>
           ) : (
             <Link to={`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`} className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'w-full')}>Log in to apply</Link>
           )}
-          <Button variant={isSaved ? 'soft' : 'secondary'} size="lg" className="mt-3 w-full" onClick={handleSave}><Bookmark className={isSaved ? 'fill-current' : ''} />{isSaved ? 'Saved' : 'Save job'}</Button>
+          <Button variant={isSaved ? 'soft' : 'secondary'} size="lg" className="mt-3 w-full" onClick={() => toggleSavedJob(job.id)}><Bookmark className={isSaved ? 'fill-current' : ''} />{isSaved ? 'Saved' : 'Save job'}</Button>
           <div className="mt-3"><ShareJobButton jobTitle={job.title} /></div>
           <div className="mt-5 border-t border-[var(--cb-divider)] pt-5 text-xs leading-5 text-[var(--cb-text-muted)]">
             <p>Job ID: {job.id}</p>
@@ -211,7 +241,7 @@ export function JobDetailPage() {
         <Button
           variant={isSaved ? 'soft' : 'secondary'}
           size="iconSm"
-          onClick={handleSave}
+          onClick={() => toggleSavedJob(job.id)}
           aria-label={isSaved ? 'Remove saved job' : 'Save job'}
         >
           <Bookmark className={isSaved ? 'fill-current' : ''} aria-hidden="true" />
