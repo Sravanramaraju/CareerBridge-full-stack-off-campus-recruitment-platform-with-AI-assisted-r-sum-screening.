@@ -52,7 +52,7 @@ export function ProfilePage() {
   const skillsMutation = useMutation({
     mutationFn: (skillRecords) => profilesService.replaceSkills(skillRecords),
     onSuccess: (updated) => {
-      queryClient.setQueryData(queryKeys.applicantProfile(), updated);
+      queryClient.setQueryData(queryKeys.applicantProfile(), (current) => ({ ...current, ...updated }));
       setSkillInput('');
       showToast('Skills updated.');
     },
