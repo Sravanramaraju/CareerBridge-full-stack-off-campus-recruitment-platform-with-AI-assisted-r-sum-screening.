@@ -24,6 +24,19 @@ function ProfileSection({ title, description, action, children }) {
   );
 }
 
+const PROFILE_SECTION_LABELS = Object.freeze({
+  basicDetails: ['Basic details complete', 'Add your name, email, and location'],
+  headline: ['Professional headline complete', 'Add a professional headline'],
+  summary: ['Professional summary complete', 'Add a professional summary'],
+  skills: ['Skills evidence complete', 'Add at least three supported skills'],
+  education: ['Education evidence complete', 'Add education evidence'],
+  projects: ['Project evidence complete', 'Add a project outcome'],
+  experience: ['Experience evidence complete', 'Add an experience example'],
+  certifications: ['Certification evidence complete', 'Add a relevant certification'],
+  resume: ['Résumé uploaded', 'Upload a résumé'],
+  preferences: ['Job preferences complete', 'Complete job preferences'],
+});
+
 export function ProfilePage() {
   useDocumentTitle('My profile');
   const queryClient = useQueryClient();
@@ -109,6 +122,8 @@ export function ProfilePage() {
   const experience = profile.experience || [];
   const certifications = profile.certificationRecords || [];
   const preferences = profile.preferences || { locations: ['Bengaluru', 'Remote'], jobTypes: ['Full-time'], workModes: ['Hybrid'] };
+  const missingSections = new Set(profile.missingSections || []);
+  const profileCompletion = profile.profileCompletion ?? 0;
 
   function openBasicEditor() {
     setBasicForm({
@@ -208,7 +223,7 @@ export function ProfilePage() {
         </div>
 
         <aside className="grid gap-5 lg:sticky lg:top-24">
-          <section className="surface-card p-6"><p className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--cb-primary)]">Profile completion</p><h2 className="mt-2 font-heading text-2xl font-extrabold">{profile.profileCompletion || 78}%</h2><ProgressBar className="mt-4" value={profile.profileCompletion || 78} /><ul className="mt-5 grid gap-3 text-xs text-[var(--cb-text-secondary)]">{['Basic details complete', 'Resume added', 'Add recent project outcomes', 'Add one experience example'].map((item, index) => <li key={item} className="flex gap-2"><span className={`mt-0.5 grid size-4 place-items-center rounded-full text-[10px] ${index < 2 ? 'bg-[var(--cb-emerald)] text-white' : 'border border-[var(--cb-border-strong)]'}`}>{index < 2 ? '✓' : ''}</span>{item}</li>)}</ul></section>
+          <section className="surface-card p-6"><p className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--cb-primary)]">Profile completion</p><h2 className="mt-2 font-heading text-2xl font-extrabold">{profileCompletion}%</h2><ProgressBar className="mt-4" value={profileCompletion} /><ul className="mt-5 grid gap-3 text-xs text-[var(--cb-text-secondary)]">{Object.entries(PROFILE_SECTION_LABELS).map(([key, labels]) => { const complete = !missingSections.has(key); return <li key={key} className="flex gap-2"><span className={`mt-0.5 grid size-4 place-items-center rounded-full text-[10px] ${complete ? 'bg-[var(--cb-emerald)] text-white' : 'border border-[var(--cb-border-strong)]'}`}>{complete ? '✓' : ''}</span>{labels[complete ? 0 : 1]}</li>; })}</ul></section>
           <section className="rounded-2xl border border-[var(--cb-cyan)] bg-[var(--cb-cyan-soft)] p-5"><FileSearch className="text-[var(--cb-cyan-strong)]" /><h2 className="mt-3 font-heading text-base font-bold">Résumé parsing status</h2><p className="mt-2 text-xs leading-5 text-[var(--cb-text-secondary)]">Uploaded documents are parsed on the server and used only for explainable, job-relevant matching signals.</p></section>
         </aside>
       </div>
