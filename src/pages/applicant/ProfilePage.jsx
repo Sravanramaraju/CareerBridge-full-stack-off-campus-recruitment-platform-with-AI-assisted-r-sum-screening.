@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileSearch, FileText, MapPin, Pencil, Plus, Trash2, Upload } from 'lucide-react';
 import { Avatar } from '@/src/components/ui/Avatar';
+import { ProfileRecordModal } from '@/src/components/profile/ProfileRecordModal';
 import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState, ProgressBar, Skeleton } from '@/src/components/ui/Feedback';
@@ -28,6 +29,8 @@ export function ProfilePage() {
   const { showToast } = useToast();
   const [basicOpen, setBasicOpen] = useState(false);
   const [skillInput, setSkillInput] = useState('');
+  const [recordEditor, setRecordEditor] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [basicForm, setBasicForm] = useState({ name: '', headline: '', location: '', summary: '', locations: '', jobTypes: '', workModes: '' });
   const fileInputRef = useRef(null);
   const profileQuery = useQuery({
@@ -71,15 +74,36 @@ export function ProfilePage() {
     },
     onError: (error) => showToast(error instanceof Error ? error.message : 'Unable to update résumés.', { tone: 'error' }),
   });
+  const recordMutation = useMutation({
+    mutationFn: ({ type, record, values }) => record
+      ? profilesService[type].update(record.id, values)
+      : profilesService[type].create(values),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.applicantProfile() });
+      setRecordEditor(null);
+      showToast('Profile record saved.');
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : 'Unable to save this record.', { tone: 'error' }),
+  });
+  const deleteRecordMutation = useMutation({
+    mutationFn: ({ type, record }) => profilesService[type].remove(record.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.applicantProfile() });
+      setDeleteTarget(null);
+      showToast('Profile record deleted.');
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : 'Unable to delete this record.', { tone: 'error' }),
+  });
 
   if (profileQuery.isLoading) return <div aria-label="Loading profile"><Skeleton className="h-24" /><Skeleton className="mt-6 h-52" /><Skeleton className="mt-6 h-52" /></div>;
   if (profileQuery.isError || !profile) return <EmptyState icon={FileSearch} title="Profile could not be loaded" description="Please try again in a moment." actionLabel="Try again" onAction={() => profileQuery.refetch()} />;
 
   const skills = profile.skills || [];
   const skillRecords = profile.skillRecords || skills.map((name) => ({ name }));
-  const education = profile.education || [{ institution: 'Visvesvaraya Technological University', qualification: 'B.E. in Computer Science', period: '2022–2026' }];
-  const projects = profile.projects || [{ name: 'Campus Opportunity Tracker', description: 'A responsive placement and application tracking dashboard.' }];
-  const certifications = profile.certifications || ['Responsive Web Design · freeCodeCamp'];
+  const education = profile.education || [];
+  const projects = profile.projects || [];
+  const experience = profile.experience || [];
+  const certifications = profile.certificationRecords || [];
   const preferences = profile.preferences || { locations: ['Bengaluru', 'Remote'], jobTypes: ['Full-time'], workModes: ['Hybrid'] };
 
   function openBasicEditor() {
@@ -141,20 +165,24 @@ export function ProfilePage() {
             <form onSubmit={addSkill} className="mt-4 flex gap-2"><Input value={skillInput} onChange={(event) => setSkillInput(event.target.value)} placeholder="Add a skill" aria-label="Add a skill" /><Button type="submit" variant="secondary" disabled={skillsMutation.isPending}><Plus />Add</Button></form>
           </ProfileSection>
 
-          <ProfileSection title="Education" action={<Button variant="ghost" size="sm"><Pencil />Edit</Button>}>
-            {education.map((item) => <div key={item.qualification}><h3 className="text-sm font-bold">{item.qualification}</h3><p className="mt-1 text-sm text-[var(--cb-text-secondary)]">{item.institution}</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">{item.period}</p></div>)}
+          <ProfileSection title="Education" action={<Button variant="ghost" size="sm" onClick={() => setRecordEditor({ type: 'education' })}><Plus />Add</Button>}>
+            {education.length === 0 && <p className="text-sm text-[var(--cb-text-muted)]">Add your current or completed education.</p>}
+            <div className="grid gap-4">{education.map((item) => <article key={item.id} className="flex items-start justify-between gap-3"><div><h3 className="text-sm font-bold">{item.qualification}</h3><p className="mt-1 text-sm text-[var(--cb-text-secondary)]">{item.institution}</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">{item.period}</p></div><div className="flex"><Button variant="ghost" size="iconSm" onClick={() => setRecordEditor({ type: 'education', record: item })} aria-label={`Edit ${item.qualification}`}><Pencil /></Button><Button variant="ghost" size="iconSm" onClick={() => setDeleteTarget({ type: 'education', record: item, label: item.qualification })} aria-label={`Delete ${item.qualification}`}><Trash2 /></Button></div></article>)}</div>
           </ProfileSection>
 
-          <ProfileSection title="Projects" action={<Button variant="ghost" size="sm"><Plus />Add project</Button>}>
-            {projects.map((project) => <article key={project.name}><h3 className="text-sm font-bold">{project.name}</h3><p className="mt-2 text-sm leading-6 text-[var(--cb-text-secondary)]">{project.description}</p></article>)}
+          <ProfileSection title="Projects" action={<Button variant="ghost" size="sm" onClick={() => setRecordEditor({ type: 'projects' })}><Plus />Add project</Button>}>
+            {projects.length === 0 && <p className="text-sm text-[var(--cb-text-muted)]">Add projects that demonstrate relevant outcomes and skills.</p>}
+            <div className="grid gap-4">{projects.map((project) => <article key={project.id} className="flex items-start justify-between gap-3"><div><h3 className="text-sm font-bold">{project.name}</h3><p className="mt-2 text-sm leading-6 text-[var(--cb-text-secondary)]">{project.description}</p>{project.technologies?.length > 0 && <p className="mt-2 text-xs text-[var(--cb-text-muted)]">{project.technologies.join(' · ')}</p>}</div><div className="flex"><Button variant="ghost" size="iconSm" onClick={() => setRecordEditor({ type: 'projects', record: project })} aria-label={`Edit ${project.name}`}><Pencil /></Button><Button variant="ghost" size="iconSm" onClick={() => setDeleteTarget({ type: 'projects', record: project, label: project.name })} aria-label={`Delete ${project.name}`}><Trash2 /></Button></div></article>)}</div>
           </ProfileSection>
 
-          <ProfileSection title="Experience" action={<Button variant="ghost" size="sm"><Plus />Add experience</Button>}>
-            <div className="rounded-xl border border-dashed p-5 text-center"><p className="text-sm font-semibold">No formal experience added</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">Internships, volunteering, freelance work, and campus responsibilities all count when relevant.</p></div>
+          <ProfileSection title="Experience" action={<Button variant="ghost" size="sm" onClick={() => setRecordEditor({ type: 'experience' })}><Plus />Add experience</Button>}>
+            {experience.length === 0 && <div className="rounded-xl border border-dashed p-5 text-center"><p className="text-sm font-semibold">No formal experience added</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">Internships, volunteering, freelance work, and campus responsibilities all count when relevant.</p></div>}
+            <div className="grid gap-4">{experience.map((item) => <article key={item.id} className="flex items-start justify-between gap-3"><div><h3 className="text-sm font-bold">{item.title}</h3><p className="mt-1 text-sm text-[var(--cb-text-secondary)]">{item.organization}{item.employmentType ? ` · ${item.employmentType}` : ''}</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">{item.startDate ? new Date(item.startDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'Start date not specified'} – {item.isCurrent ? 'Present' : item.endDate ? new Date(item.endDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'Not specified'}</p></div><div className="flex"><Button variant="ghost" size="iconSm" onClick={() => setRecordEditor({ type: 'experience', record: item })} aria-label={`Edit ${item.title}`}><Pencil /></Button><Button variant="ghost" size="iconSm" onClick={() => setDeleteTarget({ type: 'experience', record: item, label: item.title })} aria-label={`Delete ${item.title}`}><Trash2 /></Button></div></article>)}</div>
           </ProfileSection>
 
-          <ProfileSection title="Certifications" action={<Button variant="ghost" size="sm"><Plus />Add certification</Button>}>
-            <ul className="grid gap-2">{certifications.map((certification) => <li key={certification} className="flex items-center gap-2 text-sm text-[var(--cb-text-secondary)]"><span className="size-2 rounded-full bg-[var(--cb-emerald)]" />{certification}</li>)}</ul>
+          <ProfileSection title="Certifications" action={<Button variant="ghost" size="sm" onClick={() => setRecordEditor({ type: 'certifications' })}><Plus />Add certification</Button>}>
+            {certifications.length === 0 && <p className="text-sm text-[var(--cb-text-muted)]">Add relevant certifications and credentials.</p>}
+            <ul className="grid gap-2">{certifications.map((certification) => <li key={certification.id} className="flex items-center gap-2 text-sm text-[var(--cb-text-secondary)]"><span className="size-2 rounded-full bg-[var(--cb-emerald)]" /><span className="flex-1">{certification.name} · {certification.issuer}</span><Button variant="ghost" size="iconSm" onClick={() => setRecordEditor({ type: 'certifications', record: certification })} aria-label={`Edit ${certification.name}`}><Pencil /></Button><Button variant="ghost" size="iconSm" onClick={() => setDeleteTarget({ type: 'certifications', record: certification, label: certification.name })} aria-label={`Delete ${certification.name}`}><Trash2 /></Button></li>)}</ul>
           </ProfileSection>
 
           <ProfileSection title="Résumés" description="Upload PDF or DOCX files. CareerBridge extracts job-relevant profile evidence after upload.">
@@ -177,6 +205,8 @@ export function ProfilePage() {
       </div>
 
       <Modal open={basicOpen} onOpenChange={setBasicOpen}><ModalContent title="Edit profile and preferences" description="Keep this concise and aligned with the roles you want."><form onSubmit={saveBasic} className="grid max-h-[70vh] gap-4 overflow-y-auto pr-1"><label htmlFor="profile-name" className="grid gap-1.5 text-sm font-semibold">Full name<Input id="profile-name" required value={basicForm.name} onChange={(event) => setBasicForm({ ...basicForm, name: event.target.value })} /></label><label htmlFor="profile-headline" className="grid gap-1.5 text-sm font-semibold">Professional headline<TextArea id="profile-headline" className="min-h-20" maxLength={160} value={basicForm.headline} onChange={(event) => setBasicForm({ ...basicForm, headline: event.target.value })} /></label><label htmlFor="profile-location" className="grid gap-1.5 text-sm font-semibold">Location<Input id="profile-location" value={basicForm.location} onChange={(event) => setBasicForm({ ...basicForm, location: event.target.value })} /></label><label htmlFor="profile-summary" className="grid gap-1.5 text-sm font-semibold">Professional summary<TextArea id="profile-summary" maxLength={1500} value={basicForm.summary} onChange={(event) => setBasicForm({ ...basicForm, summary: event.target.value })} /></label>{[['locations', 'Preferred locations'], ['jobTypes', 'Job types'], ['workModes', 'Work modes']].map(([key, label]) => <label key={key} htmlFor={`profile-${key}`} className="grid gap-1.5 text-sm font-semibold">{label}<Input id={`profile-${key}`} value={basicForm[key]} onChange={(event) => setBasicForm({ ...basicForm, [key]: event.target.value })} placeholder="Comma-separated" /></label>)}<div className="flex justify-end"><Button type="submit" disabled={profileMutation.isPending}>{profileMutation.isPending ? 'Saving…' : 'Save changes'}</Button></div></form></ModalContent></Modal>
+      {recordEditor && <ProfileRecordModal key={`${recordEditor.type}-${recordEditor.record?.id || 'new'}`} editor={recordEditor} pending={recordMutation.isPending} onClose={() => setRecordEditor(null)} onSave={(values) => recordMutation.mutate({ ...recordEditor, values })} />}
+      <Modal open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}><ModalContent title={`Delete ${deleteTarget?.label || 'profile record'}?`} description="This removes the record from your CareerBridge profile and may affect future match guidance."><div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancel</Button><Button variant="danger" disabled={deleteRecordMutation.isPending} onClick={() => deleteRecordMutation.mutate(deleteTarget)}>{deleteRecordMutation.isPending ? 'Deleting…' : 'Delete'}</Button></div></ModalContent></Modal>
     </div>
   );
 }
