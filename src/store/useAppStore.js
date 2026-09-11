@@ -4,12 +4,13 @@ import { APPLICATION_STATUSES } from '@/src/domain/constants';
 import { mockApplications, recruiterCandidates } from '@/src/data/mockData';
 import { adminCompanyReviews, adminJobReviews, adminUsers } from '@/src/data/adminData';
 
-export const APP_STORAGE_KEY = 'careerbridge.mock.v1';
+export const APP_STORAGE_KEY = 'careerbridge.ui.v2';
 
 export const useAppStore = create(
   persist(
     (set, get) => ({
       session: null,
+      sessionStatus: 'loading',
       savedJobIds: ['product-design-intern-paperplane', 'backend-engineer-clinivo'],
       applications: mockApplications,
       recruiterDrafts: [],
@@ -47,8 +48,12 @@ export const useAppStore = create(
         profileCompletion: 78,
       },
 
-      setSession: (session) => set({ session }),
-      logout: () => set({ session: null }),
+      setSession: (session) => set({
+        session,
+        sessionStatus: session ? 'authenticated' : 'anonymous',
+      }),
+      setSessionStatus: (sessionStatus) => set({ sessionStatus }),
+      logout: () => set({ session: null, sessionStatus: 'anonymous' }),
       toggleSavedJob: (jobId) => set((state) => ({
         savedJobIds: state.savedJobIds.includes(jobId)
           ? state.savedJobIds.filter((id) => id !== jobId)
@@ -115,7 +120,6 @@ export const useAppStore = create(
       name: APP_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        session: state.session,
         savedJobIds: state.savedJobIds,
         applications: state.applications,
         recruiterDrafts: state.recruiterDrafts,

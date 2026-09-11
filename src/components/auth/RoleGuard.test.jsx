@@ -22,7 +22,13 @@ function renderGuard(route = '/applicant/dashboard') {
 }
 
 describe('RoleGuard', () => {
-  beforeEach(() => useAppStore.setState({ session: null }));
+  beforeEach(() => useAppStore.setState({ session: null, sessionStatus: 'anonymous' }));
+
+  it('waits for cookie-backed session restoration before redirecting', () => {
+    useAppStore.setState({ session: null, sessionStatus: 'loading' });
+    renderGuard();
+    expect(screen.getByLabelText('Loading page')).toBeInTheDocument();
+  });
 
   it('redirects signed-out visitors while preserving their destination', () => {
     renderGuard();

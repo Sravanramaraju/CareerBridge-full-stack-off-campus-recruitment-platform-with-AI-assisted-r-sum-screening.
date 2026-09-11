@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ThemeProvider } from '@/src/features/theme/ThemeProvider';
+import { AuthProvider } from '@/src/features/auth/AuthProvider';
 import { ToastProvider } from '@/src/components/feedback/ToastProvider';
 
 export function AppProviders({ children }) {
@@ -18,7 +19,9 @@ export function AppProviders({ children }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider><ToastProvider>{children}</ToastProvider></ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider><ToastProvider>{children}</ToastProvider></ThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
