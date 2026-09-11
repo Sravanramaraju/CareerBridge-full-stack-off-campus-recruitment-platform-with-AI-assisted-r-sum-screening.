@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight, Check, Eye, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -6,35 +7,93 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
 import { FormField, Input, Select, TextArea } from '@/src/components/ui/Input';
-import { jobs } from '@/src/data/mockData';
 import { EMPLOYMENT_TYPES, WORK_MODES } from '@/src/domain/constants';
-import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 import { useToast } from '@/src/components/feedback/ToastProvider';
 import { jobSchema, jobStepFields } from '@/src/schemas/jobSchema';
+import { recruiterService } from '@/src/services/recruiterService';
+import { queryKeys } from '@/src/services/queryKeys';
 
 const steps = [['Role basics', 'Describe the opportunity'], ['Requirements', 'Set clear expectations'], ['Review & publish', 'Check the candidate view']];
 
 function splitSkills(value = '') { return value.split(',').map((skill) => skill.trim()).filter(Boolean); }
-function makeSlug(value = '') { return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'new-role'; }
+function splitLines(value = '') { return value.split('\n').map((item) => item.trim()).filter(Boolean); }
+
+const workModeValues = { 'On-site': 'ON_SITE', Hybrid: 'HYBRID', Remote: 'REMOTE' };
+const employmentTypeValues = { 'Full-time': 'FULL_TIME', 'Part-time': 'PART_TIME', Internship: 'INTERNSHIP', Contract: 'CONTRACT' };
+const workModeLabels = { ON_SITE: 'On-site', HYBRID: 'Hybrid', REMOTE: 'Remote' };
+const employmentTypeLabels = { FULL_TIME: 'Full-time', PART_TIME: 'Part-time', INTERNSHIP: 'Internship', CONTRACT: 'Contract' };
+
+const emptyJob = {
+  title: '', department: '', category: 'Engineering', employmentType: '', workMode: '',
+  location: '', openings: 1, experienceMin: 0, experienceMax: 1, salaryMin: 5,
+  salaryMax: 8, hideSalary: false, qualification: "Bachelor's degree or equivalent practical experience",
+  requiredSkills: '', preferredSkills: '', description: '', responsibilities: '',
+  deadline: '', contactVisible: true, screeningQuestions: '',
+};
+
+export function toFormJob(job) {
+  if (!job) return emptyJob;
+  return {
+    title: job.title || '', department: job.department || '', category: job.category || 'Engineering',
+    employmentType: employmentTypeLabels[job.employmentType] || '',
+    workMode: workModeLabels[job.workMode] || '', location: job.location || '',
+    openings: job.openings || 1, experienceMin: job.experienceMin ?? 0,
+    experienceMax: job.experienceMax ?? 1,
+    salaryMin: job.salaryMin === null ? 0 : Number(job.salaryMin) / 100000,
+    salaryMax: job.salaryMax === null ? 0 : Number(job.salaryMax) / 100000,
+    hideSalary: Boolean(job.hideSalary), qualification: job.qualification || '',
+    requiredSkills: (job.skills || []).filter((item) => item.requirement === 'REQUIRED').map((item) => item.skill.name).join(', '),
+    preferredSkills: (job.skills || []).filter((item) => item.requirement === 'PREFERRED').map((item) => item.skill.name).join(', '),
+    description: job.description || '', responsibilities: (job.responsibilities || []).join('\n'),
+    deadline: job.deadline ? new Date(job.deadline).toISOString().slice(0, 10) : '',
+    contactVisible: job.contactVisible ?? true,
+    screeningQuestions: (job.screeningQuestions || []).map((item) => item.question).join('\n'),
+  };
+}
+
+export function toApiJob(values) {
+  return {
+    title: values.title.trim() || 'Untitled role', department: values.department.trim() || null,
+    category: values.category.trim() || null, location: values.location.trim() || null,
+    workMode: workModeValues[values.workMode] || null,
+    employmentType: employmentTypeValues[values.employmentType] || null,
+    openings: Number(values.openings) || 1, experienceMin: Number(values.experienceMin) || 0,
+    experienceMax: Number(values.experienceMax) || 0,
+    salaryMin: values.hideSalary ? null : Number(values.salaryMin) * 100000,
+    salaryMax: values.hideSalary ? null : Number(values.salaryMax) * 100000,
+    currency: 'INR', hideSalary: Boolean(values.hideSalary),
+    summary: values.description.trim().slice(0, 500) || null,
+    description: values.description.trim() || null,
+    responsibilities: splitLines(values.responsibilities),
+    qualification: values.qualification.trim() || null,
+    contactVisible: Boolean(values.contactVisible), deadline: values.deadline || null,
+    skills: [
+      ...splitSkills(values.requiredSkills).map((name) => ({ name, requirement: 'REQUIRED' })),
+      ...splitSkills(values.preferredSkills).map((name) => ({ name, requirement: 'PREFERRED' })),
+    ],
+    screeningQuestions: splitLines(values.screeningQuestions).map((question) => ({ question, required: false })),
+  };
+}
 
 export function JobFormPage() {
   const { jobId } = useParams();
   useDocumentTitle(jobId ? 'Edit job' : 'Post a job');
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const recruiterDrafts = useAppStore((state) => state.recruiterDrafts);
-  const saveRecruiterDraft = useAppStore((state) => state.saveRecruiterDraft);
-  const existing = recruiterDrafts.find((item) => item.id === jobId) || jobs.find((item) => item.id === jobId);
+  const existingQuery = useQuery({
+    queryKey: queryKeys.recruiterJob(jobId),
+    queryFn: ({ signal }) => recruiterService.getJob(jobId, { signal }),
+    enabled: Boolean(jobId),
+  });
+  const existing = existingQuery.data;
   const [step, setStep] = useState(0);
   const { register, handleSubmit, getValues, trigger, watch, formState: { errors, isDirty, isSubmitting, isSubmitSuccessful } } = useForm({
     resolver: zodResolver(jobSchema),
-    defaultValues: {
-      title: existing?.title || '', department: existing?.department || '', category: existing?.category || 'Engineering', employmentType: existing?.employmentType || '', workMode: existing?.workMode || '', location: existing?.location || '', openings: existing?.openings || 1,
-      experienceMin: existing?.experienceMin ?? 0, experienceMax: existing?.experienceMax ?? 1, salaryMin: existing?.salaryMin ?? 5, salaryMax: existing?.salaryMax ?? 8, hideSalary: existing?.hideSalary || false, qualification: existing?.qualification || "Bachelor's degree or equivalent practical experience", requiredSkills: existing?.requiredSkills || existing?.skills?.join(', ') || '', preferredSkills: existing?.preferredSkills || '', description: existing?.description || existing?.summary || '', responsibilities: existing?.responsibilities || '',
-      deadline: existing?.deadline || '2026-09-30', contactVisible: existing?.contactVisible ?? true, screeningQuestions: existing?.screeningQuestions || '',
-    },
+    defaultValues: emptyJob,
+    values: toFormJob(existing),
   });
   const values = watch();
 
@@ -50,26 +109,35 @@ export function JobFormPage() {
     if (valid) setStep((current) => Math.min(2, current + 1));
   }
 
-  function normaliseJob(formValues, status) {
-    const id = jobId || `${makeSlug(formValues.title)}-${recruiterDrafts.length + 1}`;
-    return {
-      id, title: formValues.title || 'Untitled role', companyId: existing?.companyId || 'northstar-labs', department: formValues.department, category: formValues.category, employmentType: formValues.employmentType, workMode: formValues.workMode, location: formValues.location, openings: Number(formValues.openings) || 1,
-      experience: `${formValues.experienceMin || 0}–${formValues.experienceMax || 1} years`, experienceMin: Number(formValues.experienceMin) || 0, experienceMax: Number(formValues.experienceMax) || 1, salary: formValues.hideSalary ? 'Salary not disclosed' : `₹${formValues.salaryMin || 0}–${formValues.salaryMax || 0} LPA`, salaryMin: Number(formValues.salaryMin) || 0, salaryMax: Number(formValues.salaryMax) || 0, hideSalary: Boolean(formValues.hideSalary), qualification: formValues.qualification,
-      skills: splitSkills(formValues.requiredSkills), requiredSkills: formValues.requiredSkills, preferredSkills: formValues.preferredSkills, description: formValues.description, summary: formValues.description.slice(0, 150), responsibilities: formValues.responsibilities, deadline: formValues.deadline, contactVisible: Boolean(formValues.contactVisible), screeningQuestions: formValues.screeningQuestions, status, updatedAt: '2026-09-01', postedAt: existing?.postedAt || '2026-09-01', applications: existing?.applications || 0,
-    };
+  async function persistJob(formValues) {
+    const payload = toApiJob(formValues);
+    return jobId
+      ? recruiterService.updateJob(jobId, payload)
+      : recruiterService.createJob(payload);
   }
 
-  function saveDraft() {
-    saveRecruiterDraft(normaliseJob(getValues(), 'Draft'));
-    showToast('Draft saved to your hiring workspace.');
-    void navigate('/recruiter/jobs');
+  async function saveDraft() {
+    try {
+      await persistJob(getValues());
+      await queryClient.invalidateQueries({ queryKey: queryKeys.recruiterJobs() });
+      showToast('Draft saved to your hiring workspace.');
+      void navigate('/recruiter/jobs');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Unable to save this draft.', { tone: 'error' });
+    }
   }
 
   async function publish(formValues) {
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
-    saveRecruiterDraft(normaliseJob(formValues, 'Published'));
-    showToast(jobId ? 'Job changes published.' : 'Job published successfully.');
-    void navigate('/recruiter/jobs');
+    try {
+      const saved = await persistJob(formValues);
+      if (saved.status === 'DRAFT') await recruiterService.publishJob(saved.id);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.recruiterJobs() });
+      await queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      showToast(jobId && existing?.status === 'PUBLISHED' ? 'Job changes saved.' : 'Job published successfully.');
+      void navigate('/recruiter/jobs');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Unable to publish this job.', { tone: 'error' });
+    }
   }
 
   return (
