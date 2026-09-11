@@ -2,7 +2,7 @@ import { ArrowRight, BookOpen, CheckCircle2, Clock3, FileText, MessagesSquare, T
 import { Link } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { buttonVariants } from '@/src/components/ui/Button';
-import { careerResources } from '@/src/data/mockData';
+import { careerResources } from '@/src/data/careerResources';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 
 const toolkit = [

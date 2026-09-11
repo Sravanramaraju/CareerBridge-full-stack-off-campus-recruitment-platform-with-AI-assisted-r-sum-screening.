@@ -9,7 +9,7 @@ import { JobCard } from '@/src/components/jobs/JobCard';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { buttonVariants } from '@/src/components/ui/Button';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
-import { careerResources } from '@/src/data/mockData';
+import { careerResources } from '@/src/data/careerResources';
 import { useSavedJobs } from '@/src/features/jobs/useSavedJobs';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 import { companiesService } from '@/src/services/companiesService';
