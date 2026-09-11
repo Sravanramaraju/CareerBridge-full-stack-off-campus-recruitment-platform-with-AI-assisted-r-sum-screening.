@@ -1,3 +1,5 @@
+import { getApplicationStatusTransitions } from './applicationTransitions.js';
+
 const STATUS_LABELS = {
   APPLIED: 'Applied',
   UNDER_REVIEW: 'Under Review',
@@ -57,6 +59,7 @@ export function toRecruiterCandidate(application, now = new Date()) {
     matchDetails: application.match,
     statusCode: application.status,
     status: STATUS_LABELS[application.status] ?? application.status,
+    allowedTransitions: getApplicationStatusTransitions(application.status, 'RECRUITER'),
     appliedAt: application.appliedAt,
     updatedAt: application.updatedAt,
   };

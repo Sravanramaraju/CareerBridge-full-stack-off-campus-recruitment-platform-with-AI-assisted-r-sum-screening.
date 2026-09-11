@@ -14,7 +14,10 @@ import { queryKeys } from '@/src/services/queryKeys';
 const statusOptions = [
   ['APPLIED', 'Applied'], ['UNDER_REVIEW', 'Under Review'], ['SHORTLISTED', 'Shortlisted'],
   ['INTERVIEW', 'Interview'], ['OFFERED', 'Offered'], ['REJECTED', 'Rejected'],
+  ['WITHDRAWN', 'Withdrawn'],
 ];
+
+const statusLabels = Object.fromEntries(statusOptions);
 
 export function CandidatePipelinePage() {
   const { jobId } = useParams();
@@ -89,7 +92,7 @@ export function CandidatePipelinePage() {
                 <div className="flex flex-wrap gap-1">{candidate.skills.slice(0, 2).map((skill) => <Badge key={skill} className="text-[10px]">{skill}</Badge>)}{candidate.skills.length > 2 && <span className="text-[10px] text-[var(--cb-text-muted)]">+{candidate.skills.length - 2}</span>}</div>
                 <span className="truncate text-xs text-[var(--cb-text-secondary)]">{candidate.location}</span>
                 <span className="text-xs text-[var(--cb-text-secondary)]">{new Date(candidate.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
-                <select aria-label={`Status for ${candidate.name}`} value={candidate.statusCode} disabled={statusMutation.isPending || candidate.statusCode === 'WITHDRAWN'} onChange={(event) => changeCandidateStatus(candidate, event.target.value)} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-2 text-xs font-semibold outline-none focus:border-[var(--cb-primary)]">{statusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                <select aria-label={`Status for ${candidate.name}`} value={candidate.statusCode} disabled={statusMutation.isPending || !candidate.allowedTransitions?.length} onChange={(event) => changeCandidateStatus(candidate, event.target.value)} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-2 text-xs font-semibold outline-none focus:border-[var(--cb-primary)]"><option value={candidate.statusCode}>{candidate.status}</option>{(candidate.allowedTransitions || []).map((status) => <option key={status} value={status}>{statusLabels[status] || status}</option>)}</select>
                 <Link to={`/recruiter/candidates/${candidate.applicationId}`} className="text-xs font-bold text-[var(--cb-primary)] hover:underline">Review</Link>
               </article>
             ))}</div>

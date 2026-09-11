@@ -21,14 +21,6 @@ const statusLabels = Object.freeze({
   INTERVIEW: 'Interview', OFFERED: 'Offered', REJECTED: 'Rejected', WITHDRAWN: 'Withdrawn',
 });
 
-const allowedTransitions = Object.freeze({
-  APPLIED: ['UNDER_REVIEW', 'REJECTED'],
-  UNDER_REVIEW: ['SHORTLISTED', 'REJECTED'],
-  SHORTLISTED: ['UNDER_REVIEW', 'INTERVIEW', 'REJECTED'],
-  INTERVIEW: ['SHORTLISTED', 'OFFERED', 'REJECTED'],
-  OFFERED: ['INTERVIEW'], REJECTED: [], WITHDRAWN: [],
-});
-
 function readableDate(value, options = {}) {
   if (!value) return 'Not provided';
   return new Date(value).toLocaleDateString('en-IN', {
@@ -67,7 +59,7 @@ export function CandidateDetailPage() {
   });
   const candidate = candidateQuery.data;
   const notes = notesQuery.data || candidate?.notes || [];
-  const transitions = allowedTransitions[candidate?.statusCode] || [];
+  const transitions = candidate?.allowedTransitions || [];
 
   useDocumentTitle(candidate?.name ? `${candidate.name} candidate review` : 'Candidate review');
 

@@ -20,12 +20,16 @@ export const APPLICANT_APPLICATION_TRANSITIONS = Object.freeze({
   WITHDRAWN: Object.freeze([]),
 });
 
-export function assertApplicationStatusTransition(currentStatus, nextStatus, actorRole) {
-  if (currentStatus === nextStatus) return false;
+export function getApplicationStatusTransitions(currentStatus, actorRole) {
   const transitions = actorRole === 'APPLICANT'
     ? APPLICANT_APPLICATION_TRANSITIONS
     : RECRUITER_APPLICATION_TRANSITIONS;
-  if (!transitions[currentStatus]?.includes(nextStatus)) {
+  return transitions[currentStatus] ?? [];
+}
+
+export function assertApplicationStatusTransition(currentStatus, nextStatus, actorRole) {
+  if (currentStatus === nextStatus) return false;
+  if (!getApplicationStatusTransitions(currentStatus, actorRole).includes(nextStatus)) {
     throw new AppError({
       code: 'INVALID_APPLICATION_TRANSITION',
       message: `An application cannot move from ${currentStatus} to ${nextStatus}.`,

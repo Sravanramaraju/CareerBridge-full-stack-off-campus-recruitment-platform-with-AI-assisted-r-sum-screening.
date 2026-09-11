@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   APPLICANT_APPLICATION_TRANSITIONS,
   assertApplicationStatusTransition,
+  getApplicationStatusTransitions,
   RECRUITER_APPLICATION_TRANSITIONS,
 } from '../src/modules/applications/applicationTransitions.js';
 
@@ -26,6 +27,13 @@ describe('application status transitions', () => {
     expect(APPLICANT_APPLICATION_TRANSITIONS.WITHDRAWN).toEqual([]);
     expect(() => assertApplicationStatusTransition('REJECTED', 'UNDER_REVIEW', 'RECRUITER'))
       .toThrow(expect.objectContaining({ code: 'INVALID_APPLICATION_TRANSITION' }));
+  });
+
+  it('returns the legal next states for API presenters', () => {
+    expect(getApplicationStatusTransitions('UNDER_REVIEW', 'RECRUITER'))
+      .toEqual(['SHORTLISTED', 'REJECTED']);
+    expect(getApplicationStatusTransitions('INTERVIEW', 'APPLICANT')).toEqual(['WITHDRAWN']);
+    expect(getApplicationStatusTransitions('UNKNOWN', 'RECRUITER')).toEqual([]);
   });
 
   it('allows applicants to withdraw only before a final outcome', () => {

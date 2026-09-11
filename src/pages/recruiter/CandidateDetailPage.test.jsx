@@ -21,6 +21,7 @@ const candidate = {
   applicationId: 'application-1', jobId: 'job-1', name: 'Ananya Rao',
   headline: 'Frontend developer', location: 'Bengaluru', experience: '1 year',
   statusCode: 'UNDER_REVIEW', status: 'Under Review', match: 88,
+  allowedTransitions: ['SHORTLISTED', 'REJECTED'],
   matchDetails: { experienceScore: 75 }, requiredCoverage: '80%', preferredCoverage: '100%',
   missing: ['PostgreSQL'], skills: ['React'], summary: 'Builds accessible applications.',
   education: [], experienceRecords: [], projects: [], certifications: [], screeningAnswers: [],

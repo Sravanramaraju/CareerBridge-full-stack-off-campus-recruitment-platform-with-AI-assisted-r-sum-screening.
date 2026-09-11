@@ -37,6 +37,7 @@ describe('recruiter application presenter', () => {
       match: 88,
       statusCode: 'SHORTLISTED',
       status: 'Shortlisted',
+      allowedTransitions: ['UNDER_REVIEW', 'INTERVIEW', 'REJECTED'],
     });
   });
 
