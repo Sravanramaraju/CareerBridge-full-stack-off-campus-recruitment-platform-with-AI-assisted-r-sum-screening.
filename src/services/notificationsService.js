@@ -1,15 +1,16 @@
-import { mockNotifications, recruiterNotifications } from '@/src/data/mockData';
-import { mockMutation, mockResponse } from '@/src/services/mockTransport';
-import { useAppStore } from '@/src/store/useAppStore';
+import { apiClient } from '@/src/services/apiClient';
+import { buildQueryString } from '@/src/services/queryString';
 
 export const notificationsService = Object.freeze({
-  getNotifications(role) {
-    return mockResponse(role === 'recruiter' ? recruiterNotifications : mockNotifications);
+  getNotifications(filters = {}, options) {
+    return apiClient.get(`/notifications${buildQueryString(filters)}`, options);
   },
-  markRead(notificationId) {
-    return mockMutation(() => useAppStore.getState().markNotificationRead(notificationId));
+  markRead(notificationId, options) {
+    return apiClient.patch(
+      `/notifications/${encodeURIComponent(notificationId)}/read`, undefined, options,
+    );
   },
-  markAllRead(notificationIds) {
-    return mockMutation(() => useAppStore.getState().markAllNotificationsRead(notificationIds));
+  markAllRead(options) {
+    return apiClient.patch('/notifications/read-all', undefined, options);
   },
 });
