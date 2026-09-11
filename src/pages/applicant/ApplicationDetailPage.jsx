@@ -1,21 +1,48 @@
-import { ArrowLeft, Clock3, FileText, Mail } from 'lucide-react';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, FileText, Mail } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ApplicationStatusBadge } from '@/src/components/applications/ApplicationStatusBadge';
 import { ApplicationTimeline } from '@/src/components/applications/ApplicationTimeline';
-import { buttonVariants } from '@/src/components/ui/Button';
-import { EmptyState } from '@/src/components/ui/Feedback';
-import { getCompanyById, jobs } from '@/src/data/mockData';
-import { useAppStore } from '@/src/store/useAppStore';
+import { Button, buttonVariants } from '@/src/components/ui/Button';
+import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
+import { Modal, ModalContent } from '@/src/components/ui/Modal';
+import { useToast } from '@/src/components/feedback/ToastProvider';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
+import { applicationsService } from '@/src/services/applicationsService';
+import { queryKeys } from '@/src/services/queryKeys';
 
 export function ApplicationDetailPage() {
   const { applicationId } = useParams();
-  const application = useAppStore((state) => state.applications.find((item) => item.id === applicationId));
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const applicationQuery = useQuery({
+    queryKey: queryKeys.applicantApplication(applicationId),
+    queryFn: ({ signal }) => applicationsService.getApplicantApplication(applicationId, { signal }),
+  });
+  const application = applicationQuery.data;
+  const withdrawMutation = useMutation({
+    mutationFn: () => applicationsService.withdrawApplication(applicationId),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.applicantApplication(applicationId), updated);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.applicantApplications() });
+      setWithdrawOpen(false);
+      showToast('Application withdrawn.');
+    },
+    onError: (error) => showToast(
+      error instanceof Error ? error.message : 'Unable to withdraw this application.',
+      { tone: 'error' },
+    ),
+  });
   useDocumentTitle(application ? 'Application details' : 'Application not found');
-  if (!application) return <div><EmptyState title="Application not found" description="This application may have been removed from local demo storage." /><Link to="/applicant/applications" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to applications</Link></div>;
+  if (applicationQuery.isLoading) return <div aria-label="Loading application details"><Skeleton className="h-5 w-36" /><Skeleton className="mt-5 h-40" /><Skeleton className="mt-6 h-80" /></div>;
+  if (applicationQuery.isError || !application) return <div><EmptyState title="Application not found" description="This application may no longer be available." actionLabel="Try again" onAction={() => applicationQuery.refetch()} /><Link to="/applicant/applications" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><ArrowLeft className="size-4" />Back to applications</Link></div>;
 
-  const job = jobs.find((item) => item.id === application.jobId);
-  const company = getCompanyById(job.companyId);
+  const { job } = application;
+  const { company } = job;
+  const canWithdraw = ['APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW']
+    .includes(application.statusCode);
 
   return (
     <div>
@@ -43,10 +70,15 @@ export function ApplicationDetailPage() {
 
         <aside className="grid h-fit gap-5 lg:sticky lg:top-24">
           <section className="surface-card p-6"><h2 className="font-heading text-lg font-bold">Application snapshot</h2><dl className="mt-4 grid gap-3 text-sm"><div className="flex justify-between gap-3"><dt className="text-[var(--cb-text-muted)]">Applied</dt><dd className="font-semibold">{new Date(application.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</dd></div><div className="flex justify-between gap-3"><dt className="text-[var(--cb-text-muted)]">Work mode</dt><dd className="font-semibold">{job.workMode}</dd></div><div className="flex justify-between gap-3"><dt className="text-[var(--cb-text-muted)]">Location</dt><dd className="text-right font-semibold">{job.location}</dd></div></dl><Link to={`/jobs/${job.id}`} className={`${buttonVariants({ variant: 'secondary', size: 'md' })} mt-5 w-full`}>View job</Link></section>
-          <section className="surface-card p-6"><p className="flex items-center gap-2 text-sm font-bold"><FileText className="size-4 text-[var(--cb-primary)]" />Submitted resume</p><p className="mt-3 text-sm font-semibold">Ananya_Rao_Resume.pdf</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">Demo document · 242 KB</p>{application.coverNote && <><p className="mt-5 border-t border-[var(--cb-divider)] pt-5 text-sm font-bold">Cover note</p><p className="mt-2 text-xs leading-5 text-[var(--cb-text-secondary)]">{application.coverNote}</p></>}</section>
-          <p className="flex gap-2 text-xs leading-5 text-[var(--cb-text-muted)]"><Clock3 className="mt-0.5 size-4 shrink-0" />Status changes are mock data saved on this device for the portfolio demonstration.</p>
+          <section className="surface-card p-6"><p className="flex items-center gap-2 text-sm font-bold"><FileText className="size-4 text-[var(--cb-primary)]" />Submitted resume</p><p className="mt-3 text-sm font-semibold">{application.resume.name}</p><p className="mt-1 text-xs text-[var(--cb-text-muted)]">{Math.ceil(application.resume.fileSize / 1024)} KB · {application.resume.parseStatus.toLocaleLowerCase()}</p>{application.coverNote && <><p className="mt-5 border-t border-[var(--cb-divider)] pt-5 text-sm font-bold">Cover note</p><p className="mt-2 text-xs leading-5 text-[var(--cb-text-secondary)]">{application.coverNote}</p></>}</section>
+          {canWithdraw && <section className="rounded-2xl border border-[var(--cb-danger)] bg-[var(--cb-danger-soft)] p-6"><h2 className="font-heading text-lg font-bold text-[var(--cb-danger)]">Withdraw application</h2><p className="mt-2 text-xs leading-5 text-[var(--cb-text-secondary)]">This ends your candidacy for this role and notifies the hiring team.</p><Button variant="danger" className="mt-4" onClick={() => setWithdrawOpen(true)}>Withdraw</Button></section>}
         </aside>
       </div>
+      <Modal open={withdrawOpen} onOpenChange={setWithdrawOpen}>
+        <ModalContent title="Withdraw this application?" description="This action cannot be reversed for the current application.">
+          <div className="flex justify-end gap-3"><Button variant="secondary" onClick={() => setWithdrawOpen(false)}>Cancel</Button><Button variant="danger" disabled={withdrawMutation.isPending} onClick={() => withdrawMutation.mutate()}>{withdrawMutation.isPending ? 'Withdrawing…' : 'Withdraw application'}</Button></div>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

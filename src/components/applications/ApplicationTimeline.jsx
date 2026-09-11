@@ -1,19 +1,22 @@
-import { Check, X } from 'lucide-react';
+import { Check, Undo2, X } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 const progressStages = ['Applied', 'Screening', 'Assessment', 'Interview', 'Offer'];
 
 export function ApplicationTimeline({ application }) {
   const isRejected = ['Rejected', 'Not selected'].includes(application.status);
+  const isWithdrawn = application.status === 'Withdrawn';
   const priorStatus = application.timeline.at(-2)?.status;
-  const currentIndex = isRejected ? Math.max(0, progressStages.indexOf(priorStatus)) : progressStages.indexOf(application.status);
+  const currentIndex = isRejected || isWithdrawn
+    ? Math.max(0, progressStages.indexOf(priorStatus))
+    : progressStages.indexOf(application.status);
 
   return (
     <ol className="mt-6">
       {progressStages.map((stage, index) => {
         const event = application.timeline.find((item) => item.status === stage);
         const completed = index < currentIndex || (application.status === 'Offer' && index <= currentIndex);
-        const current = !isRejected && index === currentIndex && application.status !== 'Offer';
+        const current = !isRejected && !isWithdrawn && index === currentIndex && application.status !== 'Offer';
         return (
           <li key={stage} className="relative flex gap-4 pb-7 last:pb-0">
             {index < progressStages.length - 1 && <span className={cn('absolute left-[15px] top-8 h-[calc(100%-16px)] w-0.5', completed ? 'bg-[var(--cb-emerald)]' : 'bg-[var(--cb-border)]')} aria-hidden="true" />}
@@ -23,6 +26,7 @@ export function ApplicationTimeline({ application }) {
         );
       })}
       {isRejected && <li className="mt-6 flex gap-4 border-t border-[var(--cb-divider)] pt-6"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--cb-danger)] text-white"><X className="size-4" aria-hidden="true" /></span><div><h3 className="text-sm font-bold text-[var(--cb-danger)]">Not selected</h3><p className="mt-1 text-xs leading-5 text-[var(--cb-text-secondary)]">{application.timeline.at(-1)?.note}</p></div></li>}
+      {isWithdrawn && <li className="mt-6 flex gap-4 border-t border-[var(--cb-divider)] pt-6"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--cb-text-muted)] text-white"><Undo2 className="size-4" aria-hidden="true" /></span><div><h3 className="text-sm font-bold">Application withdrawn</h3><p className="mt-1 text-xs leading-5 text-[var(--cb-text-secondary)]">{application.timeline.at(-1)?.note}</p></div></li>}
     </ol>
   );
 }
