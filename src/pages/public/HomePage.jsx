@@ -2,14 +2,19 @@ import {
   ArrowRight, BadgeCheck, BookOpen, CheckCircle2, ClipboardCheck, Clock3,
   FileSearch, SearchCheck, Send, ShieldCheck, Sparkles, UserRoundCheck,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { CompanyCard } from '@/src/components/companies/CompanyCard';
 import { JobCard } from '@/src/components/jobs/JobCard';
 import { JobSearchBar } from '@/src/components/jobs/JobSearchBar';
 import { buttonVariants } from '@/src/components/ui/Button';
-import { careerResources, companies, jobs } from '@/src/data/mockData';
+import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
+import { careerResources } from '@/src/data/mockData';
 import { useSavedJobs } from '@/src/features/jobs/useSavedJobs';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
+import { companiesService } from '@/src/services/companiesService';
+import { jobsService } from '@/src/services/jobsService';
+import { queryKeys } from '@/src/services/queryKeys';
 
 const browseChips = [
   'Fresher', 'Internship', 'Remote', 'Software Engineering', 'Data & Analytics',
@@ -43,8 +48,17 @@ const candidateFlow = [
 
 export function HomePage() {
   useDocumentTitle();
-  const featuredJobs = jobs.filter((job) => job.featured).slice(0, 6);
   const { savedJobIds, toggleSavedJob } = useSavedJobs();
+  const jobsQuery = useQuery({
+    queryKey: queryKeys.jobs({ page: 1, pageSize: 6 }),
+    queryFn: ({ signal }) => jobsService.getJobs({ page: 1, pageSize: 6 }, { signal }),
+  });
+  const companiesQuery = useQuery({
+    queryKey: queryKeys.companies({ page: 1, pageSize: 4 }),
+    queryFn: ({ signal }) => companiesService.getCompanies({ page: 1, pageSize: 4 }, { signal }),
+  });
+  const featuredJobs = jobsQuery.data?.items || [];
+  const featuredCompanies = companiesQuery.data?.items || [];
 
   return (
     <>
@@ -94,13 +108,16 @@ export function HomePage() {
           <div>
             <p className="text-sm font-bold text-[var(--cb-primary)]">Curated for your next step</p>
             <h2 id="featured-jobs-title" className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.035em]">Featured opportunities</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--cb-text-secondary)]">Fresh roles from verified demo employers, selected for graduates and early-career professionals.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--cb-text-secondary)]">Fresh roles from verified employers, selected for graduates and early-career professionals.</p>
           </div>
           <Link to="/jobs" className={buttonVariants({ variant: 'secondary', size: 'md' })}>
             View all jobs <ArrowRight aria-hidden="true" />
           </Link>
         </div>
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+        {jobsQuery.isLoading && <div className="mt-8 grid gap-4 lg:grid-cols-2">{Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-72" />)}</div>}
+        {jobsQuery.isError && <EmptyState className="mt-8" title="Featured jobs could not be loaded" description="Browse all jobs or try this section again." actionLabel="Try again" onAction={() => jobsQuery.refetch()} />}
+        {jobsQuery.isSuccess && featuredJobs.length === 0 && <EmptyState className="mt-8" title="New opportunities are on the way" description="There are no published roles available right now." />}
+        {featuredJobs.length > 0 && <div className="mt-8 grid gap-4 lg:grid-cols-2">
           {featuredJobs.map((job) => (
             <JobCard
               key={job.id}
@@ -109,7 +126,7 @@ export function HomePage() {
               onSave={toggleSavedJob}
             />
           ))}
-        </div>
+        </div>}
       </section>
 
       <section className="border-y border-[var(--cb-divider)] bg-[var(--cb-bg-subtle)] py-16 sm:py-20" aria-labelledby="companies-title">
@@ -118,15 +135,16 @@ export function HomePage() {
             <div>
               <p className="text-sm font-bold text-[var(--cb-emerald)]">Know where you&apos;re applying</p>
               <h2 id="companies-title" className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.035em]">Top companies hiring</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--cb-text-secondary)]">Explore transparent profiles from fictional, verified demo employers.</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--cb-text-secondary)]">Explore transparent profiles from verified employers.</p>
             </div>
             <Link className="inline-flex items-center gap-2 text-sm font-bold text-[var(--cb-primary)] hover:underline" to="/companies">
               Explore all companies <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {companies.slice(0, 4).map((company) => <CompanyCard key={company.id} company={company} />)}
-          </div>
+          {companiesQuery.isLoading && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-64" />)}</div>}
+          {companiesQuery.isError && <EmptyState className="mt-8" icon={BadgeCheck} title="Companies could not be loaded" description="Please try again in a moment." actionLabel="Try again" onAction={() => companiesQuery.refetch()} />}
+          {companiesQuery.isSuccess && featuredCompanies.length === 0 && <EmptyState className="mt-8" icon={BadgeCheck} title="No verified companies yet" description="Verified employer profiles will appear here." />}
+          {featuredCompanies.length > 0 && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{featuredCompanies.map((company) => <CompanyCard key={company.id} company={company} />)}</div>}
         </div>
       </section>
 
