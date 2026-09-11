@@ -1,11 +1,10 @@
-import { companies } from '@/src/data/mockData';
 import { RotateCcw } from 'lucide-react';
 
 const options = {
-  industry: [...new Set(companies.map((company) => company.industry))],
-  size: [...new Set(companies.map((company) => company.size))],
-  location: [...new Set(companies.map((company) => company.location.split(',')[0]))],
-  companyType: [...new Set(companies.map((company) => company.companyType))],
+  industry: ['Developer tools', 'Clean mobility', 'Financial technology', 'Product design', 'Health technology', 'Education technology', 'Retail technology'],
+  size: ['51–200 employees', '201–500 employees', '501–1,000 employees'],
+  location: ['Bengaluru', 'Chennai', 'Gurugram', 'Hyderabad', 'Mumbai', 'Pune', 'Remote'],
+  companyType: ['Product', 'Startup', 'Consulting', 'MNC'],
 };
 
 const labels = { industry: 'Industry', size: 'Company size', location: 'Location', companyType: 'Company type' };

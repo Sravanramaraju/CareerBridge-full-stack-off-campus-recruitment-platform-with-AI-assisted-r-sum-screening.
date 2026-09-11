@@ -15,7 +15,6 @@ import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
 import { readJobFacets, writeJobFacets } from '@/src/lib/jobFilterParams';
-import { matchService } from '@/src/services/matchService';
 
 function JobsLoading() {
   return (
@@ -39,32 +38,26 @@ export function JobsPage() {
   const [page, setPage] = useState(1);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
-  const session = useAppStore((state) => state.session);
-  const profile = useAppStore((state) => state.profile);
 
   const filters = useMemo(() => ({
     keyword: searchParams.get('q') || '',
     location: searchParams.get('location') || '',
     experience: searchParams.get('experience') || '',
     ...facetFilters,
-  }), [facetFilters, searchParams]);
+    sort,
+    page,
+    pageSize: 6,
+  }), [facetFilters, page, searchParams, sort]);
 
   const jobsQuery = useQuery({
     queryKey: queryKeys.jobs(filters),
-    queryFn: () => jobsService.getJobs(filters),
+    queryFn: ({ signal }) => jobsService.getJobs(filters, { signal }),
   });
 
-  const sortedJobs = useMemo(() => {
-    const result = [...(jobsQuery.data || [])];
-    if (sort === 'match' && session?.role === 'applicant') return result.sort((a, b) => matchService.scoreJob(b, profile).overall - matchService.scoreJob(a, profile).overall);
-    if (sort === 'salary') return result.sort((a, b) => b.salary.localeCompare(a.salary));
-    if (sort === 'recommended') return result.sort((a, b) => Number(b.featured) - Number(a.featured) || new Date(b.postedAt) - new Date(a.postedAt));
-    return result.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
-  }, [jobsQuery.data, profile, session?.role, sort]);
-
-  const pageCount = Math.ceil(sortedJobs.length / 6);
-  const currentPage = Math.min(page, Math.max(pageCount, 1));
-  const visibleJobs = sortedJobs.slice((currentPage - 1) * 6, currentPage * 6);
+  const visibleJobs = jobsQuery.data?.items || [];
+  const pagination = jobsQuery.data?.pagination;
+  const pageCount = pagination?.totalPages || 0;
+  const currentPage = pagination?.page || page;
 
   function updateFacetFilters(next) {
     setFacetFilters(next);
@@ -133,28 +126,27 @@ export function JobsPage() {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 id="job-results-title" className="font-heading text-xl font-bold">Job results</h2>
-              <p className="mt-1 text-xs text-[var(--cb-text-muted)]" aria-live="polite">{jobsQuery.isLoading ? 'Finding roles…' : `${sortedJobs.length} opportunities found`}</p>
+              <p className="mt-1 text-xs text-[var(--cb-text-muted)]" aria-live="polite">{jobsQuery.isLoading ? 'Finding roles…' : `${pagination?.total || 0} opportunities found`}</p>
             </div>
             <label className="flex items-center gap-2 text-xs font-semibold text-[var(--cb-text-secondary)]">
               Sort by
               <select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }} className="h-9 rounded-lg border bg-[var(--cb-surface)] px-3 text-sm outline-none focus:border-[var(--cb-primary)]">
                 <option value="recommended">Recommended</option>
                 <option value="newest">Newest</option>
-                {session?.role === 'applicant' && <option value="match">Match</option>}
                 <option value="salary">Salary</option>
               </select>
             </label>
           </div>
 
           {jobsQuery.isLoading && <JobsLoading />}
-          {jobsQuery.isError && <EmptyState icon={BriefcaseBusiness} title="Jobs could not be loaded" description="Something interrupted the demo service. Please try again." actionLabel="Try again" onAction={() => jobsQuery.refetch()} />}
-          {jobsQuery.isSuccess && sortedJobs.length === 0 && <EmptyState title="No roles match these filters" description="Try a broader keyword, location, or remove one of your filters." actionLabel="Clear filters" onAction={clearFilters} />}
-          {jobsQuery.isSuccess && sortedJobs.length > 0 && (
+          {jobsQuery.isError && <EmptyState icon={BriefcaseBusiness} title="Jobs could not be loaded" description="Please try again in a moment." actionLabel="Try again" onAction={() => jobsQuery.refetch()} />}
+          {jobsQuery.isSuccess && visibleJobs.length === 0 && <EmptyState title="No roles match these filters" description="Try a broader keyword, location, or remove one of your filters." actionLabel="Clear filters" onAction={clearFilters} />}
+          {jobsQuery.isSuccess && visibleJobs.length > 0 && (
             <div className="grid gap-4 xl:grid-cols-2">
-              {visibleJobs.map((job) => <JobCard key={job.id} job={job} detailState={{ from: `${location.pathname}${location.search}` }} match={session?.role === 'applicant' ? matchService.scoreJob(job, profile).overall : undefined} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
+              {visibleJobs.map((job) => <JobCard key={job.id} job={job} detailState={{ from: `${location.pathname}${location.search}` }} isSaved={savedJobIds.includes(job.id)} onSave={toggleSavedJob} />)}
             </div>
           )}
-          {jobsQuery.isSuccess && <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} />}
+          {jobsQuery.isSuccess && pageCount > 1 && <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} />}
         </section>
       </div>
     </div>

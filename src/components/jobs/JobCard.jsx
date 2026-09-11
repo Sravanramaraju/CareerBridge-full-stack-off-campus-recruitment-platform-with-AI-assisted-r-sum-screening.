@@ -2,14 +2,13 @@ import { Bookmark, Clock3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
-import { getCompanyById } from '@/src/data/mockData';
 import { JobMeta } from '@/src/components/jobs/JobMeta';
 import { MatchSummary } from '@/src/components/jobs/MatchSummary';
 import { formatPostedDate } from '@/src/lib/jobFormatting';
 import { useToast } from '@/src/components/feedback/ToastProvider';
 
 export function JobCard({ job, onSave, isSaved = false, match, detailState }) {
-  const company = getCompanyById(job.companyId);
+  const company = job.company;
   const { showToast } = useToast();
 
   function handleSave() {

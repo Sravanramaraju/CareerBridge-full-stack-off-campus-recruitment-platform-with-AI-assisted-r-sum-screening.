@@ -14,13 +14,12 @@ import { buttonVariants, Button } from '@/src/components/ui/Button';
 import { EmptyState, Skeleton } from '@/src/components/ui/Feedback';
 import { TextArea } from '@/src/components/ui/Input';
 import { Modal, ModalContent, ModalTrigger } from '@/src/components/ui/Modal';
-import { getCompanyById } from '@/src/data/mockData';
+import { companiesService } from '@/src/services/companiesService';
 import { jobsService } from '@/src/services/jobsService';
 import { queryKeys } from '@/src/services/queryKeys';
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { useDocumentTitle } from '@/src/hooks/useDocumentTitle';
-import { matchService } from '@/src/services/matchService';
 
 const responsibilities = [
   'Collaborate with product, design, and engineering teammates on focused product outcomes.',
@@ -57,10 +56,21 @@ export function JobDetailPage() {
   const session = useAppStore((state) => state.session);
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const applications = useAppStore((state) => state.applications);
-  const profile = useAppStore((state) => state.profile);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
   const submitApplication = useAppStore((state) => state.submitApplication);
-  const jobQuery = useQuery({ queryKey: queryKeys.job(jobId), queryFn: () => jobsService.getJobById(jobId) });
+  const jobQuery = useQuery({ queryKey: queryKeys.job(jobId), queryFn: ({ signal }) => jobsService.getJobById(jobId, { signal }) });
+  const companyId = jobQuery.data?.company?.id;
+  const companyQuery = useQuery({
+    queryKey: queryKeys.company(companyId),
+    queryFn: ({ signal }) => companiesService.getCompanyById(companyId, { signal }),
+    enabled: Boolean(companyId),
+  });
+  const isApplicant = session?.role === 'applicant';
+  const matchQuery = useQuery({
+    queryKey: queryKeys.jobMatch(jobId),
+    queryFn: ({ signal }) => jobsService.getJobMatch(jobId, { signal }),
+    enabled: isApplicant && jobQuery.isSuccess,
+  });
   useDocumentTitle(jobQuery.data?.title || 'Job details');
   const backToJobs = typeof location.state?.from === 'string' && location.state.from.startsWith('/jobs') ? location.state.from : '/jobs';
 
@@ -75,11 +85,20 @@ export function JobDetailPage() {
   }
 
   const job = jobQuery.data;
-  const company = getCompanyById(job.companyId);
+  const company = companyQuery.data || job.company;
   const isSaved = savedJobIds.includes(job.id);
   const application = applications.find((item) => item.jobId === job.id);
-  const isApplicant = session?.role === 'applicant';
-  const match = matchService.scoreJob(job, profile);
+  const match = matchQuery.data?.match;
+  const matchBreakdown = match ? {
+    requiredSkills: match.requiredSkillScore,
+    preferredSkills: match.preferredSkillScore,
+    experience: match.experienceScore,
+    education: match.explanation.breakdown.education,
+    location: match.preferenceScore,
+    semanticSimilarity: match.semanticAvailable ? match.semanticScore : 'Unavailable',
+    matchedSkills: match.requiredSkillsMatched,
+    missingSkills: match.requiredSkillsMissing,
+  } : null;
 
   function handleApply(event) {
     event.preventDefault();
@@ -142,11 +161,11 @@ export function JobDetailPage() {
         </div>
 
         <aside className="surface-card top-24 p-5 lg:sticky" aria-label="Application actions">
-          {isApplicant && !application && (
+          {isApplicant && !application && match && (
             <div className="mb-5 rounded-xl bg-[var(--cb-primary-soft)] p-4">
               <p className="flex items-center gap-2 text-sm font-bold text-[var(--cb-primary)]"><Sparkles className="size-4" />Your match guidance</p>
-              <MatchSummary score={match.overall} className="mt-3" />
-              <details className="mt-4"><summary className="cursor-pointer text-xs font-bold text-[var(--cb-primary)]">Why this match?</summary><div className="mt-4"><MatchBreakdown breakdown={match} /></div></details>
+              <MatchSummary score={match.overallScore} className="mt-3" />
+              <details className="mt-4"><summary className="cursor-pointer text-xs font-bold text-[var(--cb-primary)]">Why this match?</summary><div className="mt-4"><MatchBreakdown breakdown={matchBreakdown} /></div></details>
             </div>
           )}
           {application ? (

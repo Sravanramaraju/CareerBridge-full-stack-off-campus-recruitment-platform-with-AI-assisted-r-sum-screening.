@@ -12,18 +12,17 @@ export function CompaniesPage() {
   useDocumentTitle('Explore companies');
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ industry: '', size: '', location: '', companyType: '' });
-  const companiesQuery = useQuery({ queryKey: queryKeys.companies(), queryFn: companiesService.getCompanies });
-  const filteredCompanies = useMemo(() => {
-    const keyword = search.trim().toLocaleLowerCase();
-    return (companiesQuery.data || []).filter((company) => {
-      const matchesSearch = !keyword || [company.name, company.industry, company.location].join(' ').toLocaleLowerCase().includes(keyword);
-      return matchesSearch
-        && (!filters.industry || company.industry === filters.industry)
-        && (!filters.size || company.size === filters.size)
-        && (!filters.location || company.location.startsWith(filters.location))
-        && (!filters.companyType || company.companyType === filters.companyType);
-    });
-  }, [companiesQuery.data, filters, search]);
+  const requestFilters = useMemo(() => ({
+    q: search.trim(),
+    ...filters,
+    page: 1,
+    pageSize: 50,
+  }), [filters, search]);
+  const companiesQuery = useQuery({
+    queryKey: queryKeys.companies(requestFilters),
+    queryFn: ({ signal }) => companiesService.getCompanies(requestFilters, { signal }),
+  });
+  const filteredCompanies = companiesQuery.data?.items || [];
 
   return (
     <div className="page-container py-10 sm:py-14">
@@ -47,7 +46,7 @@ export function CompaniesPage() {
       <section className="mt-9" aria-labelledby="company-results-title">
         <div className="flex items-center justify-between gap-4">
           <h2 id="company-results-title" className="font-heading text-xl font-bold">Companies</h2>
-          <p className="text-xs text-[var(--cb-text-muted)]">{companiesQuery.isLoading ? 'Loading…' : `${filteredCompanies.length} profiles`}</p>
+          <p className="text-xs text-[var(--cb-text-muted)]">{companiesQuery.isLoading ? 'Loading…' : `${companiesQuery.data?.pagination.total || 0} profiles`}</p>
         </div>
         {companiesQuery.isLoading && (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

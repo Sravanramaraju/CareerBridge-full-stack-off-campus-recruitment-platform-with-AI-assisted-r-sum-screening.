@@ -23,15 +23,20 @@ export function CompanyDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const savedJobIds = useAppStore((state) => state.savedJobIds);
   const toggleSavedJob = useAppStore((state) => state.toggleSavedJob);
-  const companyQuery = useQuery({ queryKey: queryKeys.company(companyId), queryFn: () => companiesService.getCompanyById(companyId) });
-  const jobsQuery = useQuery({ queryKey: queryKeys.companyJobs(companyId), queryFn: () => jobsService.getJobs({}), enabled: companyQuery.isSuccess });
+  const companyQuery = useQuery({ queryKey: queryKeys.company(companyId), queryFn: ({ signal }) => companiesService.getCompanyById(companyId, { signal }) });
+  const jobFilters = { page: 1, pageSize: 50, sort: 'newest' };
+  const jobsQuery = useQuery({
+    queryKey: queryKeys.companyJobs(companyId, jobFilters),
+    queryFn: ({ signal }) => jobsService.getCompanyJobs(companyId, jobFilters, { signal }),
+    enabled: companyQuery.isSuccess,
+  });
   useDocumentTitle(companyQuery.data?.name || 'Company profile');
 
   if (companyQuery.isLoading) return <div className="page-container py-12"><Skeleton className="h-5 w-32" /><div className="surface-card mt-7 p-8"><Skeleton className="size-16" /><Skeleton className="mt-5 h-9 w-1/2" /><Skeleton className="mt-3 h-5 w-1/3" /></div></div>;
   if (!companyQuery.data) return <div className="page-container py-16"><EmptyState icon={Building2} title="Company not found" description="This company profile may no longer be available." /></div>;
 
   const company = companyQuery.data;
-  const companyJobs = (jobsQuery.data || []).filter((job) => job.companyId === company.id);
+  const companyJobs = jobsQuery.data?.items || [];
 
   return (
     <div className="page-container py-8 sm:py-10">
