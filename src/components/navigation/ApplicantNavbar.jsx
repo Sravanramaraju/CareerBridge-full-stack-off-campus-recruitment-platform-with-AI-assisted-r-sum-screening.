@@ -1,5 +1,5 @@
 import { Bell, Bookmark, ChevronDown, LogOut, Menu, Search, Settings, UserRound } from 'lucide-react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { CareerBridgeLogo } from '@/src/components/brand/CareerBridgeLogo';
 import { ThemeToggle } from '@/src/components/navigation/ThemeToggle';
 import { Avatar } from '@/src/components/ui/Avatar';
@@ -8,6 +8,7 @@ import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from '@/src/compone
 import { useAppStore } from '@/src/store/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { ApplicantNotificationMenu } from '@/src/components/notifications/ApplicantNotificationMenu';
+import { useLogout } from '@/src/features/auth/useLogout';
 
 const links = [
   ['Jobs', '/jobs'], ['Companies', '/companies'], ['Applications', '/applicant/applications'], ['Resources', '/resources'],
@@ -19,13 +20,7 @@ const accountLinks = [
 
 export function ApplicantNavbar() {
   const session = useAppStore((state) => state.session);
-  const logout = useAppStore((state) => state.logout);
-  const navigate = useNavigate();
-
-  function handleLogout() {
-    logout();
-    void navigate('/', { replace: true });
-  }
+  const { logout, isLoggingOut } = useLogout();
 
   const navClass = ({ isActive }) => cn('rounded-lg px-3 py-2 text-sm font-semibold transition-colors', isActive ? 'bg-[var(--cb-primary-soft)] text-[var(--cb-primary)]' : 'text-[var(--cb-text-secondary)] hover:bg-[var(--cb-bg-subtle)] hover:text-[var(--cb-text)]');
 
@@ -44,7 +39,7 @@ export function ApplicantNavbar() {
             </summary>
             <div className="absolute right-0 mt-2 w-52 rounded-xl border bg-[var(--cb-surface-raised)] p-2 shadow-[var(--cb-shadow-raised)]">
               {accountLinks.map(([label, to, Icon]) => <Link key={to} to={to} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[var(--cb-text-secondary)] hover:bg-[var(--cb-bg-subtle)] hover:text-[var(--cb-text)]"><Icon className="size-4" />{label}</Link>)}
-              <button onClick={handleLogout} type="button" className="mt-1 flex w-full items-center gap-2 border-t border-[var(--cb-divider)] px-3 pt-3 pb-2 text-sm font-semibold text-[var(--cb-danger)]"><LogOut className="size-4" />Log out</button>
+              <button onClick={logout} disabled={isLoggingOut} type="button" className="mt-1 flex w-full items-center gap-2 border-t border-[var(--cb-divider)] px-3 pt-3 pb-2 text-sm font-semibold text-[var(--cb-danger)] disabled:opacity-60"><LogOut className="size-4" />{isLoggingOut ? 'Logging out…' : 'Log out'}</button>
             </div>
           </details>
           <Drawer>
@@ -53,7 +48,7 @@ export function ApplicantNavbar() {
               <nav className="grid gap-1" aria-label="Mobile applicant navigation">
                 {[['Dashboard', '/applicant/dashboard'], ...links, ...accountLinks.map(([label, to]) => [label, to])].map(([label, to]) => <DrawerClose key={to} render={<NavLink to={to} className={navClass} />}>{label}</DrawerClose>)}
               </nav>
-              <button onClick={handleLogout} type="button" className="mt-5 flex w-full items-center gap-2 border-t border-[var(--cb-divider)] px-3 pt-5 text-sm font-bold text-[var(--cb-danger)]"><LogOut className="size-4" />Log out</button>
+              <button onClick={logout} disabled={isLoggingOut} type="button" className="mt-5 flex w-full items-center gap-2 border-t border-[var(--cb-divider)] px-3 pt-5 text-sm font-bold text-[var(--cb-danger)] disabled:opacity-60"><LogOut className="size-4" />{isLoggingOut ? 'Logging out…' : 'Log out'}</button>
             </DrawerContent>
           </Drawer>
         </div>
