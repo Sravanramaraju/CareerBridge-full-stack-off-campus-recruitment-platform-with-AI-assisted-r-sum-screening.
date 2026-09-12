@@ -11,6 +11,10 @@
     "dev:full": "concurrently --kill-others-on-fail --names frontend,server \"npm run dev\" \"npm run dev:server\"",
     "db:up": "docker compose up -d postgres mailpit",
     "db:down": "docker compose down",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:deploy": "npm --prefix server run db:deploy",
+    "db:seed": "npm --prefix server run db:seed",
+    "db:test:prepare": "npm --prefix server run db:test:prepare",
     "ai:warmup": "npm --prefix server run ai:warmup",
     "build": "vite build && node scripts/prepare-sites-worker.mjs",
     "preview": "vite preview",
@@ -18,7 +22,9 @@
     "format": "oxfmt .",
     "test": "vitest run --passWithNoTests",
     "test:server": "npm --prefix server test",
-    "test:all": "npm test && npm run test:server"
+    "test:integration": "npm --prefix server run test:integration",
+    "test:all": "npm test && npm run test:server && npm run test:integration",
+    "verify": "npm run lint && npm run build && npm run test:all"
   },
   "dependencies": {
     "react": "19.2.6",
