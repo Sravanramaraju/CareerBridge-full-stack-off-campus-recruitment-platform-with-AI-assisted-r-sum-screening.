@@ -15,10 +15,12 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:test:prepare": "node scripts/prepareTestDatabase.js",
     "ai:warmup": "node scripts/warmupEmbeddings.js",
     "lint": "oxlint -c .oxlintrc.json src tests",
     "format": "oxfmt src tests",
     "test": "vitest run",
+    "test:integration": "npm run db:test:prepare && vitest run --config vitest.integration.config.js",
     "check": "npm run lint && npm test"
   },
   "dependencies": {
