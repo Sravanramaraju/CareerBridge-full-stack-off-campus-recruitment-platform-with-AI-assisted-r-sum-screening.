@@ -11,6 +11,8 @@ export default defineConfig({
       DATABASE_URL: process.env.DATABASE_URL_TEST,
       DATABASE_URL_TEST: process.env.DATABASE_URL_TEST,
       NODE_ENV: 'test',
+      AUTH_RATE_LIMIT_MAX: '1000',
+      PASSWORD_RATE_LIMIT_MAX: '1000',
     },
     environment: 'node',
     include: ['tests/integration/**/*.test.js'],
