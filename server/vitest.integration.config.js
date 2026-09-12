@@ -13,6 +13,7 @@ export default defineConfig({
       NODE_ENV: 'test',
       AUTH_RATE_LIMIT_MAX: '1000',
       PASSWORD_RATE_LIMIT_MAX: '1000',
+      EMBEDDINGS_ENABLED: 'false',
     },
     environment: 'node',
     include: ['tests/integration/**/*.test.js'],
